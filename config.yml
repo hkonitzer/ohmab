@@ -1,0 +1,16 @@
+server:
+  port: 8080
+  headers:
+    Access-Control-Allow-Origin: "*" #Set CORS headers for the preflight request
+database:
+  dialect: postgres # possible values: postgres, mysql, sqlite3
+  dbname: esdra-dev
+  dbuser: "dbuser"
+  dbhost: "localhost"
+  dbport: 32768
+  dbpassword: "dbpassword"
+  postgres:
+    sslmode: "disable" # see https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-PARAMKEYWORDS
+  sqlite3:
+    cache: "shared" # see https://www.sqlite.org/uri.html#recognized_query_parameters"
+    mode: "memory"

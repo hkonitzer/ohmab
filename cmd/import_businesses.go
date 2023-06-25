@@ -135,7 +135,7 @@ func main() {
 					ae_ := (addr.Street == s) && (addr.Zip == z) && (addr.City == c)
 					ae = ae_
 					if ae_ {
-						logger.Debug().Msgf("Address '%s, %s %s' already exists in business '%s'", addr.Street, addr.Zip, addr.City, b1.Name1)
+						logger.Debug().Msgf("Address '%s, %s %s' already exists in business '%s'", s, z, c, b1.Name1)
 						break
 					}
 				}

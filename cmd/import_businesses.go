@@ -165,6 +165,9 @@ func main() {
 			businessCreate := client.Business.Create()
 			addressCreate := client.Address.Create()
 			for i, field := range record {
+				if field == "" {
+					continue
+				}
 				schemaHeader := headersFromSchemas[i]
 				schema := strings.Split(schemaHeader, "$")[0]
 				schemaField := strings.Split(schemaHeader, "$")[1]

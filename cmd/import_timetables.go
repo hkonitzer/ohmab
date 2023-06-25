@@ -91,6 +91,9 @@ func main() {
 		busQuery := client.Business.Query()
 		var city, street, zip string
 		for i, field := range record {
+			if field == "" {
+				continue
+			}
 			schemaHeader := headersFromSchemas[i]
 			schema := strings.Split(schemaHeader, "$")[0]
 			schemaField := strings.Split(schemaHeader, "$")[1]

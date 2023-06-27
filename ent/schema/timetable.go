@@ -24,7 +24,9 @@ func (Timetable) Fields() []ent.Field {
 			Immutable().Default(uuid.New),
 		field.Enum("type").
 			Values("DEFAULT", "REGULAR", "CLOSED", "EMERGENCYSERVICE", "HOLIDAY", "SPECIAL").Default("DEFAULT"),
-		field.Time("datetime_from").Optional(),
+		field.Time("datetime_from").
+			Annotations(entgql.OrderField("datetime_from")).
+			Optional(),
 		field.Time("datetime_to").Optional(),
 		field.Bool("time_whole_day").Default(false),
 		field.Text("comment").Optional(),

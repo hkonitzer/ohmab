@@ -61,6 +61,7 @@ var (
 		{Name: "deleted_at", Type: field.TypeTime, Nullable: true},
 		{Name: "name1", Type: field.TypeString, Size: 2147483647},
 		{Name: "name2", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "alias", Type: field.TypeString, Unique: true, Size: 20},
 		{Name: "telephone", Type: field.TypeString, Unique: true, Nullable: true, Size: 2147483647},
 		{Name: "email", Type: field.TypeString, Unique: true, Nullable: true, Size: 2147483647},
 		{Name: "website", Type: field.TypeString, Nullable: true, Size: 2147483647},
@@ -76,7 +77,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "businesses_users_businesses",
-				Columns:    []*schema.Column{BusinessesColumns[11]},
+				Columns:    []*schema.Column{BusinessesColumns[12]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -90,7 +91,7 @@ var (
 			{
 				Name:    "business_email",
 				Unique:  false,
-				Columns: []*schema.Column{BusinessesColumns[7]},
+				Columns: []*schema.Column{BusinessesColumns[8]},
 			},
 		},
 	}

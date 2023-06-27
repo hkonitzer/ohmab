@@ -303,6 +303,8 @@ type Business implements Node {
   name1: String!
   """The optional second name of the business"""
   name2: String
+  """The unqiue alias of the business (short name)"""
+  alias: String!
   """Telephone number"""
   telephone: String
   """Email address (has to be unique)"""
@@ -420,6 +422,20 @@ input BusinessWhereInput {
   name2NotNil: Boolean
   name2EqualFold: String
   name2ContainsFold: String
+  """alias field predicates"""
+  alias: String
+  aliasNEQ: String
+  aliasIn: [String!]
+  aliasNotIn: [String!]
+  aliasGT: String
+  aliasGTE: String
+  aliasLT: String
+  aliasLTE: String
+  aliasContains: String
+  aliasHasPrefix: String
+  aliasHasSuffix: String
+  aliasEqualFold: String
+  aliasContainsFold: String
   """telephone field predicates"""
   telephone: String
   telephoneNEQ: String
@@ -509,6 +525,8 @@ input CreateBusinessInput {
   name1: String!
   """The optional second name of the business"""
   name2: String
+  """The unqiue alias of the business (short name)"""
+  alias: String!
   """Telephone number"""
   telephone: String
   """Email address (has to be unique)"""

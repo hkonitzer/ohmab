@@ -64,6 +64,7 @@ func init() {
 	businessMixin := schema.Business{}.Mixin()
 	businessHooks := schema.Business{}.Hooks()
 	business.Hooks[0] = businessHooks[0]
+	business.Hooks[1] = businessHooks[1]
 	businessMixinFields0 := businessMixin[0].Fields()
 	_ = businessMixinFields0
 	businessFields := schema.Business{}.Fields()
@@ -82,8 +83,12 @@ func init() {
 	businessDescName1 := businessFields[1].Descriptor()
 	// business.Name1Validator is a validator for the "name1" field. It is called by the builders before save.
 	business.Name1Validator = businessDescName1.Validators[0].(func(string) error)
+	// businessDescAlias is the schema descriptor for alias field.
+	businessDescAlias := businessFields[3].Descriptor()
+	// business.AliasValidator is a validator for the "alias" field. It is called by the builders before save.
+	business.AliasValidator = businessDescAlias.Validators[0].(func(string) error)
 	// businessDescActive is the schema descriptor for active field.
-	businessDescActive := businessFields[7].Descriptor()
+	businessDescActive := businessFields[8].Descriptor()
 	// business.DefaultActive holds the default value on creation for the active field.
 	business.DefaultActive = businessDescActive.Default.(bool)
 	// businessDescID is the schema descriptor for id field.

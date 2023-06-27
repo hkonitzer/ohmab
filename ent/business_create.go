@@ -87,6 +87,12 @@ func (bc *BusinessCreate) SetNillableName2(s *string) *BusinessCreate {
 	return bc
 }
 
+// SetAlias sets the "alias" field.
+func (bc *BusinessCreate) SetAlias(s string) *BusinessCreate {
+	bc.mutation.SetAlias(s)
+	return bc
+}
+
 // SetTelephone sets the "telephone" field.
 func (bc *BusinessCreate) SetTelephone(s string) *BusinessCreate {
 	bc.mutation.SetTelephone(s)
@@ -301,6 +307,14 @@ func (bc *BusinessCreate) check() error {
 			return &ValidationError{Name: "name1", err: fmt.Errorf(`ent: validator failed for field "Business.name1": %w`, err)}
 		}
 	}
+	if _, ok := bc.mutation.Alias(); !ok {
+		return &ValidationError{Name: "alias", err: errors.New(`ent: missing required field "Business.alias"`)}
+	}
+	if v, ok := bc.mutation.Alias(); ok {
+		if err := business.AliasValidator(v); err != nil {
+			return &ValidationError{Name: "alias", err: fmt.Errorf(`ent: validator failed for field "Business.alias": %w`, err)}
+		}
+	}
 	if _, ok := bc.mutation.Active(); !ok {
 		return &ValidationError{Name: "active", err: errors.New(`ent: missing required field "Business.active"`)}
 	}
@@ -358,6 +372,10 @@ func (bc *BusinessCreate) createSpec() (*Business, *sqlgraph.CreateSpec) {
 	if value, ok := bc.mutation.Name2(); ok {
 		_spec.SetField(business.FieldName2, field.TypeString, value)
 		_node.Name2 = value
+	}
+	if value, ok := bc.mutation.Alias(); ok {
+		_spec.SetField(business.FieldAlias, field.TypeString, value)
+		_node.Alias = value
 	}
 	if value, ok := bc.mutation.Telephone(); ok {
 		_spec.SetField(business.FieldTelephone, field.TypeString, value)

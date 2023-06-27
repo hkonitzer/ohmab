@@ -85,6 +85,12 @@ func (bu *BusinessUpdate) ClearName2() *BusinessUpdate {
 	return bu
 }
 
+// SetAlias sets the "alias" field.
+func (bu *BusinessUpdate) SetAlias(s string) *BusinessUpdate {
+	bu.mutation.SetAlias(s)
+	return bu
+}
+
 // SetTelephone sets the "telephone" field.
 func (bu *BusinessUpdate) SetTelephone(s string) *BusinessUpdate {
 	bu.mutation.SetTelephone(s)
@@ -330,6 +336,11 @@ func (bu *BusinessUpdate) check() error {
 			return &ValidationError{Name: "name1", err: fmt.Errorf(`ent: validator failed for field "Business.name1": %w`, err)}
 		}
 	}
+	if v, ok := bu.mutation.Alias(); ok {
+		if err := business.AliasValidator(v); err != nil {
+			return &ValidationError{Name: "alias", err: fmt.Errorf(`ent: validator failed for field "Business.alias": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -362,6 +373,9 @@ func (bu *BusinessUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if bu.mutation.Name2Cleared() {
 		_spec.ClearField(business.FieldName2, field.TypeString)
+	}
+	if value, ok := bu.mutation.Alias(); ok {
+		_spec.SetField(business.FieldAlias, field.TypeString, value)
 	}
 	if value, ok := bu.mutation.Telephone(); ok {
 		_spec.SetField(business.FieldTelephone, field.TypeString, value)
@@ -578,6 +592,12 @@ func (buo *BusinessUpdateOne) SetNillableName2(s *string) *BusinessUpdateOne {
 // ClearName2 clears the value of the "name2" field.
 func (buo *BusinessUpdateOne) ClearName2() *BusinessUpdateOne {
 	buo.mutation.ClearName2()
+	return buo
+}
+
+// SetAlias sets the "alias" field.
+func (buo *BusinessUpdateOne) SetAlias(s string) *BusinessUpdateOne {
+	buo.mutation.SetAlias(s)
 	return buo
 }
 
@@ -839,6 +859,11 @@ func (buo *BusinessUpdateOne) check() error {
 			return &ValidationError{Name: "name1", err: fmt.Errorf(`ent: validator failed for field "Business.name1": %w`, err)}
 		}
 	}
+	if v, ok := buo.mutation.Alias(); ok {
+		if err := business.AliasValidator(v); err != nil {
+			return &ValidationError{Name: "alias", err: fmt.Errorf(`ent: validator failed for field "Business.alias": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -888,6 +913,9 @@ func (buo *BusinessUpdateOne) sqlSave(ctx context.Context) (_node *Business, err
 	}
 	if buo.mutation.Name2Cleared() {
 		_spec.ClearField(business.FieldName2, field.TypeString)
+	}
+	if value, ok := buo.mutation.Alias(); ok {
+		_spec.SetField(business.FieldAlias, field.TypeString, value)
 	}
 	if value, ok := buo.mutation.Telephone(); ok {
 		_spec.SetField(business.FieldTelephone, field.TypeString, value)

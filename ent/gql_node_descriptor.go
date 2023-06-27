@@ -222,7 +222,7 @@ func (b *Business) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     b.ID,
 		Type:   "Business",
-		Fields: make([]*Field, 10),
+		Fields: make([]*Field, 11),
 		Edges:  make([]*Edge, 3),
 	}
 	var buf []byte
@@ -266,10 +266,18 @@ func (b *Business) Node(ctx context.Context) (node *Node, err error) {
 		Name:  "name2",
 		Value: string(buf),
 	}
-	if buf, err = json.Marshal(b.Telephone); err != nil {
+	if buf, err = json.Marshal(b.Alias); err != nil {
 		return nil, err
 	}
 	node.Fields[5] = &Field{
+		Type:  "string",
+		Name:  "alias",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(b.Telephone); err != nil {
+		return nil, err
+	}
+	node.Fields[6] = &Field{
 		Type:  "string",
 		Name:  "telephone",
 		Value: string(buf),
@@ -277,7 +285,7 @@ func (b *Business) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(b.Email); err != nil {
 		return nil, err
 	}
-	node.Fields[6] = &Field{
+	node.Fields[7] = &Field{
 		Type:  "string",
 		Name:  "email",
 		Value: string(buf),
@@ -285,7 +293,7 @@ func (b *Business) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(b.Website); err != nil {
 		return nil, err
 	}
-	node.Fields[7] = &Field{
+	node.Fields[8] = &Field{
 		Type:  "string",
 		Name:  "website",
 		Value: string(buf),
@@ -293,7 +301,7 @@ func (b *Business) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(b.Comment); err != nil {
 		return nil, err
 	}
-	node.Fields[8] = &Field{
+	node.Fields[9] = &Field{
 		Type:  "string",
 		Name:  "comment",
 		Value: string(buf),
@@ -301,7 +309,7 @@ func (b *Business) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(b.Active); err != nil {
 		return nil, err
 	}
-	node.Fields[9] = &Field{
+	node.Fields[10] = &Field{
 		Type:  "bool",
 		Name:  "active",
 		Value: string(buf),

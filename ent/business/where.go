@@ -82,6 +82,11 @@ func Name2(v string) predicate.Business {
 	return predicate.Business(sql.FieldEQ(FieldName2, v))
 }
 
+// Alias applies equality check predicate on the "alias" field. It's identical to AliasEQ.
+func Alias(v string) predicate.Business {
+	return predicate.Business(sql.FieldEQ(FieldAlias, v))
+}
+
 // Telephone applies equality check predicate on the "telephone" field. It's identical to TelephoneEQ.
 func Telephone(v string) predicate.Business {
 	return predicate.Business(sql.FieldEQ(FieldTelephone, v))
@@ -375,6 +380,71 @@ func Name2EqualFold(v string) predicate.Business {
 // Name2ContainsFold applies the ContainsFold predicate on the "name2" field.
 func Name2ContainsFold(v string) predicate.Business {
 	return predicate.Business(sql.FieldContainsFold(FieldName2, v))
+}
+
+// AliasEQ applies the EQ predicate on the "alias" field.
+func AliasEQ(v string) predicate.Business {
+	return predicate.Business(sql.FieldEQ(FieldAlias, v))
+}
+
+// AliasNEQ applies the NEQ predicate on the "alias" field.
+func AliasNEQ(v string) predicate.Business {
+	return predicate.Business(sql.FieldNEQ(FieldAlias, v))
+}
+
+// AliasIn applies the In predicate on the "alias" field.
+func AliasIn(vs ...string) predicate.Business {
+	return predicate.Business(sql.FieldIn(FieldAlias, vs...))
+}
+
+// AliasNotIn applies the NotIn predicate on the "alias" field.
+func AliasNotIn(vs ...string) predicate.Business {
+	return predicate.Business(sql.FieldNotIn(FieldAlias, vs...))
+}
+
+// AliasGT applies the GT predicate on the "alias" field.
+func AliasGT(v string) predicate.Business {
+	return predicate.Business(sql.FieldGT(FieldAlias, v))
+}
+
+// AliasGTE applies the GTE predicate on the "alias" field.
+func AliasGTE(v string) predicate.Business {
+	return predicate.Business(sql.FieldGTE(FieldAlias, v))
+}
+
+// AliasLT applies the LT predicate on the "alias" field.
+func AliasLT(v string) predicate.Business {
+	return predicate.Business(sql.FieldLT(FieldAlias, v))
+}
+
+// AliasLTE applies the LTE predicate on the "alias" field.
+func AliasLTE(v string) predicate.Business {
+	return predicate.Business(sql.FieldLTE(FieldAlias, v))
+}
+
+// AliasContains applies the Contains predicate on the "alias" field.
+func AliasContains(v string) predicate.Business {
+	return predicate.Business(sql.FieldContains(FieldAlias, v))
+}
+
+// AliasHasPrefix applies the HasPrefix predicate on the "alias" field.
+func AliasHasPrefix(v string) predicate.Business {
+	return predicate.Business(sql.FieldHasPrefix(FieldAlias, v))
+}
+
+// AliasHasSuffix applies the HasSuffix predicate on the "alias" field.
+func AliasHasSuffix(v string) predicate.Business {
+	return predicate.Business(sql.FieldHasSuffix(FieldAlias, v))
+}
+
+// AliasEqualFold applies the EqualFold predicate on the "alias" field.
+func AliasEqualFold(v string) predicate.Business {
+	return predicate.Business(sql.FieldEqualFold(FieldAlias, v))
+}
+
+// AliasContainsFold applies the ContainsFold predicate on the "alias" field.
+func AliasContainsFold(v string) predicate.Business {
+	return predicate.Business(sql.FieldContainsFold(FieldAlias, v))
 }
 
 // TelephoneEQ applies the EQ predicate on the "telephone" field.

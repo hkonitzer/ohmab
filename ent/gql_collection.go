@@ -330,6 +330,11 @@ func (b *BusinessQuery) collectField(ctx context.Context, opCtx *graphql.Operati
 				selectedFields = append(selectedFields, business.FieldName2)
 				fieldSeen[business.FieldName2] = struct{}{}
 			}
+		case "alias":
+			if _, ok := fieldSeen[business.FieldAlias]; !ok {
+				selectedFields = append(selectedFields, business.FieldAlias)
+				fieldSeen[business.FieldAlias] = struct{}{}
+			}
 		case "telephone":
 			if _, ok := fieldSeen[business.FieldTelephone]; !ok {
 				selectedFields = append(selectedFields, business.FieldTelephone)

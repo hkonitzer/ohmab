@@ -27,6 +27,8 @@ const (
 	FieldName1 = "name1"
 	// FieldName2 holds the string denoting the name2 field in the database.
 	FieldName2 = "name2"
+	// FieldAlias holds the string denoting the alias field in the database.
+	FieldAlias = "alias"
 	// FieldTelephone holds the string denoting the telephone field in the database.
 	FieldTelephone = "telephone"
 	// FieldEmail holds the string denoting the email field in the database.
@@ -72,6 +74,7 @@ var Columns = []string{
 	FieldDeletedAt,
 	FieldName1,
 	FieldName2,
+	FieldAlias,
 	FieldTelephone,
 	FieldEmail,
 	FieldWebsite,
@@ -115,7 +118,7 @@ func ValidColumn(column string) bool {
 //
 //	import _ "hynie.de/ohmab/ent/runtime"
 var (
-	Hooks [1]ent.Hook
+	Hooks [2]ent.Hook
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
@@ -124,6 +127,8 @@ var (
 	UpdateDefaultUpdatedAt func() time.Time
 	// Name1Validator is a validator for the "name1" field. It is called by the builders before save.
 	Name1Validator func(string) error
+	// AliasValidator is a validator for the "alias" field. It is called by the builders before save.
+	AliasValidator func(string) error
 	// DefaultActive holds the default value on creation for the "active" field.
 	DefaultActive bool
 	// DefaultID holds the default value on creation for the "id" field.
@@ -161,6 +166,11 @@ func ByName1(opts ...sql.OrderTermOption) OrderOption {
 // ByName2 orders the results by the name2 field.
 func ByName2(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldName2, opts...).ToFunc()
+}
+
+// ByAlias orders the results by the alias field.
+func ByAlias(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAlias, opts...).ToFunc()
 }
 
 // ByTelephone orders the results by the telephone field.

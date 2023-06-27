@@ -27,6 +27,13 @@ func (Business) Fields() []ent.Field {
 			NotEmpty().Annotations(entgql.OrderField("NAME1")).Comment("The main name of the business"),
 		field.Text("name2").
 			Optional().Comment("The optional second name of the business"),
+		field.Text("alias").
+			Unique().
+			MaxLen(20).
+			Annotations(entsql.Annotation{ // If using a SQL-database: change the underlying data type to varchar(20).
+				Size: 20,
+			}).
+			Comment("The unqiue alias of the business (short name)"),
 		field.Text("telephone").
 			Optional().Unique().Comment("Telephone number"),
 		field.Text("email").
@@ -74,6 +81,7 @@ func (Business) Indexes() []ent.Index {
 
 func (Business) Hooks() []ent.Hook {
 	return []ent.Hook{
+		hooks.UpperCaseForBussinessFields(),
 		hooks.AuditLogForBusiness(),
 	}
 }

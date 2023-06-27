@@ -1915,6 +1915,7 @@ type BusinessMutation struct {
 	deleted_at       *time.Time
 	name1            *string
 	name2            *string
+	alias            *string
 	telephone        *string
 	email            *string
 	website          *string
@@ -2242,6 +2243,42 @@ func (m *BusinessMutation) Name2Cleared() bool {
 func (m *BusinessMutation) ResetName2() {
 	m.name2 = nil
 	delete(m.clearedFields, business.FieldName2)
+}
+
+// SetAlias sets the "alias" field.
+func (m *BusinessMutation) SetAlias(s string) {
+	m.alias = &s
+}
+
+// Alias returns the value of the "alias" field in the mutation.
+func (m *BusinessMutation) Alias() (r string, exists bool) {
+	v := m.alias
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAlias returns the old "alias" field's value of the Business entity.
+// If the Business object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BusinessMutation) OldAlias(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAlias is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAlias requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAlias: %w", err)
+	}
+	return oldValue.Alias, nil
+}
+
+// ResetAlias resets all changes to the "alias" field.
+func (m *BusinessMutation) ResetAlias() {
+	m.alias = nil
 }
 
 // SetTelephone sets the "telephone" field.
@@ -2657,7 +2694,7 @@ func (m *BusinessMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *BusinessMutation) Fields() []string {
-	fields := make([]string, 0, 10)
+	fields := make([]string, 0, 11)
 	if m.created_at != nil {
 		fields = append(fields, business.FieldCreatedAt)
 	}
@@ -2672,6 +2709,9 @@ func (m *BusinessMutation) Fields() []string {
 	}
 	if m.name2 != nil {
 		fields = append(fields, business.FieldName2)
+	}
+	if m.alias != nil {
+		fields = append(fields, business.FieldAlias)
 	}
 	if m.telephone != nil {
 		fields = append(fields, business.FieldTelephone)
@@ -2706,6 +2746,8 @@ func (m *BusinessMutation) Field(name string) (ent.Value, bool) {
 		return m.Name1()
 	case business.FieldName2:
 		return m.Name2()
+	case business.FieldAlias:
+		return m.Alias()
 	case business.FieldTelephone:
 		return m.Telephone()
 	case business.FieldEmail:
@@ -2735,6 +2777,8 @@ func (m *BusinessMutation) OldField(ctx context.Context, name string) (ent.Value
 		return m.OldName1(ctx)
 	case business.FieldName2:
 		return m.OldName2(ctx)
+	case business.FieldAlias:
+		return m.OldAlias(ctx)
 	case business.FieldTelephone:
 		return m.OldTelephone(ctx)
 	case business.FieldEmail:
@@ -2788,6 +2832,13 @@ func (m *BusinessMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetName2(v)
+		return nil
+	case business.FieldAlias:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAlias(v)
 		return nil
 	case business.FieldTelephone:
 		v, ok := value.(string)
@@ -2926,6 +2977,9 @@ func (m *BusinessMutation) ResetField(name string) error {
 		return nil
 	case business.FieldName2:
 		m.ResetName2()
+		return nil
+	case business.FieldAlias:
+		m.ResetAlias()
 		return nil
 	case business.FieldTelephone:
 		m.ResetTelephone()

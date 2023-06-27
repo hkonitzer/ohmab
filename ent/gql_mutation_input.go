@@ -17,6 +17,7 @@ type CreateBusinessInput struct {
 	DeletedAt  *time.Time
 	Name1      string
 	Name2      *string
+	Alias      string
 	Telephone  *string
 	Email      *string
 	Website    *string
@@ -42,6 +43,7 @@ func (i *CreateBusinessInput) Mutate(m *BusinessMutation) {
 	if v := i.Name2; v != nil {
 		m.SetName2(*v)
 	}
+	m.SetAlias(i.Alias)
 	if v := i.Telephone; v != nil {
 		m.SetTelephone(*v)
 	}

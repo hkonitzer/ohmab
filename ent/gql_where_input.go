@@ -1255,6 +1255,21 @@ type BusinessWhereInput struct {
 	Name2EqualFold    *string  `json:"name2EqualFold,omitempty"`
 	Name2ContainsFold *string  `json:"name2ContainsFold,omitempty"`
 
+	// "alias" field predicates.
+	Alias             *string  `json:"alias,omitempty"`
+	AliasNEQ          *string  `json:"aliasNEQ,omitempty"`
+	AliasIn           []string `json:"aliasIn,omitempty"`
+	AliasNotIn        []string `json:"aliasNotIn,omitempty"`
+	AliasGT           *string  `json:"aliasGT,omitempty"`
+	AliasGTE          *string  `json:"aliasGTE,omitempty"`
+	AliasLT           *string  `json:"aliasLT,omitempty"`
+	AliasLTE          *string  `json:"aliasLTE,omitempty"`
+	AliasContains     *string  `json:"aliasContains,omitempty"`
+	AliasHasPrefix    *string  `json:"aliasHasPrefix,omitempty"`
+	AliasHasSuffix    *string  `json:"aliasHasSuffix,omitempty"`
+	AliasEqualFold    *string  `json:"aliasEqualFold,omitempty"`
+	AliasContainsFold *string  `json:"aliasContainsFold,omitempty"`
+
 	// "telephone" field predicates.
 	Telephone             *string  `json:"telephone,omitempty"`
 	TelephoneNEQ          *string  `json:"telephoneNEQ,omitempty"`
@@ -1596,6 +1611,45 @@ func (i *BusinessWhereInput) P() (predicate.Business, error) {
 	}
 	if i.Name2ContainsFold != nil {
 		predicates = append(predicates, business.Name2ContainsFold(*i.Name2ContainsFold))
+	}
+	if i.Alias != nil {
+		predicates = append(predicates, business.AliasEQ(*i.Alias))
+	}
+	if i.AliasNEQ != nil {
+		predicates = append(predicates, business.AliasNEQ(*i.AliasNEQ))
+	}
+	if len(i.AliasIn) > 0 {
+		predicates = append(predicates, business.AliasIn(i.AliasIn...))
+	}
+	if len(i.AliasNotIn) > 0 {
+		predicates = append(predicates, business.AliasNotIn(i.AliasNotIn...))
+	}
+	if i.AliasGT != nil {
+		predicates = append(predicates, business.AliasGT(*i.AliasGT))
+	}
+	if i.AliasGTE != nil {
+		predicates = append(predicates, business.AliasGTE(*i.AliasGTE))
+	}
+	if i.AliasLT != nil {
+		predicates = append(predicates, business.AliasLT(*i.AliasLT))
+	}
+	if i.AliasLTE != nil {
+		predicates = append(predicates, business.AliasLTE(*i.AliasLTE))
+	}
+	if i.AliasContains != nil {
+		predicates = append(predicates, business.AliasContains(*i.AliasContains))
+	}
+	if i.AliasHasPrefix != nil {
+		predicates = append(predicates, business.AliasHasPrefix(*i.AliasHasPrefix))
+	}
+	if i.AliasHasSuffix != nil {
+		predicates = append(predicates, business.AliasHasSuffix(*i.AliasHasSuffix))
+	}
+	if i.AliasEqualFold != nil {
+		predicates = append(predicates, business.AliasEqualFold(*i.AliasEqualFold))
+	}
+	if i.AliasContainsFold != nil {
+		predicates = append(predicates, business.AliasContainsFold(*i.AliasContainsFold))
 	}
 	if i.Telephone != nil {
 		predicates = append(predicates, business.TelephoneEQ(*i.Telephone))

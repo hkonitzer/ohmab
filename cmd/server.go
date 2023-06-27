@@ -147,11 +147,12 @@ func createTestData(client *ent.Client) {
 		// create a random tag for each business
 		tempTag := client.Tag.Create().SetName(getRandomString(20)).SetComment("TESTDATA").SaveX(ctx)
 		// create a business with random telephonnumber
-		name1 := fmt.Sprintf("B%v-name1", i)
+		name1 := fmt.Sprintf("B%v-name1 %v%v%v", i, i, i, i)
 		name2 := fmt.Sprintf("B%v-name2", i)
 		tempBusiness, err := client.Business.Create().
 			SetName1(name1).
 			SetName2(name2).
+			SetAlias(name1).
 			SetTelephone(getRandomIntAsString(10000, 90000)).
 			SetComment("TESTDATA").
 			AddTags(tempTagTestdata, tempTag).
@@ -167,7 +168,7 @@ func createTestData(client *ent.Client) {
 			SetStreet(fmt.Sprintf("B%v-street", i)).
 			SetCity(fmt.Sprintf("B%v-city", i)).
 			SetComment("TESTDATA").
-			SetComment(getRandomString(10)).
+			SetAddition(getRandomString(10)).
 			SetZip(fmt.Sprintf("B%v-zip", i)).
 			AddBusiness(tempBusiness).
 			SaveX(ctx)

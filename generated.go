@@ -81,6 +81,7 @@ type ComplexityRoot struct {
 	Business struct {
 		Active    func(childComplexity int) int
 		Addresses func(childComplexity int) int
+		Alias     func(childComplexity int) int
 		Comment   func(childComplexity int) int
 		CreatedAt func(childComplexity int) int
 		DeletedAt func(childComplexity int) int
@@ -370,6 +371,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Business.Addresses(childComplexity), true
+
+	case "Business.alias":
+		if e.complexity.Business.Alias == nil {
+			break
+		}
+
+		return e.complexity.Business.Alias(childComplexity), true
 
 	case "Business.comment":
 		if e.complexity.Business.Comment == nil {
@@ -1766,6 +1774,8 @@ func (ec *executionContext) fieldContext_Address_business(ctx context.Context, f
 				return ec.fieldContext_Business_name1(ctx, field)
 			case "name2":
 				return ec.fieldContext_Business_name2(ctx, field)
+			case "alias":
+				return ec.fieldContext_Business_alias(ctx, field)
 			case "telephone":
 				return ec.fieldContext_Business_telephone(ctx, field)
 			case "email":
@@ -2422,6 +2432,50 @@ func (ec *executionContext) fieldContext_Business_name2(ctx context.Context, fie
 	return fc, nil
 }
 
+func (ec *executionContext) _Business_alias(ctx context.Context, field graphql.CollectedField, obj *ent.Business) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Business_alias(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Alias, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Business_alias(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Business",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Business_telephone(ctx context.Context, field graphql.CollectedField, obj *ent.Business) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Business_telephone(ctx, field)
 	if err != nil {
@@ -3024,6 +3078,8 @@ func (ec *executionContext) fieldContext_BusinessEdge_node(ctx context.Context, 
 				return ec.fieldContext_Business_name1(ctx, field)
 			case "name2":
 				return ec.fieldContext_Business_name2(ctx, field)
+			case "alias":
+				return ec.fieldContext_Business_alias(ctx, field)
 			case "telephone":
 				return ec.fieldContext_Business_telephone(ctx, field)
 			case "email":
@@ -3139,6 +3195,8 @@ func (ec *executionContext) fieldContext_Mutation_createBusiness(ctx context.Con
 				return ec.fieldContext_Business_name1(ctx, field)
 			case "name2":
 				return ec.fieldContext_Business_name2(ctx, field)
+			case "alias":
+				return ec.fieldContext_Business_alias(ctx, field)
 			case "telephone":
 				return ec.fieldContext_Business_telephone(ctx, field)
 			case "email":
@@ -4011,6 +4069,8 @@ func (ec *executionContext) fieldContext_Tag_business(ctx context.Context, field
 				return ec.fieldContext_Business_name1(ctx, field)
 			case "name2":
 				return ec.fieldContext_Business_name2(ctx, field)
+			case "alias":
+				return ec.fieldContext_Business_alias(ctx, field)
 			case "telephone":
 				return ec.fieldContext_Business_telephone(ctx, field)
 			case "email":
@@ -5583,6 +5643,8 @@ func (ec *executionContext) fieldContext_User_businesses(ctx context.Context, fi
 				return ec.fieldContext_Business_name1(ctx, field)
 			case "name2":
 				return ec.fieldContext_Business_name2(ctx, field)
+			case "alias":
+				return ec.fieldContext_Business_alias(ctx, field)
 			case "telephone":
 				return ec.fieldContext_Business_telephone(ctx, field)
 			case "email":
@@ -9706,7 +9768,7 @@ func (ec *executionContext) unmarshalInputBusinessWhereInput(ctx context.Context
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createdAt", "createdAtNEQ", "createdAtIn", "createdAtNotIn", "createdAtGT", "createdAtGTE", "createdAtLT", "createdAtLTE", "updatedAt", "updatedAtNEQ", "updatedAtIn", "updatedAtNotIn", "updatedAtGT", "updatedAtGTE", "updatedAtLT", "updatedAtLTE", "deletedAt", "deletedAtNEQ", "deletedAtIn", "deletedAtNotIn", "deletedAtGT", "deletedAtGTE", "deletedAtLT", "deletedAtLTE", "deletedAtIsNil", "deletedAtNotNil", "name1", "name1NEQ", "name1In", "name1NotIn", "name1GT", "name1GTE", "name1LT", "name1LTE", "name1Contains", "name1HasPrefix", "name1HasSuffix", "name1EqualFold", "name1ContainsFold", "name2", "name2NEQ", "name2In", "name2NotIn", "name2GT", "name2GTE", "name2LT", "name2LTE", "name2Contains", "name2HasPrefix", "name2HasSuffix", "name2IsNil", "name2NotNil", "name2EqualFold", "name2ContainsFold", "telephone", "telephoneNEQ", "telephoneIn", "telephoneNotIn", "telephoneGT", "telephoneGTE", "telephoneLT", "telephoneLTE", "telephoneContains", "telephoneHasPrefix", "telephoneHasSuffix", "telephoneIsNil", "telephoneNotNil", "telephoneEqualFold", "telephoneContainsFold", "email", "emailNEQ", "emailIn", "emailNotIn", "emailGT", "emailGTE", "emailLT", "emailLTE", "emailContains", "emailHasPrefix", "emailHasSuffix", "emailIsNil", "emailNotNil", "emailEqualFold", "emailContainsFold", "website", "websiteNEQ", "websiteIn", "websiteNotIn", "websiteGT", "websiteGTE", "websiteLT", "websiteLTE", "websiteContains", "websiteHasPrefix", "websiteHasSuffix", "websiteIsNil", "websiteNotNil", "websiteEqualFold", "websiteContainsFold", "comment", "commentNEQ", "commentIn", "commentNotIn", "commentGT", "commentGTE", "commentLT", "commentLTE", "commentContains", "commentHasPrefix", "commentHasSuffix", "commentIsNil", "commentNotNil", "commentEqualFold", "commentContainsFold", "active", "activeNEQ", "hasAddresses", "hasAddressesWith", "hasTags", "hasTagsWith", "hasUsers", "hasUsersWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createdAt", "createdAtNEQ", "createdAtIn", "createdAtNotIn", "createdAtGT", "createdAtGTE", "createdAtLT", "createdAtLTE", "updatedAt", "updatedAtNEQ", "updatedAtIn", "updatedAtNotIn", "updatedAtGT", "updatedAtGTE", "updatedAtLT", "updatedAtLTE", "deletedAt", "deletedAtNEQ", "deletedAtIn", "deletedAtNotIn", "deletedAtGT", "deletedAtGTE", "deletedAtLT", "deletedAtLTE", "deletedAtIsNil", "deletedAtNotNil", "name1", "name1NEQ", "name1In", "name1NotIn", "name1GT", "name1GTE", "name1LT", "name1LTE", "name1Contains", "name1HasPrefix", "name1HasSuffix", "name1EqualFold", "name1ContainsFold", "name2", "name2NEQ", "name2In", "name2NotIn", "name2GT", "name2GTE", "name2LT", "name2LTE", "name2Contains", "name2HasPrefix", "name2HasSuffix", "name2IsNil", "name2NotNil", "name2EqualFold", "name2ContainsFold", "alias", "aliasNEQ", "aliasIn", "aliasNotIn", "aliasGT", "aliasGTE", "aliasLT", "aliasLTE", "aliasContains", "aliasHasPrefix", "aliasHasSuffix", "aliasEqualFold", "aliasContainsFold", "telephone", "telephoneNEQ", "telephoneIn", "telephoneNotIn", "telephoneGT", "telephoneGTE", "telephoneLT", "telephoneLTE", "telephoneContains", "telephoneHasPrefix", "telephoneHasSuffix", "telephoneIsNil", "telephoneNotNil", "telephoneEqualFold", "telephoneContainsFold", "email", "emailNEQ", "emailIn", "emailNotIn", "emailGT", "emailGTE", "emailLT", "emailLTE", "emailContains", "emailHasPrefix", "emailHasSuffix", "emailIsNil", "emailNotNil", "emailEqualFold", "emailContainsFold", "website", "websiteNEQ", "websiteIn", "websiteNotIn", "websiteGT", "websiteGTE", "websiteLT", "websiteLTE", "websiteContains", "websiteHasPrefix", "websiteHasSuffix", "websiteIsNil", "websiteNotNil", "websiteEqualFold", "websiteContainsFold", "comment", "commentNEQ", "commentIn", "commentNotIn", "commentGT", "commentGTE", "commentLT", "commentLTE", "commentContains", "commentHasPrefix", "commentHasSuffix", "commentIsNil", "commentNotNil", "commentEqualFold", "commentContainsFold", "active", "activeNEQ", "hasAddresses", "hasAddressesWith", "hasTags", "hasTagsWith", "hasUsers", "hasUsersWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -10298,6 +10360,123 @@ func (ec *executionContext) unmarshalInputBusinessWhereInput(ctx context.Context
 				return it, err
 			}
 			it.Name2ContainsFold = data
+		case "alias":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("alias"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Alias = data
+		case "aliasNEQ":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("aliasNEQ"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AliasNEQ = data
+		case "aliasIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("aliasIn"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AliasIn = data
+		case "aliasNotIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("aliasNotIn"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AliasNotIn = data
+		case "aliasGT":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("aliasGT"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AliasGT = data
+		case "aliasGTE":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("aliasGTE"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AliasGTE = data
+		case "aliasLT":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("aliasLT"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AliasLT = data
+		case "aliasLTE":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("aliasLTE"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AliasLTE = data
+		case "aliasContains":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("aliasContains"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AliasContains = data
+		case "aliasHasPrefix":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("aliasHasPrefix"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AliasHasPrefix = data
+		case "aliasHasSuffix":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("aliasHasSuffix"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AliasHasSuffix = data
+		case "aliasEqualFold":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("aliasEqualFold"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AliasEqualFold = data
+		case "aliasContainsFold":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("aliasContainsFold"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AliasContainsFold = data
 		case "telephone":
 			var err error
 
@@ -10923,7 +11102,7 @@ func (ec *executionContext) unmarshalInputCreateBusinessInput(ctx context.Contex
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"createdAt", "updatedAt", "deletedAt", "name1", "name2", "telephone", "email", "website", "comment", "active", "addressIDs", "tagIDs", "usersID"}
+	fieldsInOrder := [...]string{"createdAt", "updatedAt", "deletedAt", "name1", "name2", "alias", "telephone", "email", "website", "comment", "active", "addressIDs", "tagIDs", "usersID"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -10975,6 +11154,15 @@ func (ec *executionContext) unmarshalInputCreateBusinessInput(ctx context.Contex
 				return it, err
 			}
 			it.Name2 = data
+		case "alias":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("alias"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Alias = data
 		case "telephone":
 			var err error
 
@@ -14649,6 +14837,11 @@ func (ec *executionContext) _Business(ctx context.Context, sel ast.SelectionSet,
 			}
 		case "name2":
 			out.Values[i] = ec._Business_name2(ctx, field, obj)
+		case "alias":
+			out.Values[i] = ec._Business_alias(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
 		case "telephone":
 			out.Values[i] = ec._Business_telephone(ctx, field, obj)
 		case "email":

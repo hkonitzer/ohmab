@@ -30,6 +30,8 @@ type Business struct {
 	Name1 string `json:"name1,omitempty"`
 	// The optional second name of the business
 	Name2 string `json:"name2,omitempty"`
+	// The unqiue alias of the business (short name)
+	Alias string `json:"alias,omitempty"`
 	// Telephone number
 	Telephone string `json:"telephone,omitempty"`
 	// Email address (has to be unique)
@@ -103,7 +105,7 @@ func (*Business) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case business.FieldActive:
 			values[i] = new(sql.NullBool)
-		case business.FieldName1, business.FieldName2, business.FieldTelephone, business.FieldEmail, business.FieldWebsite, business.FieldComment:
+		case business.FieldName1, business.FieldName2, business.FieldAlias, business.FieldTelephone, business.FieldEmail, business.FieldWebsite, business.FieldComment:
 			values[i] = new(sql.NullString)
 		case business.FieldCreatedAt, business.FieldUpdatedAt, business.FieldDeletedAt:
 			values[i] = new(sql.NullTime)
@@ -161,6 +163,12 @@ func (b *Business) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field name2", values[i])
 			} else if value.Valid {
 				b.Name2 = value.String
+			}
+		case business.FieldAlias:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field alias", values[i])
+			} else if value.Valid {
+				b.Alias = value.String
 			}
 		case business.FieldTelephone:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -264,6 +272,9 @@ func (b *Business) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("name2=")
 	builder.WriteString(b.Name2)
+	builder.WriteString(", ")
+	builder.WriteString("alias=")
+	builder.WriteString(b.Alias)
 	builder.WriteString(", ")
 	builder.WriteString("telephone=")
 	builder.WriteString(b.Telephone)

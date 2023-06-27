@@ -74,10 +74,29 @@ func AuditLogForBusiness() ent.Hook {
 	return hook.On(hk, ent.OpCreate|ent.OpUpdate|ent.OpDelete|ent.OpDeleteOne|ent.OpUpdateOne)
 }
 
+// AuditLogForAddress is a hook that logs all operations on Adresses.
+func AuditLogForAddress() ent.Hook {
+	hk := func(next ent.Mutator) ent.Mutator {
+		return hook.AddressFunc(func(ctx context.Context, m *ent.AddressMutation) (ent.Value, error) {
+			addressId, _ := m.ID()
+			m.Client().AuditLog.Create().
+				SetUser("admin").
+				SetAction(m.Op().String()).
+				SetEntitySchema(m.Type()).
+				SetEntityUUID(addressId.String()).
+				SetEntityValues(extractFieldsandherValues(m)).
+				SaveX(ctx)
+			return next.Mutate(ctx, m)
+		})
+	}
+	return hook.On(hk, ent.OpCreate|ent.OpUpdate|ent.OpDelete|ent.OpDeleteOne|ent.OpUpdateOne)
+}
+
 func extractFieldsandherValues(m ent.Mutation) map[string]string {
 	fieldsAndValues := make(map[string]string)
 	for _, field := range m.Fields() {
-		if field == constants.TimeMixinUpdatedAtFieldName || field == constants.TimeMixinCreatedAtFieldName { // skip this field in audit logs
+		if field == constants.TimeMixinUpdatedAtFieldName ||
+			field == constants.TimeMixinCreatedAtFieldName { // skip this field in audit logs
 			continue
 		}
 		value, _ := m.Field(field)

@@ -6,6 +6,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"hynie.de/ohmab/ent/schema/constants"
+	"hynie.de/ohmab/ent/schema/hooks"
 )
 
 // Address holds the schema definition for the Address entity.
@@ -30,6 +31,8 @@ func (Address) Fields() []ent.Field {
 			Optional(),
 		field.Text("country").
 			Optional(),
+		field.Bool("primary").
+			Default(false).Comment("Is this the primary address?"),
 		field.Text("telephone").
 			Optional().Unique().Comment("Telephone number"),
 		field.Text("comment").
@@ -50,5 +53,11 @@ func (Address) Edges() []ent.Edge {
 		edge.From("business", Business.Type).
 			Ref("addresses"),
 		edge.To("timetables", Timetable.Type),
+	}
+}
+
+func (Address) Hooks() []ent.Hook {
+	return []ent.Hook{
+		hooks.AuditLogForAddress(),
 	}
 }

@@ -762,7 +762,7 @@ func HasAddresses() predicate.Business {
 	return predicate.Business(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, AddressesTable, AddressesPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, false, AddressesTable, AddressesColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})

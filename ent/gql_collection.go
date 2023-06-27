@@ -47,9 +47,7 @@ func (a *AddressQuery) collectField(ctx context.Context, opCtx *graphql.Operatio
 			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
 				return err
 			}
-			a.WithNamedBusiness(alias, func(wq *BusinessQuery) {
-				*wq = *query
-			})
+			a.withBusiness = query
 		case "timetables":
 			var (
 				alias = field.Alias
@@ -106,6 +104,11 @@ func (a *AddressQuery) collectField(ctx context.Context, opCtx *graphql.Operatio
 			if _, ok := fieldSeen[address.FieldCountry]; !ok {
 				selectedFields = append(selectedFields, address.FieldCountry)
 				fieldSeen[address.FieldCountry] = struct{}{}
+			}
+		case "primary":
+			if _, ok := fieldSeen[address.FieldPrimary]; !ok {
+				selectedFields = append(selectedFields, address.FieldPrimary)
+				fieldSeen[address.FieldPrimary] = struct{}{}
 			}
 		case "telephone":
 			if _, ok := fieldSeen[address.FieldTelephone]; !ok {

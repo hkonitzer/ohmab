@@ -60,6 +60,7 @@ type ComplexityRoot struct {
 		CreatedAt  func(childComplexity int) int
 		DeletedAt  func(childComplexity int) int
 		ID         func(childComplexity int) int
+		Primary    func(childComplexity int) int
 		State      func(childComplexity int) int
 		Street     func(childComplexity int) int
 		Telephone  func(childComplexity int) int
@@ -266,6 +267,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Address.ID(childComplexity), true
+
+	case "Address.primary":
+		if e.complexity.Address.Primary == nil {
+			break
+		}
+
+		return e.complexity.Address.Primary(childComplexity), true
 
 	case "Address.state":
 		if e.complexity.Address.State == nil {
@@ -1644,6 +1652,50 @@ func (ec *executionContext) fieldContext_Address_country(ctx context.Context, fi
 	return fc, nil
 }
 
+func (ec *executionContext) _Address_primary(ctx context.Context, field graphql.CollectedField, obj *ent.Address) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Address_primary(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Primary, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Address_primary(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Address",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Address_telephone(ctx context.Context, field graphql.CollectedField, obj *ent.Address) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Address_telephone(ctx, field)
 	if err != nil {
@@ -1749,9 +1801,9 @@ func (ec *executionContext) _Address_business(ctx context.Context, field graphql
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*ent.Business)
+	res := resTmp.(*ent.Business)
 	fc.Result = res
-	return ec.marshalOBusiness2ᚕᚖhynieᚗdeᚋohmabᚋentᚐBusinessᚄ(ctx, field.Selections, res)
+	return ec.marshalOBusiness2ᚖhynieᚗdeᚋohmabᚋentᚐBusiness(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Address_business(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2740,6 +2792,8 @@ func (ec *executionContext) fieldContext_Business_addresses(ctx context.Context,
 				return ec.fieldContext_Address_state(ctx, field)
 			case "country":
 				return ec.fieldContext_Address_country(ctx, field)
+			case "primary":
+				return ec.fieldContext_Address_primary(ctx, field)
 			case "telephone":
 				return ec.fieldContext_Address_telephone(ctx, field)
 			case "comment":
@@ -4772,6 +4826,8 @@ func (ec *executionContext) fieldContext_Timetable_address(ctx context.Context, 
 				return ec.fieldContext_Address_state(ctx, field)
 			case "country":
 				return ec.fieldContext_Address_country(ctx, field)
+			case "primary":
+				return ec.fieldContext_Address_primary(ctx, field)
 			case "telephone":
 				return ec.fieldContext_Address_telephone(ctx, field)
 			case "comment":
@@ -7580,7 +7636,7 @@ func (ec *executionContext) unmarshalInputAddressWhereInput(ctx context.Context,
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createdAt", "createdAtNEQ", "createdAtIn", "createdAtNotIn", "createdAtGT", "createdAtGTE", "createdAtLT", "createdAtLTE", "updatedAt", "updatedAtNEQ", "updatedAtIn", "updatedAtNotIn", "updatedAtGT", "updatedAtGTE", "updatedAtLT", "updatedAtLTE", "deletedAt", "deletedAtNEQ", "deletedAtIn", "deletedAtNotIn", "deletedAtGT", "deletedAtGTE", "deletedAtLT", "deletedAtLTE", "deletedAtIsNil", "deletedAtNotNil", "addition", "additionNEQ", "additionIn", "additionNotIn", "additionGT", "additionGTE", "additionLT", "additionLTE", "additionContains", "additionHasPrefix", "additionHasSuffix", "additionIsNil", "additionNotNil", "additionEqualFold", "additionContainsFold", "street", "streetNEQ", "streetIn", "streetNotIn", "streetGT", "streetGTE", "streetLT", "streetLTE", "streetContains", "streetHasPrefix", "streetHasSuffix", "streetIsNil", "streetNotNil", "streetEqualFold", "streetContainsFold", "city", "cityNEQ", "cityIn", "cityNotIn", "cityGT", "cityGTE", "cityLT", "cityLTE", "cityContains", "cityHasPrefix", "cityHasSuffix", "cityIsNil", "cityNotNil", "cityEqualFold", "cityContainsFold", "zip", "zipNEQ", "zipIn", "zipNotIn", "zipGT", "zipGTE", "zipLT", "zipLTE", "zipContains", "zipHasPrefix", "zipHasSuffix", "zipIsNil", "zipNotNil", "zipEqualFold", "zipContainsFold", "state", "stateNEQ", "stateIn", "stateNotIn", "stateGT", "stateGTE", "stateLT", "stateLTE", "stateContains", "stateHasPrefix", "stateHasSuffix", "stateIsNil", "stateNotNil", "stateEqualFold", "stateContainsFold", "country", "countryNEQ", "countryIn", "countryNotIn", "countryGT", "countryGTE", "countryLT", "countryLTE", "countryContains", "countryHasPrefix", "countryHasSuffix", "countryIsNil", "countryNotNil", "countryEqualFold", "countryContainsFold", "telephone", "telephoneNEQ", "telephoneIn", "telephoneNotIn", "telephoneGT", "telephoneGTE", "telephoneLT", "telephoneLTE", "telephoneContains", "telephoneHasPrefix", "telephoneHasSuffix", "telephoneIsNil", "telephoneNotNil", "telephoneEqualFold", "telephoneContainsFold", "comment", "commentNEQ", "commentIn", "commentNotIn", "commentGT", "commentGTE", "commentLT", "commentLTE", "commentContains", "commentHasPrefix", "commentHasSuffix", "commentIsNil", "commentNotNil", "commentEqualFold", "commentContainsFold", "hasBusiness", "hasBusinessWith", "hasTimetables", "hasTimetablesWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createdAt", "createdAtNEQ", "createdAtIn", "createdAtNotIn", "createdAtGT", "createdAtGTE", "createdAtLT", "createdAtLTE", "updatedAt", "updatedAtNEQ", "updatedAtIn", "updatedAtNotIn", "updatedAtGT", "updatedAtGTE", "updatedAtLT", "updatedAtLTE", "deletedAt", "deletedAtNEQ", "deletedAtIn", "deletedAtNotIn", "deletedAtGT", "deletedAtGTE", "deletedAtLT", "deletedAtLTE", "deletedAtIsNil", "deletedAtNotNil", "addition", "additionNEQ", "additionIn", "additionNotIn", "additionGT", "additionGTE", "additionLT", "additionLTE", "additionContains", "additionHasPrefix", "additionHasSuffix", "additionIsNil", "additionNotNil", "additionEqualFold", "additionContainsFold", "street", "streetNEQ", "streetIn", "streetNotIn", "streetGT", "streetGTE", "streetLT", "streetLTE", "streetContains", "streetHasPrefix", "streetHasSuffix", "streetIsNil", "streetNotNil", "streetEqualFold", "streetContainsFold", "city", "cityNEQ", "cityIn", "cityNotIn", "cityGT", "cityGTE", "cityLT", "cityLTE", "cityContains", "cityHasPrefix", "cityHasSuffix", "cityIsNil", "cityNotNil", "cityEqualFold", "cityContainsFold", "zip", "zipNEQ", "zipIn", "zipNotIn", "zipGT", "zipGTE", "zipLT", "zipLTE", "zipContains", "zipHasPrefix", "zipHasSuffix", "zipIsNil", "zipNotNil", "zipEqualFold", "zipContainsFold", "state", "stateNEQ", "stateIn", "stateNotIn", "stateGT", "stateGTE", "stateLT", "stateLTE", "stateContains", "stateHasPrefix", "stateHasSuffix", "stateIsNil", "stateNotNil", "stateEqualFold", "stateContainsFold", "country", "countryNEQ", "countryIn", "countryNotIn", "countryGT", "countryGTE", "countryLT", "countryLTE", "countryContains", "countryHasPrefix", "countryHasSuffix", "countryIsNil", "countryNotNil", "countryEqualFold", "countryContainsFold", "primary", "primaryNEQ", "telephone", "telephoneNEQ", "telephoneIn", "telephoneNotIn", "telephoneGT", "telephoneGTE", "telephoneLT", "telephoneLTE", "telephoneContains", "telephoneHasPrefix", "telephoneHasSuffix", "telephoneIsNil", "telephoneNotNil", "telephoneEqualFold", "telephoneContainsFold", "comment", "commentNEQ", "commentIn", "commentNotIn", "commentGT", "commentGTE", "commentLT", "commentLTE", "commentContains", "commentHasPrefix", "commentHasSuffix", "commentIsNil", "commentNotNil", "commentEqualFold", "commentContainsFold", "hasBusiness", "hasBusinessWith", "hasTimetables", "hasTimetablesWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -8730,6 +8786,24 @@ func (ec *executionContext) unmarshalInputAddressWhereInput(ctx context.Context,
 				return it, err
 			}
 			it.CountryContainsFold = data
+		case "primary":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("primary"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Primary = data
+		case "primaryNEQ":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("primaryNEQ"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PrimaryNEQ = data
 		case "telephone":
 			var err error
 
@@ -14615,6 +14689,11 @@ func (ec *executionContext) _Address(ctx context.Context, sel ast.SelectionSet, 
 			out.Values[i] = ec._Address_state(ctx, field, obj)
 		case "country":
 			out.Values[i] = ec._Address_country(ctx, field, obj)
+		case "primary":
+			out.Values[i] = ec._Address_primary(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
 		case "telephone":
 			out.Values[i] = ec._Address_telephone(ctx, field, obj)
 		case "comment":

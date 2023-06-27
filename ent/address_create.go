@@ -150,6 +150,20 @@ func (ac *AddressCreate) SetNillableCountry(s *string) *AddressCreate {
 	return ac
 }
 
+// SetPrimary sets the "primary" field.
+func (ac *AddressCreate) SetPrimary(b bool) *AddressCreate {
+	ac.mutation.SetPrimary(b)
+	return ac
+}
+
+// SetNillablePrimary sets the "primary" field if the given value is not nil.
+func (ac *AddressCreate) SetNillablePrimary(b *bool) *AddressCreate {
+	if b != nil {
+		ac.SetPrimary(*b)
+	}
+	return ac
+}
+
 // SetTelephone sets the "telephone" field.
 func (ac *AddressCreate) SetTelephone(s string) *AddressCreate {
 	ac.mutation.SetTelephone(s)
@@ -192,19 +206,23 @@ func (ac *AddressCreate) SetNillableID(u *uuid.UUID) *AddressCreate {
 	return ac
 }
 
-// AddBusinesIDs adds the "business" edge to the Business entity by IDs.
-func (ac *AddressCreate) AddBusinesIDs(ids ...uuid.UUID) *AddressCreate {
-	ac.mutation.AddBusinesIDs(ids...)
+// SetBusinessID sets the "business" edge to the Business entity by ID.
+func (ac *AddressCreate) SetBusinessID(id uuid.UUID) *AddressCreate {
+	ac.mutation.SetBusinessID(id)
 	return ac
 }
 
-// AddBusiness adds the "business" edges to the Business entity.
-func (ac *AddressCreate) AddBusiness(b ...*Business) *AddressCreate {
-	ids := make([]uuid.UUID, len(b))
-	for i := range b {
-		ids[i] = b[i].ID
+// SetNillableBusinessID sets the "business" edge to the Business entity by ID if the given value is not nil.
+func (ac *AddressCreate) SetNillableBusinessID(id *uuid.UUID) *AddressCreate {
+	if id != nil {
+		ac = ac.SetBusinessID(*id)
 	}
-	return ac.AddBusinesIDs(ids...)
+	return ac
+}
+
+// SetBusiness sets the "business" edge to the Business entity.
+func (ac *AddressCreate) SetBusiness(b *Business) *AddressCreate {
+	return ac.SetBusinessID(b.ID)
 }
 
 // AddTimetableIDs adds the "timetables" edge to the Timetable entity by IDs.
@@ -229,7 +247,9 @@ func (ac *AddressCreate) Mutation() *AddressMutation {
 
 // Save creates the Address in the database.
 func (ac *AddressCreate) Save(ctx context.Context) (*Address, error) {
-	ac.defaults()
+	if err := ac.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, ac.sqlSave, ac.mutation, ac.hooks)
 }
 
@@ -256,19 +276,33 @@ func (ac *AddressCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (ac *AddressCreate) defaults() {
+func (ac *AddressCreate) defaults() error {
 	if _, ok := ac.mutation.CreatedAt(); !ok {
+		if address.DefaultCreatedAt == nil {
+			return fmt.Errorf("ent: uninitialized address.DefaultCreatedAt (forgotten import ent/runtime?)")
+		}
 		v := address.DefaultCreatedAt()
 		ac.mutation.SetCreatedAt(v)
 	}
 	if _, ok := ac.mutation.UpdatedAt(); !ok {
+		if address.DefaultUpdatedAt == nil {
+			return fmt.Errorf("ent: uninitialized address.DefaultUpdatedAt (forgotten import ent/runtime?)")
+		}
 		v := address.DefaultUpdatedAt()
 		ac.mutation.SetUpdatedAt(v)
 	}
+	if _, ok := ac.mutation.Primary(); !ok {
+		v := address.DefaultPrimary
+		ac.mutation.SetPrimary(v)
+	}
 	if _, ok := ac.mutation.ID(); !ok {
+		if address.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized address.DefaultID (forgotten import ent/runtime?)")
+		}
 		v := address.DefaultID()
 		ac.mutation.SetID(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -278,6 +312,9 @@ func (ac *AddressCreate) check() error {
 	}
 	if _, ok := ac.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Address.updated_at"`)}
+	}
+	if _, ok := ac.mutation.Primary(); !ok {
+		return &ValidationError{Name: "primary", err: errors.New(`ent: missing required field "Address.primary"`)}
 	}
 	return nil
 }
@@ -350,6 +387,10 @@ func (ac *AddressCreate) createSpec() (*Address, *sqlgraph.CreateSpec) {
 		_spec.SetField(address.FieldCountry, field.TypeString, value)
 		_node.Country = value
 	}
+	if value, ok := ac.mutation.Primary(); ok {
+		_spec.SetField(address.FieldPrimary, field.TypeBool, value)
+		_node.Primary = value
+	}
 	if value, ok := ac.mutation.Telephone(); ok {
 		_spec.SetField(address.FieldTelephone, field.TypeString, value)
 		_node.Telephone = value
@@ -360,10 +401,10 @@ func (ac *AddressCreate) createSpec() (*Address, *sqlgraph.CreateSpec) {
 	}
 	if nodes := ac.mutation.BusinessIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   address.BusinessTable,
-			Columns: address.BusinessPrimaryKey,
+			Columns: []string{address.BusinessColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(business.FieldID, field.TypeUUID),
@@ -372,6 +413,7 @@ func (ac *AddressCreate) createSpec() (*Address, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_node.business_addresses = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := ac.mutation.TimetablesIDs(); len(nodes) > 0 {

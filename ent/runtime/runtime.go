@@ -21,6 +21,8 @@ import (
 // to their package variables.
 func init() {
 	addressMixin := schema.Address{}.Mixin()
+	addressHooks := schema.Address{}.Hooks()
+	address.Hooks[0] = addressHooks[0]
 	addressMixinFields0 := addressMixin[0].Fields()
 	_ = addressMixinFields0
 	addressFields := schema.Address{}.Fields()
@@ -35,6 +37,10 @@ func init() {
 	address.DefaultUpdatedAt = addressDescUpdatedAt.Default.(func() time.Time)
 	// address.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	address.UpdateDefaultUpdatedAt = addressDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// addressDescPrimary is the schema descriptor for primary field.
+	addressDescPrimary := addressFields[7].Descriptor()
+	// address.DefaultPrimary holds the default value on creation for the primary field.
+	address.DefaultPrimary = addressDescPrimary.Default.(bool)
 	// addressDescID is the schema descriptor for id field.
 	addressDescID := addressFields[0].Descriptor()
 	// address.DefaultID holds the default value on creation for the id field.

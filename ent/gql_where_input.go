@@ -169,6 +169,10 @@ type AddressWhereInput struct {
 	CountryEqualFold    *string  `json:"countryEqualFold,omitempty"`
 	CountryContainsFold *string  `json:"countryContainsFold,omitempty"`
 
+	// "primary" field predicates.
+	Primary    *bool `json:"primary,omitempty"`
+	PrimaryNEQ *bool `json:"primaryNEQ,omitempty"`
+
 	// "telephone" field predicates.
 	Telephone             *string  `json:"telephone,omitempty"`
 	TelephoneNEQ          *string  `json:"telephoneNEQ,omitempty"`
@@ -654,6 +658,12 @@ func (i *AddressWhereInput) P() (predicate.Address, error) {
 	}
 	if i.CountryContainsFold != nil {
 		predicates = append(predicates, address.CountryContainsFold(*i.CountryContainsFold))
+	}
+	if i.Primary != nil {
+		predicates = append(predicates, address.PrimaryEQ(*i.Primary))
+	}
+	if i.PrimaryNEQ != nil {
+		predicates = append(predicates, address.PrimaryNEQ(*i.PrimaryNEQ))
 	}
 	if i.Telephone != nil {
 		predicates = append(predicates, address.TelephoneEQ(*i.Telephone))

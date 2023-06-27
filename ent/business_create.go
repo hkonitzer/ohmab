@@ -399,10 +399,10 @@ func (bc *BusinessCreate) createSpec() (*Business, *sqlgraph.CreateSpec) {
 	}
 	if nodes := bc.mutation.AddressesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   business.AddressesTable,
-			Columns: business.AddressesPrimaryKey,
+			Columns: []string{business.AddressesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(address.FieldID, field.TypeUUID),

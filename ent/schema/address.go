@@ -31,8 +31,7 @@ func (Address) Fields() []ent.Field {
 			Optional(),
 		field.Text("country").
 			Optional(),
-		field.Bool("primary").
-			Default(false).Comment("Is this the primary address?"),
+
 		field.Text("telephone").
 			Optional().Unique().Comment("Telephone number"),
 		field.Text("comment").
@@ -51,7 +50,7 @@ func (Address) Mixin() []ent.Mixin {
 func (Address) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("business", Business.Type).
-			Ref("addresses"),
+			Ref("addresses").Unique(),
 		edge.To("timetables", Timetable.Type),
 	}
 }

@@ -102,6 +102,11 @@ func Country(v string) predicate.Address {
 	return predicate.Address(sql.FieldEQ(FieldCountry, v))
 }
 
+// Primary applies equality check predicate on the "primary" field. It's identical to PrimaryEQ.
+func Primary(v bool) predicate.Address {
+	return predicate.Address(sql.FieldEQ(FieldPrimary, v))
+}
+
 // Telephone applies equality check predicate on the "telephone" field. It's identical to TelephoneEQ.
 func Telephone(v string) predicate.Address {
 	return predicate.Address(sql.FieldEQ(FieldTelephone, v))
@@ -692,6 +697,16 @@ func CountryContainsFold(v string) predicate.Address {
 	return predicate.Address(sql.FieldContainsFold(FieldCountry, v))
 }
 
+// PrimaryEQ applies the EQ predicate on the "primary" field.
+func PrimaryEQ(v bool) predicate.Address {
+	return predicate.Address(sql.FieldEQ(FieldPrimary, v))
+}
+
+// PrimaryNEQ applies the NEQ predicate on the "primary" field.
+func PrimaryNEQ(v bool) predicate.Address {
+	return predicate.Address(sql.FieldNEQ(FieldPrimary, v))
+}
+
 // TelephoneEQ applies the EQ predicate on the "telephone" field.
 func TelephoneEQ(v string) predicate.Address {
 	return predicate.Address(sql.FieldEQ(FieldTelephone, v))
@@ -847,7 +862,7 @@ func HasBusiness() predicate.Address {
 	return predicate.Address(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, BusinessTable, BusinessPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, true, BusinessTable, BusinessColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})

@@ -339,7 +339,7 @@ func (c *AddressClient) QueryBusiness(a *Address) *BusinessQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(address.Table, address.FieldID, id),
 			sqlgraph.To(business.Table, business.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, address.BusinessTable, address.BusinessPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, true, address.BusinessTable, address.BusinessColumn),
 		)
 		fromV = sqlgraph.Neighbors(a.driver.Dialect(), step)
 		return fromV, nil
@@ -365,7 +365,8 @@ func (c *AddressClient) QueryTimetables(a *Address) *TimetableQuery {
 
 // Hooks returns the client hooks.
 func (c *AddressClient) Hooks() []Hook {
-	return c.hooks.Address
+	hooks := c.hooks.Address
+	return append(hooks[:len(hooks):len(hooks)], address.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -607,7 +608,7 @@ func (c *BusinessClient) QueryAddresses(b *Business) *AddressQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(business.Table, business.FieldID, id),
 			sqlgraph.To(address.Table, address.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, business.AddressesTable, business.AddressesPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, false, business.AddressesTable, business.AddressesColumn),
 		)
 		fromV = sqlgraph.Neighbors(b.driver.Dialect(), step)
 		return fromV, nil

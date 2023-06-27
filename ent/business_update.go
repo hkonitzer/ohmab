@@ -406,10 +406,10 @@ func (bu *BusinessUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if bu.mutation.AddressesCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   business.AddressesTable,
-			Columns: business.AddressesPrimaryKey,
+			Columns: []string{business.AddressesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(address.FieldID, field.TypeUUID),
@@ -419,10 +419,10 @@ func (bu *BusinessUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := bu.mutation.RemovedAddressesIDs(); len(nodes) > 0 && !bu.mutation.AddressesCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   business.AddressesTable,
-			Columns: business.AddressesPrimaryKey,
+			Columns: []string{business.AddressesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(address.FieldID, field.TypeUUID),
@@ -435,10 +435,10 @@ func (bu *BusinessUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := bu.mutation.AddressesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   business.AddressesTable,
-			Columns: business.AddressesPrimaryKey,
+			Columns: []string{business.AddressesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(address.FieldID, field.TypeUUID),
@@ -946,10 +946,10 @@ func (buo *BusinessUpdateOne) sqlSave(ctx context.Context) (_node *Business, err
 	}
 	if buo.mutation.AddressesCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   business.AddressesTable,
-			Columns: business.AddressesPrimaryKey,
+			Columns: []string{business.AddressesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(address.FieldID, field.TypeUUID),
@@ -959,10 +959,10 @@ func (buo *BusinessUpdateOne) sqlSave(ctx context.Context) (_node *Business, err
 	}
 	if nodes := buo.mutation.RemovedAddressesIDs(); len(nodes) > 0 && !buo.mutation.AddressesCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   business.AddressesTable,
-			Columns: business.AddressesPrimaryKey,
+			Columns: []string{business.AddressesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(address.FieldID, field.TypeUUID),
@@ -975,10 +975,10 @@ func (buo *BusinessUpdateOne) sqlSave(ctx context.Context) (_node *Business, err
 	}
 	if nodes := buo.mutation.AddressesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   business.AddressesTable,
-			Columns: business.AddressesPrimaryKey,
+			Columns: []string{business.AddressesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(address.FieldID, field.TypeUUID),

@@ -21,14 +21,24 @@ var (
 		{Name: "zip", Type: field.TypeString, Nullable: true, Size: 2147483647},
 		{Name: "state", Type: field.TypeString, Nullable: true, Size: 2147483647},
 		{Name: "country", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "primary", Type: field.TypeBool, Default: false},
 		{Name: "telephone", Type: field.TypeString, Unique: true, Nullable: true, Size: 2147483647},
 		{Name: "comment", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "business_addresses", Type: field.TypeUUID, Nullable: true},
 	}
 	// AddressesTable holds the schema information for the "addresses" table.
 	AddressesTable = &schema.Table{
 		Name:       "addresses",
 		Columns:    AddressesColumns,
 		PrimaryKey: []*schema.Column{AddressesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "addresses_businesses_addresses",
+				Columns:    []*schema.Column{AddressesColumns[13]},
+				RefColumns: []*schema.Column{BusinessesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
 	}
 	// AuditLogsColumns holds the columns for the "audit_logs" table.
 	AuditLogsColumns = []*schema.Column{
@@ -176,31 +186,6 @@ var (
 			},
 		},
 	}
-	// BusinessAddressesColumns holds the columns for the "business_addresses" table.
-	BusinessAddressesColumns = []*schema.Column{
-		{Name: "business_id", Type: field.TypeUUID},
-		{Name: "address_id", Type: field.TypeUUID},
-	}
-	// BusinessAddressesTable holds the schema information for the "business_addresses" table.
-	BusinessAddressesTable = &schema.Table{
-		Name:       "business_addresses",
-		Columns:    BusinessAddressesColumns,
-		PrimaryKey: []*schema.Column{BusinessAddressesColumns[0], BusinessAddressesColumns[1]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "business_addresses_business_id",
-				Columns:    []*schema.Column{BusinessAddressesColumns[0]},
-				RefColumns: []*schema.Column{BusinessesColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-			{
-				Symbol:     "business_addresses_address_id",
-				Columns:    []*schema.Column{BusinessAddressesColumns[1]},
-				RefColumns: []*schema.Column{AddressesColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-		},
-	}
 	// BusinessTagsColumns holds the columns for the "business_tags" table.
 	BusinessTagsColumns = []*schema.Column{
 		{Name: "business_id", Type: field.TypeUUID},
@@ -284,7 +269,6 @@ var (
 		TagsTable,
 		TimetablesTable,
 		UsersTable,
-		BusinessAddressesTable,
 		BusinessTagsTable,
 		TimetableUsersOnDutyTable,
 		UserTagsTable,
@@ -292,10 +276,9 @@ var (
 )
 
 func init() {
+	AddressesTable.ForeignKeys[0].RefTable = BusinessesTable
 	BusinessesTable.ForeignKeys[0].RefTable = UsersTable
 	TimetablesTable.ForeignKeys[0].RefTable = AddressesTable
-	BusinessAddressesTable.ForeignKeys[0].RefTable = BusinessesTable
-	BusinessAddressesTable.ForeignKeys[1].RefTable = AddressesTable
 	BusinessTagsTable.ForeignKeys[0].RefTable = BusinessesTable
 	BusinessTagsTable.ForeignKeys[1].RefTable = TagsTable
 	TimetableUsersOnDutyTable.ForeignKeys[0].RefTable = TimetablesTable

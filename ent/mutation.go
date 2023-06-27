@@ -54,11 +54,11 @@ type AddressMutation struct {
 	zip               *string
 	state             *string
 	country           *string
+	primary           *bool
 	telephone         *string
 	comment           *string
 	clearedFields     map[string]struct{}
-	business          map[uuid.UUID]struct{}
-	removedbusiness   map[uuid.UUID]struct{}
+	business          *uuid.UUID
 	clearedbusiness   bool
 	timetables        map[uuid.UUID]struct{}
 	removedtimetables map[uuid.UUID]struct{}
@@ -587,6 +587,42 @@ func (m *AddressMutation) ResetCountry() {
 	delete(m.clearedFields, address.FieldCountry)
 }
 
+// SetPrimary sets the "primary" field.
+func (m *AddressMutation) SetPrimary(b bool) {
+	m.primary = &b
+}
+
+// Primary returns the value of the "primary" field in the mutation.
+func (m *AddressMutation) Primary() (r bool, exists bool) {
+	v := m.primary
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPrimary returns the old "primary" field's value of the Address entity.
+// If the Address object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AddressMutation) OldPrimary(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPrimary is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPrimary requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPrimary: %w", err)
+	}
+	return oldValue.Primary, nil
+}
+
+// ResetPrimary resets all changes to the "primary" field.
+func (m *AddressMutation) ResetPrimary() {
+	m.primary = nil
+}
+
 // SetTelephone sets the "telephone" field.
 func (m *AddressMutation) SetTelephone(s string) {
 	m.telephone = &s
@@ -685,14 +721,9 @@ func (m *AddressMutation) ResetComment() {
 	delete(m.clearedFields, address.FieldComment)
 }
 
-// AddBusinesIDs adds the "business" edge to the Business entity by ids.
-func (m *AddressMutation) AddBusinesIDs(ids ...uuid.UUID) {
-	if m.business == nil {
-		m.business = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.business[ids[i]] = struct{}{}
-	}
+// SetBusinessID sets the "business" edge to the Business entity by id.
+func (m *AddressMutation) SetBusinessID(id uuid.UUID) {
+	m.business = &id
 }
 
 // ClearBusiness clears the "business" edge to the Business entity.
@@ -705,29 +736,20 @@ func (m *AddressMutation) BusinessCleared() bool {
 	return m.clearedbusiness
 }
 
-// RemoveBusinesIDs removes the "business" edge to the Business entity by IDs.
-func (m *AddressMutation) RemoveBusinesIDs(ids ...uuid.UUID) {
-	if m.removedbusiness == nil {
-		m.removedbusiness = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.business, ids[i])
-		m.removedbusiness[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedBusiness returns the removed IDs of the "business" edge to the Business entity.
-func (m *AddressMutation) RemovedBusinessIDs() (ids []uuid.UUID) {
-	for id := range m.removedbusiness {
-		ids = append(ids, id)
+// BusinessID returns the "business" edge ID in the mutation.
+func (m *AddressMutation) BusinessID() (id uuid.UUID, exists bool) {
+	if m.business != nil {
+		return *m.business, true
 	}
 	return
 }
 
 // BusinessIDs returns the "business" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// BusinessID instead. It exists only for internal usage by the builders.
 func (m *AddressMutation) BusinessIDs() (ids []uuid.UUID) {
-	for id := range m.business {
-		ids = append(ids, id)
+	if id := m.business; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -736,7 +758,6 @@ func (m *AddressMutation) BusinessIDs() (ids []uuid.UUID) {
 func (m *AddressMutation) ResetBusiness() {
 	m.business = nil
 	m.clearedbusiness = false
-	m.removedbusiness = nil
 }
 
 // AddTimetableIDs adds the "timetables" edge to the Timetable entity by ids.
@@ -827,7 +848,7 @@ func (m *AddressMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AddressMutation) Fields() []string {
-	fields := make([]string, 0, 11)
+	fields := make([]string, 0, 12)
 	if m.created_at != nil {
 		fields = append(fields, address.FieldCreatedAt)
 	}
@@ -854,6 +875,9 @@ func (m *AddressMutation) Fields() []string {
 	}
 	if m.country != nil {
 		fields = append(fields, address.FieldCountry)
+	}
+	if m.primary != nil {
+		fields = append(fields, address.FieldPrimary)
 	}
 	if m.telephone != nil {
 		fields = append(fields, address.FieldTelephone)
@@ -887,6 +911,8 @@ func (m *AddressMutation) Field(name string) (ent.Value, bool) {
 		return m.State()
 	case address.FieldCountry:
 		return m.Country()
+	case address.FieldPrimary:
+		return m.Primary()
 	case address.FieldTelephone:
 		return m.Telephone()
 	case address.FieldComment:
@@ -918,6 +944,8 @@ func (m *AddressMutation) OldField(ctx context.Context, name string) (ent.Value,
 		return m.OldState(ctx)
 	case address.FieldCountry:
 		return m.OldCountry(ctx)
+	case address.FieldPrimary:
+		return m.OldPrimary(ctx)
 	case address.FieldTelephone:
 		return m.OldTelephone(ctx)
 	case address.FieldComment:
@@ -993,6 +1021,13 @@ func (m *AddressMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetCountry(v)
+		return nil
+	case address.FieldPrimary:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPrimary(v)
 		return nil
 	case address.FieldTelephone:
 		v, ok := value.(string)
@@ -1141,6 +1176,9 @@ func (m *AddressMutation) ResetField(name string) error {
 	case address.FieldCountry:
 		m.ResetCountry()
 		return nil
+	case address.FieldPrimary:
+		m.ResetPrimary()
+		return nil
 	case address.FieldTelephone:
 		m.ResetTelephone()
 		return nil
@@ -1168,11 +1206,9 @@ func (m *AddressMutation) AddedEdges() []string {
 func (m *AddressMutation) AddedIDs(name string) []ent.Value {
 	switch name {
 	case address.EdgeBusiness:
-		ids := make([]ent.Value, 0, len(m.business))
-		for id := range m.business {
-			ids = append(ids, id)
+		if id := m.business; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	case address.EdgeTimetables:
 		ids := make([]ent.Value, 0, len(m.timetables))
 		for id := range m.timetables {
@@ -1186,9 +1222,6 @@ func (m *AddressMutation) AddedIDs(name string) []ent.Value {
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *AddressMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 2)
-	if m.removedbusiness != nil {
-		edges = append(edges, address.EdgeBusiness)
-	}
 	if m.removedtimetables != nil {
 		edges = append(edges, address.EdgeTimetables)
 	}
@@ -1199,12 +1232,6 @@ func (m *AddressMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *AddressMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case address.EdgeBusiness:
-		ids := make([]ent.Value, 0, len(m.removedbusiness))
-		for id := range m.removedbusiness {
-			ids = append(ids, id)
-		}
-		return ids
 	case address.EdgeTimetables:
 		ids := make([]ent.Value, 0, len(m.removedtimetables))
 		for id := range m.removedtimetables {
@@ -1243,6 +1270,9 @@ func (m *AddressMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *AddressMutation) ClearEdge(name string) error {
 	switch name {
+	case address.EdgeBusiness:
+		m.ClearBusiness()
+		return nil
 	}
 	return fmt.Errorf("unknown Address unique edge %s", name)
 }

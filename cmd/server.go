@@ -161,24 +161,27 @@ func createTestData(client *ent.Client) {
 			logger.Fatal().Msgf("failed creating a business: %v", err)
 		}
 		// create a timetable entry
-		firstofdecember := time.Date(2023, 12, 1, 0, 0, 0, 0, time.Local)
 
-		// create the address for the business
-		address := client.Address.Create().
-			SetStreet(fmt.Sprintf("B%v-street", i)).
-			SetCity(fmt.Sprintf("B%v-city", i)).
-			SetComment("TESTDATA").
-			SetAddition(getRandomString(10)).
-			SetZip(fmt.Sprintf("B%v-zip", i)).
-			AddBusiness(tempBusiness).
-			SaveX(ctx)
-		// create the timetable entry
-		client.Timetable.Create().
-			SetAddress(address).
-			SetComment("TESTDATA").
-			SetDatetimeFrom(firstofdecember).
-			SetDatetimeTo(firstofdecember.Add(time.Hour * 9)).
-			SaveX(ctx)
+		// create two addresses for the business
+		for ii := 1; ii < 3; ii++ {
+			address := client.Address.Create().
+				SetStreet(fmt.Sprintf("B%v-street %v", i, ii)).
+				SetCity(fmt.Sprintf("B%v-city %v", i, ii)).
+				SetComment("TESTDATA").
+				SetAddition(getRandomString(10)).
+				SetZip(fmt.Sprintf("B%v-zip %v", i, ii)).
+				SetBusiness(tempBusiness).
+				SaveX(ctx)
+
+			daysindecember := time.Date(2023, 12, ii, 0, 0, 0, 0, time.Local)
+			// create the timetable entry
+			client.Timetable.Create().
+				SetAddress(address).
+				SetComment("TESTDATA").
+				SetDatetimeFrom(daysindecember).
+				SetDatetimeTo(daysindecember.Add(time.Hour * 9)).
+				SaveX(ctx)
+		}
 
 	}
 	knownBussiness, err := client.Business.Query().All(ctx)

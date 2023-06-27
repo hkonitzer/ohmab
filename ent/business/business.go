@@ -47,11 +47,13 @@ const (
 	EdgeUsers = "users"
 	// Table holds the table name of the business in the database.
 	Table = "businesses"
-	// AddressesTable is the table that holds the addresses relation/edge. The primary key declared below.
-	AddressesTable = "business_addresses"
+	// AddressesTable is the table that holds the addresses relation/edge.
+	AddressesTable = "addresses"
 	// AddressesInverseTable is the table name for the Address entity.
 	// It exists in this package in order to avoid circular dependency with the "address" package.
 	AddressesInverseTable = "addresses"
+	// AddressesColumn is the table column denoting the addresses relation/edge.
+	AddressesColumn = "business_addresses"
 	// TagsTable is the table that holds the tags relation/edge. The primary key declared below.
 	TagsTable = "business_tags"
 	// TagsInverseTable is the table name for the Tag entity.
@@ -89,9 +91,6 @@ var ForeignKeys = []string{
 }
 
 var (
-	// AddressesPrimaryKey and AddressesColumn2 are the table columns denoting the
-	// primary key for the addresses relation (M2M).
-	AddressesPrimaryKey = []string{"business_id", "address_id"}
 	// TagsPrimaryKey and TagsColumn2 are the table columns denoting the
 	// primary key for the tags relation (M2M).
 	TagsPrimaryKey = []string{"business_id", "tag_id"}
@@ -236,7 +235,7 @@ func newAddressesStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(AddressesInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2M, false, AddressesTable, AddressesPrimaryKey...),
+		sqlgraph.Edge(sqlgraph.O2M, false, AddressesTable, AddressesColumn),
 	)
 }
 func newTagsStep() *sqlgraph.Step {

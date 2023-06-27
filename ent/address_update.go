@@ -178,6 +178,20 @@ func (au *AddressUpdate) ClearCountry() *AddressUpdate {
 	return au
 }
 
+// SetPrimary sets the "primary" field.
+func (au *AddressUpdate) SetPrimary(b bool) *AddressUpdate {
+	au.mutation.SetPrimary(b)
+	return au
+}
+
+// SetNillablePrimary sets the "primary" field if the given value is not nil.
+func (au *AddressUpdate) SetNillablePrimary(b *bool) *AddressUpdate {
+	if b != nil {
+		au.SetPrimary(*b)
+	}
+	return au
+}
+
 // SetTelephone sets the "telephone" field.
 func (au *AddressUpdate) SetTelephone(s string) *AddressUpdate {
 	au.mutation.SetTelephone(s)
@@ -218,19 +232,23 @@ func (au *AddressUpdate) ClearComment() *AddressUpdate {
 	return au
 }
 
-// AddBusinesIDs adds the "business" edge to the Business entity by IDs.
-func (au *AddressUpdate) AddBusinesIDs(ids ...uuid.UUID) *AddressUpdate {
-	au.mutation.AddBusinesIDs(ids...)
+// SetBusinessID sets the "business" edge to the Business entity by ID.
+func (au *AddressUpdate) SetBusinessID(id uuid.UUID) *AddressUpdate {
+	au.mutation.SetBusinessID(id)
 	return au
 }
 
-// AddBusiness adds the "business" edges to the Business entity.
-func (au *AddressUpdate) AddBusiness(b ...*Business) *AddressUpdate {
-	ids := make([]uuid.UUID, len(b))
-	for i := range b {
-		ids[i] = b[i].ID
+// SetNillableBusinessID sets the "business" edge to the Business entity by ID if the given value is not nil.
+func (au *AddressUpdate) SetNillableBusinessID(id *uuid.UUID) *AddressUpdate {
+	if id != nil {
+		au = au.SetBusinessID(*id)
 	}
-	return au.AddBusinesIDs(ids...)
+	return au
+}
+
+// SetBusiness sets the "business" edge to the Business entity.
+func (au *AddressUpdate) SetBusiness(b *Business) *AddressUpdate {
+	return au.SetBusinessID(b.ID)
 }
 
 // AddTimetableIDs adds the "timetables" edge to the Timetable entity by IDs.
@@ -253,25 +271,10 @@ func (au *AddressUpdate) Mutation() *AddressMutation {
 	return au.mutation
 }
 
-// ClearBusiness clears all "business" edges to the Business entity.
+// ClearBusiness clears the "business" edge to the Business entity.
 func (au *AddressUpdate) ClearBusiness() *AddressUpdate {
 	au.mutation.ClearBusiness()
 	return au
-}
-
-// RemoveBusinesIDs removes the "business" edge to Business entities by IDs.
-func (au *AddressUpdate) RemoveBusinesIDs(ids ...uuid.UUID) *AddressUpdate {
-	au.mutation.RemoveBusinesIDs(ids...)
-	return au
-}
-
-// RemoveBusiness removes "business" edges to Business entities.
-func (au *AddressUpdate) RemoveBusiness(b ...*Business) *AddressUpdate {
-	ids := make([]uuid.UUID, len(b))
-	for i := range b {
-		ids[i] = b[i].ID
-	}
-	return au.RemoveBusinesIDs(ids...)
 }
 
 // ClearTimetables clears all "timetables" edges to the Timetable entity.
@@ -297,7 +300,9 @@ func (au *AddressUpdate) RemoveTimetables(t ...*Timetable) *AddressUpdate {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (au *AddressUpdate) Save(ctx context.Context) (int, error) {
-	au.defaults()
+	if err := au.defaults(); err != nil {
+		return 0, err
+	}
 	return withHooks(ctx, au.sqlSave, au.mutation, au.hooks)
 }
 
@@ -324,11 +329,15 @@ func (au *AddressUpdate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (au *AddressUpdate) defaults() {
+func (au *AddressUpdate) defaults() error {
 	if _, ok := au.mutation.UpdatedAt(); !ok {
+		if address.UpdateDefaultUpdatedAt == nil {
+			return fmt.Errorf("ent: uninitialized address.UpdateDefaultUpdatedAt (forgotten import ent/runtime?)")
+		}
 		v := address.UpdateDefaultUpdatedAt()
 		au.mutation.SetUpdatedAt(v)
 	}
+	return nil
 }
 
 func (au *AddressUpdate) sqlSave(ctx context.Context) (n int, err error) {
@@ -385,6 +394,9 @@ func (au *AddressUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if au.mutation.CountryCleared() {
 		_spec.ClearField(address.FieldCountry, field.TypeString)
 	}
+	if value, ok := au.mutation.Primary(); ok {
+		_spec.SetField(address.FieldPrimary, field.TypeBool, value)
+	}
 	if value, ok := au.mutation.Telephone(); ok {
 		_spec.SetField(address.FieldTelephone, field.TypeString, value)
 	}
@@ -399,39 +411,23 @@ func (au *AddressUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if au.mutation.BusinessCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   address.BusinessTable,
-			Columns: address.BusinessPrimaryKey,
+			Columns: []string{address.BusinessColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(business.FieldID, field.TypeUUID),
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := au.mutation.RemovedBusinessIDs(); len(nodes) > 0 && !au.mutation.BusinessCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   address.BusinessTable,
-			Columns: address.BusinessPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(business.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := au.mutation.BusinessIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   address.BusinessTable,
-			Columns: address.BusinessPrimaryKey,
+			Columns: []string{address.BusinessColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(business.FieldID, field.TypeUUID),
@@ -653,6 +649,20 @@ func (auo *AddressUpdateOne) ClearCountry() *AddressUpdateOne {
 	return auo
 }
 
+// SetPrimary sets the "primary" field.
+func (auo *AddressUpdateOne) SetPrimary(b bool) *AddressUpdateOne {
+	auo.mutation.SetPrimary(b)
+	return auo
+}
+
+// SetNillablePrimary sets the "primary" field if the given value is not nil.
+func (auo *AddressUpdateOne) SetNillablePrimary(b *bool) *AddressUpdateOne {
+	if b != nil {
+		auo.SetPrimary(*b)
+	}
+	return auo
+}
+
 // SetTelephone sets the "telephone" field.
 func (auo *AddressUpdateOne) SetTelephone(s string) *AddressUpdateOne {
 	auo.mutation.SetTelephone(s)
@@ -693,19 +703,23 @@ func (auo *AddressUpdateOne) ClearComment() *AddressUpdateOne {
 	return auo
 }
 
-// AddBusinesIDs adds the "business" edge to the Business entity by IDs.
-func (auo *AddressUpdateOne) AddBusinesIDs(ids ...uuid.UUID) *AddressUpdateOne {
-	auo.mutation.AddBusinesIDs(ids...)
+// SetBusinessID sets the "business" edge to the Business entity by ID.
+func (auo *AddressUpdateOne) SetBusinessID(id uuid.UUID) *AddressUpdateOne {
+	auo.mutation.SetBusinessID(id)
 	return auo
 }
 
-// AddBusiness adds the "business" edges to the Business entity.
-func (auo *AddressUpdateOne) AddBusiness(b ...*Business) *AddressUpdateOne {
-	ids := make([]uuid.UUID, len(b))
-	for i := range b {
-		ids[i] = b[i].ID
+// SetNillableBusinessID sets the "business" edge to the Business entity by ID if the given value is not nil.
+func (auo *AddressUpdateOne) SetNillableBusinessID(id *uuid.UUID) *AddressUpdateOne {
+	if id != nil {
+		auo = auo.SetBusinessID(*id)
 	}
-	return auo.AddBusinesIDs(ids...)
+	return auo
+}
+
+// SetBusiness sets the "business" edge to the Business entity.
+func (auo *AddressUpdateOne) SetBusiness(b *Business) *AddressUpdateOne {
+	return auo.SetBusinessID(b.ID)
 }
 
 // AddTimetableIDs adds the "timetables" edge to the Timetable entity by IDs.
@@ -728,25 +742,10 @@ func (auo *AddressUpdateOne) Mutation() *AddressMutation {
 	return auo.mutation
 }
 
-// ClearBusiness clears all "business" edges to the Business entity.
+// ClearBusiness clears the "business" edge to the Business entity.
 func (auo *AddressUpdateOne) ClearBusiness() *AddressUpdateOne {
 	auo.mutation.ClearBusiness()
 	return auo
-}
-
-// RemoveBusinesIDs removes the "business" edge to Business entities by IDs.
-func (auo *AddressUpdateOne) RemoveBusinesIDs(ids ...uuid.UUID) *AddressUpdateOne {
-	auo.mutation.RemoveBusinesIDs(ids...)
-	return auo
-}
-
-// RemoveBusiness removes "business" edges to Business entities.
-func (auo *AddressUpdateOne) RemoveBusiness(b ...*Business) *AddressUpdateOne {
-	ids := make([]uuid.UUID, len(b))
-	for i := range b {
-		ids[i] = b[i].ID
-	}
-	return auo.RemoveBusinesIDs(ids...)
 }
 
 // ClearTimetables clears all "timetables" edges to the Timetable entity.
@@ -785,7 +784,9 @@ func (auo *AddressUpdateOne) Select(field string, fields ...string) *AddressUpda
 
 // Save executes the query and returns the updated Address entity.
 func (auo *AddressUpdateOne) Save(ctx context.Context) (*Address, error) {
-	auo.defaults()
+	if err := auo.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, auo.sqlSave, auo.mutation, auo.hooks)
 }
 
@@ -812,11 +813,15 @@ func (auo *AddressUpdateOne) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (auo *AddressUpdateOne) defaults() {
+func (auo *AddressUpdateOne) defaults() error {
 	if _, ok := auo.mutation.UpdatedAt(); !ok {
+		if address.UpdateDefaultUpdatedAt == nil {
+			return fmt.Errorf("ent: uninitialized address.UpdateDefaultUpdatedAt (forgotten import ent/runtime?)")
+		}
 		v := address.UpdateDefaultUpdatedAt()
 		auo.mutation.SetUpdatedAt(v)
 	}
+	return nil
 }
 
 func (auo *AddressUpdateOne) sqlSave(ctx context.Context) (_node *Address, err error) {
@@ -890,6 +895,9 @@ func (auo *AddressUpdateOne) sqlSave(ctx context.Context) (_node *Address, err e
 	if auo.mutation.CountryCleared() {
 		_spec.ClearField(address.FieldCountry, field.TypeString)
 	}
+	if value, ok := auo.mutation.Primary(); ok {
+		_spec.SetField(address.FieldPrimary, field.TypeBool, value)
+	}
 	if value, ok := auo.mutation.Telephone(); ok {
 		_spec.SetField(address.FieldTelephone, field.TypeString, value)
 	}
@@ -904,39 +912,23 @@ func (auo *AddressUpdateOne) sqlSave(ctx context.Context) (_node *Address, err e
 	}
 	if auo.mutation.BusinessCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   address.BusinessTable,
-			Columns: address.BusinessPrimaryKey,
+			Columns: []string{address.BusinessColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(business.FieldID, field.TypeUUID),
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := auo.mutation.RemovedBusinessIDs(); len(nodes) > 0 && !auo.mutation.BusinessCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   address.BusinessTable,
-			Columns: address.BusinessPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(business.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := auo.mutation.BusinessIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   address.BusinessTable,
-			Columns: address.BusinessPrimaryKey,
+			Columns: []string{address.BusinessColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(business.FieldID, field.TypeUUID),

@@ -12,11 +12,13 @@ type Address implements Node {
   zip: String
   state: String
   country: String
+  """Is this the primary address?"""
+  primary: Boolean!
   """Telephone number"""
   telephone: String
   """A comment for this address"""
   comment: String
-  business: [Business!]
+  business: Business
   timetables: [Timetable!]
 }
 """
@@ -161,6 +163,9 @@ input AddressWhereInput {
   countryNotNil: Boolean
   countryEqualFold: String
   countryContainsFold: String
+  """primary field predicates"""
+  primary: Boolean
+  primaryNEQ: Boolean
   """telephone field predicates"""
   telephone: String
   telephoneNEQ: String

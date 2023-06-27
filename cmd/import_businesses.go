@@ -8,11 +8,13 @@ import (
 	"hynie.de/ohmab/ent"
 	"hynie.de/ohmab/ent/business"
 	_ "hynie.de/ohmab/ent/runtime"
+	schemas "hynie.de/ohmab/ent/schema"
 	"hynie.de/ohmab/internal/pkg/config"
 	"hynie.de/ohmab/internal/pkg/db"
 	"hynie.de/ohmab/internal/pkg/log"
 	"hynie.de/ohmab/internal/pkg/utils"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -57,6 +59,10 @@ func main() {
 	startTime := time.Now()
 	var headersFromSchemas []string = nil
 	var rowCounter = 0
+
+	addressSchema := schemas.Address{}
+	aFields := addressSchema.Fields()
+
 	for {
 		record, readErr := reader.Read()
 		if record == nil {
@@ -173,14 +179,36 @@ func main() {
 				schemaField := strings.Split(schemaHeader, "$")[1]
 				switch schema {
 				case "BUSINESS":
+					// no need for checking fieldType, only alias here for now
 					err := businessCreate.Mutation().SetField(schemaField, field)
 					if err != nil {
 						logger.Fatal().Msgf("Error setting business field '%s' to '%s': %v", schemaField, field, err)
 					}
 				case "ADDRESS":
-					err := addressCreate.Mutation().SetField(schemaField, field)
-					if err != nil {
-						logger.Fatal().Msgf("Error setting address field '%s' to '%s' from row=%d: %v", schemaField, field, rowCounter, err)
+					var fieldType string
+					for _, bField := range aFields {
+						fieldDesc := bField.Descriptor()
+						if fieldDesc.Name == schemaField {
+							fieldType_ := fieldDesc.Info.Type.String()
+							fieldType = fieldType_
+							break
+						}
+					}
+					switch fieldType {
+					case "bool":
+						b, err := strconv.ParseBool(field)
+						if err != nil {
+							logger.Fatal().Msgf("Error converting '%s' to bool from row=%d: %v", field, rowCounter, err)
+						}
+						err = addressCreate.Mutation().SetField(schemaField, b)
+						if err != nil {
+							logger.Fatal().Msgf("Error setting address field '%s' to '%s' from row=%d: %v", schemaField, field, rowCounter, err)
+						}
+					default: // string
+						err := addressCreate.Mutation().SetField(schemaField, field)
+						if err != nil {
+							logger.Fatal().Msgf("Error setting address field '%s' to '%s' from row=%d: %v", schemaField, field, rowCounter, err)
+						}
 					}
 				default:
 					logger.Fatal().Msgf("Unknown schema '%s'", schema)

@@ -91,17 +91,14 @@ func main() {
 		busQuery := client.Business.Query()
 		var city, street, zip string
 		for i, field := range record {
-			if field == "" {
-				continue
-			}
 			schemaHeader := headersFromSchemas[i]
 			schema := strings.Split(schemaHeader, "$")[0]
 			schemaField := strings.Split(schemaHeader, "$")[1]
 			switch schema {
 			case "BUSINESS":
 				switch strings.ToLower(schemaField) {
-				case "name1":
-					busQuery.Where(business.Name1(field))
+				case "alias":
+					busQuery.Where(business.Alias(strings.ToUpper(field)))
 				}
 			case "ADDRESS":
 				switch strings.ToLower(schemaField) {
@@ -120,25 +117,28 @@ func main() {
 
 		}
 		// get the business for this csv column first
-		business_ := busQuery.Where(
-			business.HasAddressesWith(address.Zip(zip), address.City(city), address.Street(street))).
-			WithAddresses().Unique(true).FirstX(ctx)
+		// if no city, street and zip is given, get the primary address
+		if city == "" && street == "" && zip == "" {
+			busQuery.Where().
+				WithAddresses(
+					func(q *ent.AddressQuery) {
+						q.Where(address.PrimaryEQ(true)).FirstX(ctx)
+					},
+				).Unique(true)
+		} else {
+			busQuery.Where(
+				business.HasAddressesWith(address.Zip(zip), address.City(city), address.Street(street))).
+				WithAddresses().Unique(true)
+		}
+		business_ := busQuery.FirstX(ctx)
 		if business_ == nil { // businessAddresses_ cannot be nil
 			skippedImports++
 			logger.Info().Msgf("Business with address not found, Name/Zip/City/Street: %s/%s/%s/%s", record[0], zip, city, street)
 			continue
 		}
 
-		// get the correct address
-		businessAddresses_ := business_.Edges.Addresses
-		var businessAddress *ent.Address
-		for _, businessAddress_ := range businessAddresses_ {
-			if businessAddress_.Zip == zip &&
-				businessAddress_.City == city &&
-				businessAddress_.Street == street {
-				businessAddress = businessAddress_
-			}
-		}
+		// get the correct address, only one give because of FirstX
+		businessAddress := business_.Edges.Addresses[0]
 		logger.Debug().Msgf("Processing address %v", businessAddress.ID)
 		// get field types for Timetable
 		tt := schemas.Timetable{}
@@ -264,7 +264,7 @@ func main() {
 func createTimetableFieldsandCheckAgainstTableHeader(header []string) ([]string, error) {
 	// unique id for a business and his address for a timetable entry - must be the first three columns in the csvSü
 	headersFromSchemas := []string{
-		"BUSINESS$NAME1",
+		"BUSINESS$ALIAS",
 		"ADDRESS$ZIP",
 		"ADDRESS$CITY",
 		"ADDRESS$STREET",
@@ -285,24 +285,6 @@ func createTimetableFieldsandCheckAgainstTableHeader(header []string) ([]string,
 		return nil, fmt.Errorf("csv header length '%d' does not match needed fields in schema length '%d', (perhaps wrong field limiter, should be ;), loaded header: %v", len(header), len(headersFromSchemas), header)
 	}
 	for i, headerField := range header {
-		/*
-			if i == 0 { // First column has to be NAME (for Business)
-				if strings.ToUpper(headerField) != "NAME" {
-					return nil, fmt.Errorf("first header field has to be NAME")
-				}
-				continue
-			} else if i == 1 { // Second column has to be ZIP (for Business address)
-				if strings.ToUpper(headerField) != "ZIP" {
-					return nil, fmt.Errorf("second header field has to be ZIP")
-				}
-				continue
-			} else if i == 2 { // Third column has to be CITY (for Business address)
-				if strings.ToUpper(headerField) != "CITY" {
-					return nil, fmt.Errorf("third header field has to be CITY")
-				}
-				continue
-			}
-		*/
 		helper := strings.Split(headersFromSchemas[i], "$") // cut SchemaName
 		if strings.ToUpper(headerField) != strings.ToUpper(helper[1]) {
 			return nil, fmt.Errorf("header field '%s' does not match schema field '%s' (schema=%s)", headerField, helper[1], helper[0])

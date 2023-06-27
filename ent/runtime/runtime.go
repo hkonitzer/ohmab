@@ -23,6 +23,7 @@ func init() {
 	addressMixin := schema.Address{}.Mixin()
 	addressHooks := schema.Address{}.Hooks()
 	address.Hooks[0] = addressHooks[0]
+	address.Hooks[1] = addressHooks[1]
 	addressMixinFields0 := addressMixin[0].Fields()
 	_ = addressMixinFields0
 	addressFields := schema.Address{}.Fields()

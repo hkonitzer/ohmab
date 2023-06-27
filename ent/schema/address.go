@@ -31,7 +31,8 @@ func (Address) Fields() []ent.Field {
 			Optional(),
 		field.Text("country").
 			Optional(),
-
+		field.Bool("primary").
+			Default(false).Comment("Is this the primary address?"),
 		field.Text("telephone").
 			Optional().Unique().Comment("Telephone number"),
 		field.Text("comment").
@@ -57,6 +58,7 @@ func (Address) Edges() []ent.Edge {
 
 func (Address) Hooks() []ent.Hook {
 	return []ent.Hook{
+		hooks.EnsureOnlyOnePrimaryAddress(),
 		hooks.AuditLogForAddress(),
 	}
 }

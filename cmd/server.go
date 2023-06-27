@@ -164,13 +164,17 @@ func createTestData(client *ent.Client) {
 
 		// create two addresses for the business
 		for ii := 1; ii < 3; ii++ {
-			address := client.Address.Create().
+			addressCreate := client.Address.Create().
 				SetStreet(fmt.Sprintf("B%v-street %v", i, ii)).
 				SetCity(fmt.Sprintf("B%v-city %v", i, ii)).
 				SetComment("TESTDATA").
 				SetAddition(getRandomString(10)).
 				SetZip(fmt.Sprintf("B%v-zip %v", i, ii)).
-				SetBusiness(tempBusiness).
+				SetBusiness(tempBusiness)
+			if ii == 1 {
+				addressCreate.SetPrimary(true)
+			}
+			address := addressCreate.
 				SaveX(ctx)
 
 			daysindecember := time.Date(2023, 12, ii, 0, 0, 0, 0, time.Local)

@@ -28,14 +28,19 @@ func (r *queryResolver) Nodes(ctx context.Context, ids []uuid.UUID) ([]ent.Noder
 	return r.client.Noders(ctx, ids)
 }
 
+// Addresses is the resolver for the addresses field.
+func (r *queryResolver) Addresses(ctx context.Context, after *entgql.Cursor[uuid.UUID], first *int, before *entgql.Cursor[uuid.UUID], last *int, where *ent.AddressWhereInput) (*ent.AddressConnection, error) {
+	panic(fmt.Errorf("not implemented: Addresses - addresses"))
+}
+
 // Businesses is the resolver for the businesses field.
 func (r *queryResolver) Businesses(ctx context.Context, after *entgql.Cursor[uuid.UUID], first *int, before *entgql.Cursor[uuid.UUID], last *int, orderBy []*ent.BusinessOrder, where *ent.BusinessWhereInput) (*ent.BusinessConnection, error) {
-	return r.client.Business.Query().Paginate(ctx, after, first, before, last, ent.WithBusinessOrder(orderBy))
+	return r.client.Business.Query().Paginate(ctx, after, first, before, last, ent.WithBusinessOrder(orderBy), ent.WithBusinessFilter(where.Filter))
 }
 
 // Timetables is the resolver for the timetables field.
-func (r *queryResolver) Timetables(ctx context.Context, after *entgql.Cursor[uuid.UUID], first *int, before *entgql.Cursor[uuid.UUID], last *int, where *ent.TimetableWhereInput) (*ent.TimetableConnection, error) {
-	panic(fmt.Errorf("not implemented: Timetables - timetables"))
+func (r *queryResolver) Timetables(ctx context.Context, after *entgql.Cursor[uuid.UUID], first *int, before *entgql.Cursor[uuid.UUID], last *int, orderBy []*ent.TimetableOrder, where *ent.TimetableWhereInput) (*ent.TimetableConnection, error) {
+	return r.client.Timetable.Query().WithAddress().Paginate(ctx, after, first, before, last, ent.WithTimetableOrder(orderBy), ent.WithTimetableFilter(where.Filter))
 }
 
 // AuditLog returns AuditLogResolver implementation.

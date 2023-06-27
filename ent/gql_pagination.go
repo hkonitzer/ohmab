@@ -1460,6 +1460,53 @@ func (t *TimetableQuery) Paginate(
 	return conn, nil
 }
 
+var (
+	// TimetableOrderFieldDatetimeFrom orders Timetable by datetime_from.
+	TimetableOrderFieldDatetimeFrom = &TimetableOrderField{
+		Value: func(t *Timetable) (ent.Value, error) {
+			return t.DatetimeFrom, nil
+		},
+		column: timetable.FieldDatetimeFrom,
+		toTerm: timetable.ByDatetimeFrom,
+		toCursor: func(t *Timetable) Cursor {
+			return Cursor{
+				ID:    t.ID,
+				Value: t.DatetimeFrom,
+			}
+		},
+	}
+)
+
+// String implement fmt.Stringer interface.
+func (f TimetableOrderField) String() string {
+	var str string
+	switch f.column {
+	case TimetableOrderFieldDatetimeFrom.column:
+		str = "datetime_from"
+	}
+	return str
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (f TimetableOrderField) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(f.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (f *TimetableOrderField) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("TimetableOrderField %T must be a string", v)
+	}
+	switch str {
+	case "datetime_from":
+		*f = *TimetableOrderFieldDatetimeFrom
+	default:
+		return fmt.Errorf("%s is not a valid TimetableOrderField", str)
+	}
+	return nil
+}
+
 // TimetableOrderField defines the ordering field of Timetable.
 type TimetableOrderField struct {
 	// Value extracts the ordering value from the given Timetable.

@@ -13,11 +13,14 @@ import (
 	"hynie.de/ohmab/internal/pkg/config"
 	"hynie.de/ohmab/internal/pkg/db"
 	"hynie.de/ohmab/internal/pkg/log"
+	"hynie.de/ohmab/internal/pkg/routes"
 	"math/rand"
 	"net/http"
 	"strings"
 	"time"
 )
+
+var srv *routes.Server
 
 func main() {
 	// Get logger
@@ -50,28 +53,20 @@ func main() {
 		createTestData(client)
 	}
 
-	srv := newServer(client)
+	srv = routes.NewServer(client)
 	r := newRouter(srv)
 
 	logger.Info().Msgf("connect to http://localhost:%d/ for GraphQL playground", configurations.Server.Port)
 
 	httpErr := http.ListenAndServe(fmt.Sprintf(":%d", configurations.Server.Port), r)
 	if httpErr != nil {
-		logger.Fatal().Msgf("http server terminated", httpErr)
+		logger.Fatal().Msgf("http Server terminated", httpErr)
 	}
 
 }
 
-type server struct {
-	client *ent.Client
-}
-
-func newServer(client *ent.Client) *server {
-	return &server{client: client}
-}
-
 // newRouter creates a new router with the blog handlers mounted.
-func newRouter(srv *server) chi.Router {
+func newRouter(srv *routes.Server) chi.Router {
 	r := chi.NewRouter()
 	//r.Use(middleware.Logger)
 	configs, _ := config.GetConfiguration()
@@ -86,11 +81,13 @@ func newRouter(srv *server) chi.Router {
 	r.Handle("/",
 		playground.Handler("OHMAB", "/query"),
 	)
-	entServer := handler.NewDefaultServer(ESDRA.NewSchema(srv.client))
+	entServer := handler.NewDefaultServer(ESDRA.NewSchema(srv.Client))
 	r.Handle("/query",
 		entServer,
 	)
 
+	// html exports
+	r.Get("/exports/timetables", srv.Timetables)
 	return r
 }
 

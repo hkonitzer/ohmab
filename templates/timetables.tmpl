@@ -1,0 +1,47 @@
+<html>
+<head>
+    <title>TIMETABLES</title>
+
+
+</head>
+<body>
+
+
+
+    <table>
+
+
+                {{- range . }}
+                    <tr>
+                    <td><h2>{{ .DatetimeFrom.Format "02.01.2006 15:04" }} &mdash; {{ .DatetimeTo.Format "02.01.2006 15:04" }}</h2></td>
+                    </tr>
+
+                    <tr>
+                        <td>{{ .Edges.Address.Edges.Business.Name1 }}</td>
+                    </tr>
+
+                    <tr>
+                        <td>{{ .Edges.Address.Street }}</td>
+                    </tr>
+                    <tr>
+                        <td>{{ .Edges.Address.Zip }}&thinsp;{{ .Edges.Address.City }}</td>
+                    </tr>
+                    {{ if .AvailabilityByPhone }}
+                    <tr>
+                        <td><a href="tel:{{ .AvailabilityByPhone }}">{{ convertTel .AvailabilityByPhone }}</a></td>
+                    </tr>
+                    {{ end }}
+                    {{ if (ne .AvailabilityByPhone .Edges.Address.Telephone) }}
+                    <tr>
+                        <td><a href="tel:{{ .Edges.Address.Telephone }}">{{ convertTel .Edges.Address.Telephone }}</a></td>
+                    </tr>
+                    <tr>
+                        <td>Stand: {{ .UpdatedAt.Format "01.02.2006 15:04" }}
+                    </tr>
+                    {{end}}
+                {{- end }}
+
+
+    </table>
+</body>
+</html>

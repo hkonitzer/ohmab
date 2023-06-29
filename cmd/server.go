@@ -78,6 +78,7 @@ func newRouter(srv *routes.Server) chi.Router {
 	r.Use(middleware.Recoverer)
 	r.Use(ESDRACtx)
 	r.Use(SetHeadersHandler)
+	r.Use(middleware.ThrottleBacklog(10, 100, 10*time.Second)) // @TODO: make this configurable
 	r.Handle("/",
 		playground.Handler("OHMAB", "/query"),
 	)

@@ -6,12 +6,14 @@ import (
 	"flag"
 	"fmt"
 	"hynie.de/ohmab/ent"
+	"hynie.de/ohmab/ent/address"
 	"hynie.de/ohmab/ent/business"
 	_ "hynie.de/ohmab/ent/runtime"
 	schemas "hynie.de/ohmab/ent/schema"
 	"hynie.de/ohmab/internal/pkg/config"
 	"hynie.de/ohmab/internal/pkg/db"
 	"hynie.de/ohmab/internal/pkg/log"
+	"hynie.de/ohmab/internal/pkg/privacy"
 	"hynie.de/ohmab/internal/pkg/utils"
 	"os"
 	"strconv"
@@ -41,6 +43,8 @@ func main() {
 	}
 	// Create client
 	ctx := context.TODO()
+	// set admin rights
+	ctx = privacy.NewContext(ctx, privacy.UserViewer{Role: privacy.Admin})
 	client, clientError := db.CreateClient(ctx, configurations)
 	if clientError != nil {
 		logger.Fatal().Msgf("Error creating client: %v", clientError)
@@ -219,9 +223,16 @@ func main() {
 				t, _ := addressCreate.Mutation().Telephone()
 				str, _ := addressCreate.Mutation().Street()
 				cty, _ := addressCreate.Mutation().City()
-				logger.Fatal().Msgf("Error saving address 'City=%v;Street=%v;Tel=%v' from row=%d: %v", cty, str, t, rowCounter, addrerr)
+				zip, _ := addressCreate.Mutation().Zip()
+				ad := client.Address.Query().Where(address.CityEQ(cty), address.StreetEQ(str), address.TelephoneEQ(t), address.ZipEQ(zip)).OnlyX(ctx)
+				logger.Info().Msgf("Error saving address 'City=%v;Street=%v;Tel=%v' from row=%d: %v", cty, str, t, rowCounter, addrerr)
+				if ad == nil {
+					logger.Fatal().Msgf("Error saving address 'City=%v;Street=%v;Tel=%v' from row=%d: %v", cty, str, t, rowCounter, addrerr)
+				}
+				businessCreate.AddAddresses(ad)
+			} else {
+				businessCreate.AddAddresses(addr)
 			}
-			businessCreate.AddAddresses(addr)
 			_, err := businessCreate.Save(ctx)
 			if err != nil {
 				logger.Fatal().Msgf("Error saving business '%s' from row=%d: %v", record[0], rowCounter, err)

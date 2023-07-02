@@ -9,8 +9,10 @@ import (
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
 	"github.com/google/uuid"
+	"hynie.de/ohmab/ent/privacy"
 	"hynie.de/ohmab/ent/schema/constants"
 	"hynie.de/ohmab/ent/schema/hooks"
+	"hynie.de/ohmab/internal/pkg/privacy/rule"
 )
 
 // Business holds the schema definition for the Business entity.
@@ -59,7 +61,7 @@ func (Business) Edges() []ent.Edge {
 		edge.To("addresses", Address.Type).
 			Annotations(entsql.OnDelete(entsql.Cascade)),
 		edge.To("tags", Tag.Type),
-		edge.From("users", User.Type).Ref("businesses").Unique(),
+		edge.To("users", User.Type),
 	}
 }
 
@@ -83,5 +85,19 @@ func (Business) Hooks() []ent.Hook {
 	return []ent.Hook{
 		hooks.UpperCaseForBussinessFields(),
 		hooks.AuditLogForBusiness(),
+	}
+}
+
+// Policy defines the privacy policy of the User.
+func (Business) Policy() ent.Policy {
+	return privacy.Policy{
+		Mutation: privacy.MutationPolicy{
+			rule.DenyIfNoViewer(),
+			rule.AllowIfAdmin(),
+			privacy.AlwaysDenyRule(),
+		},
+		Query: privacy.QueryPolicy{
+			privacy.AlwaysAllowRule(),
+		},
 	}
 }

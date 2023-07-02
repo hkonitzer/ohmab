@@ -59,6 +59,12 @@ func (uu *UserUpdate) ClearDeletedAt() *UserUpdate {
 	return uu
 }
 
+// SetLogin sets the "login" field.
+func (uu *UserUpdate) SetLogin(s string) *UserUpdate {
+	uu.mutation.SetLogin(s)
+	return uu
+}
+
 // SetSurname sets the "surname" field.
 func (uu *UserUpdate) SetSurname(s string) *UserUpdate {
 	uu.mutation.SetSurname(s)
@@ -329,6 +335,11 @@ func (uu *UserUpdate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (uu *UserUpdate) check() error {
+	if v, ok := uu.mutation.Login(); ok {
+		if err := user.LoginValidator(v); err != nil {
+			return &ValidationError{Name: "login", err: fmt.Errorf(`ent: validator failed for field "User.login": %w`, err)}
+		}
+	}
 	if v, ok := uu.mutation.Surname(); ok {
 		if err := user.SurnameValidator(v); err != nil {
 			return &ValidationError{Name: "surname", err: fmt.Errorf(`ent: validator failed for field "User.surname": %w`, err)}
@@ -357,6 +368,9 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if uu.mutation.DeletedAtCleared() {
 		_spec.ClearField(user.FieldDeletedAt, field.TypeTime)
+	}
+	if value, ok := uu.mutation.Login(); ok {
+		_spec.SetField(user.FieldLogin, field.TypeString, value)
 	}
 	if value, ok := uu.mutation.Surname(); ok {
 		_spec.SetField(user.FieldSurname, field.TypeString, value)
@@ -396,10 +410,10 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if uu.mutation.BusinessesCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
 			Table:   user.BusinessesTable,
-			Columns: []string{user.BusinessesColumn},
+			Columns: user.BusinessesPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(business.FieldID, field.TypeUUID),
@@ -409,10 +423,10 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := uu.mutation.RemovedBusinessesIDs(); len(nodes) > 0 && !uu.mutation.BusinessesCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
 			Table:   user.BusinessesTable,
-			Columns: []string{user.BusinessesColumn},
+			Columns: user.BusinessesPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(business.FieldID, field.TypeUUID),
@@ -425,10 +439,10 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := uu.mutation.BusinessesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
 			Table:   user.BusinessesTable,
-			Columns: []string{user.BusinessesColumn},
+			Columns: user.BusinessesPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(business.FieldID, field.TypeUUID),
@@ -572,6 +586,12 @@ func (uuo *UserUpdateOne) SetNillableDeletedAt(t *time.Time) *UserUpdateOne {
 // ClearDeletedAt clears the value of the "deleted_at" field.
 func (uuo *UserUpdateOne) ClearDeletedAt() *UserUpdateOne {
 	uuo.mutation.ClearDeletedAt()
+	return uuo
+}
+
+// SetLogin sets the "login" field.
+func (uuo *UserUpdateOne) SetLogin(s string) *UserUpdateOne {
+	uuo.mutation.SetLogin(s)
 	return uuo
 }
 
@@ -858,6 +878,11 @@ func (uuo *UserUpdateOne) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (uuo *UserUpdateOne) check() error {
+	if v, ok := uuo.mutation.Login(); ok {
+		if err := user.LoginValidator(v); err != nil {
+			return &ValidationError{Name: "login", err: fmt.Errorf(`ent: validator failed for field "User.login": %w`, err)}
+		}
+	}
 	if v, ok := uuo.mutation.Surname(); ok {
 		if err := user.SurnameValidator(v); err != nil {
 			return &ValidationError{Name: "surname", err: fmt.Errorf(`ent: validator failed for field "User.surname": %w`, err)}
@@ -904,6 +929,9 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 	if uuo.mutation.DeletedAtCleared() {
 		_spec.ClearField(user.FieldDeletedAt, field.TypeTime)
 	}
+	if value, ok := uuo.mutation.Login(); ok {
+		_spec.SetField(user.FieldLogin, field.TypeString, value)
+	}
 	if value, ok := uuo.mutation.Surname(); ok {
 		_spec.SetField(user.FieldSurname, field.TypeString, value)
 	}
@@ -942,10 +970,10 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 	}
 	if uuo.mutation.BusinessesCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
 			Table:   user.BusinessesTable,
-			Columns: []string{user.BusinessesColumn},
+			Columns: user.BusinessesPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(business.FieldID, field.TypeUUID),
@@ -955,10 +983,10 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 	}
 	if nodes := uuo.mutation.RemovedBusinessesIDs(); len(nodes) > 0 && !uuo.mutation.BusinessesCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
 			Table:   user.BusinessesTable,
-			Columns: []string{user.BusinessesColumn},
+			Columns: user.BusinessesPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(business.FieldID, field.TypeUUID),
@@ -971,10 +999,10 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 	}
 	if nodes := uuo.mutation.BusinessesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
 			Table:   user.BusinessesTable,
-			Columns: []string{user.BusinessesColumn},
+			Columns: user.BusinessesPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(business.FieldID, field.TypeUUID),

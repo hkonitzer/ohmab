@@ -13,7 +13,7 @@ import (
 
 func main() {
 	log.Println("Generating entutils/entgql schema files...")
-	ex, err := entgql.NewExtension(
+	graphqlEx, err := entgql.NewExtension(
 		entgql.WithConfigPath("gqlgen.yml"),
 		entgql.WithSchemaGenerator(),
 		entgql.WithSchemaPath("./ent.graphql"),
@@ -24,7 +24,8 @@ func main() {
 		log.Fatalf("creating entgql extension: %v", err)
 	}
 	opts := []entc.Option{
-		entc.Extensions(ex),
+		entc.Extensions(graphqlEx),
+		entc.FeatureNames("privacy"),
 	}
 
 	if err := entc.Generate("./ent/schema", &gen.Config{

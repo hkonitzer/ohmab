@@ -7,6 +7,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/oauth"
 	ESDRA "hynie.de/ohmab"
 	"hynie.de/ohmab/ent"
 	_ "hynie.de/ohmab/ent/runtime"
@@ -79,13 +80,18 @@ func newRouter(srv *routes.Server) chi.Router {
 	r.Use(ESDRACtx)
 	r.Use(SetHeadersHandler)
 	r.Use(middleware.ThrottleBacklog(10, 100, 10*time.Second)) // @TODO: make this configurable
-	r.Handle("/",
-		playground.Handler("OHMAB", "/query"),
-	)
-	entServer := handler.NewDefaultServer(ESDRA.NewSchema(srv.Client))
-	r.Handle("/query",
-		entServer,
-	)
+
+	routes.RegisterOAuthAPI(r, srv)
+
+	r.Route("/", func(r chi.Router) {
+		r.Use(oauth.Authorize(configs.OAUTHSECRETKEY, nil))
+		r.Use(routes.CheckUser)
+		r.Handle("/",
+			playground.Handler("OHMAB", "/query"),
+		)
+		entServer := handler.NewDefaultServer(ESDRA.NewSchema(srv.Client))
+		r.Handle("/query", entServer)
+	})
 
 	// html exports
 	r.Get("/exports/timetables", srv.Timetables)

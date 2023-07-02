@@ -77,21 +77,12 @@ var (
 		{Name: "website", Type: field.TypeString, Nullable: true, Size: 2147483647},
 		{Name: "comment", Type: field.TypeString, Nullable: true, Size: 2147483647},
 		{Name: "active", Type: field.TypeBool, Default: true},
-		{Name: "user_businesses", Type: field.TypeUUID, Nullable: true},
 	}
 	// BusinessesTable holds the schema information for the "businesses" table.
 	BusinessesTable = &schema.Table{
 		Name:       "businesses",
 		Columns:    BusinessesColumns,
 		PrimaryKey: []*schema.Column{BusinessesColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "businesses_users_businesses",
-				Columns:    []*schema.Column{BusinessesColumns[12]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-		},
 		Indexes: []*schema.Index{
 			{
 				Name:    "business_name1_name2",
@@ -164,6 +155,7 @@ var (
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "deleted_at", Type: field.TypeTime, Nullable: true},
+		{Name: "login", Type: field.TypeString, Size: 2147483647},
 		{Name: "surname", Type: field.TypeString, Size: 2147483647},
 		{Name: "firstname", Type: field.TypeString, Size: 2147483647},
 		{Name: "title", Type: field.TypeString, Nullable: true, Size: 2147483647},
@@ -171,7 +163,7 @@ var (
 		{Name: "passwordhash", Type: field.TypeString, Nullable: true, Size: 2147483647},
 		{Name: "comment", Type: field.TypeString, Nullable: true, Size: 2147483647},
 		{Name: "active", Type: field.TypeBool, Default: true},
-		{Name: "role", Type: field.TypeInt, Default: 0},
+		{Name: "role", Type: field.TypeInt, Default: 8},
 	}
 	// UsersTable holds the schema information for the "users" table.
 	UsersTable = &schema.Table{
@@ -182,7 +174,7 @@ var (
 			{
 				Name:    "user_email",
 				Unique:  false,
-				Columns: []*schema.Column{UsersColumns[7]},
+				Columns: []*schema.Column{UsersColumns[8]},
 			},
 		},
 	}
@@ -207,6 +199,31 @@ var (
 				Symbol:     "business_tags_tag_id",
 				Columns:    []*schema.Column{BusinessTagsColumns[1]},
 				RefColumns: []*schema.Column{TagsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
+	// BusinessUsersColumns holds the columns for the "business_users" table.
+	BusinessUsersColumns = []*schema.Column{
+		{Name: "business_id", Type: field.TypeUUID},
+		{Name: "user_id", Type: field.TypeUUID},
+	}
+	// BusinessUsersTable holds the schema information for the "business_users" table.
+	BusinessUsersTable = &schema.Table{
+		Name:       "business_users",
+		Columns:    BusinessUsersColumns,
+		PrimaryKey: []*schema.Column{BusinessUsersColumns[0], BusinessUsersColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "business_users_business_id",
+				Columns:    []*schema.Column{BusinessUsersColumns[0]},
+				RefColumns: []*schema.Column{BusinessesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "business_users_user_id",
+				Columns:    []*schema.Column{BusinessUsersColumns[1]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 		},
@@ -270,6 +287,7 @@ var (
 		TimetablesTable,
 		UsersTable,
 		BusinessTagsTable,
+		BusinessUsersTable,
 		TimetableUsersOnDutyTable,
 		UserTagsTable,
 	}
@@ -277,10 +295,11 @@ var (
 
 func init() {
 	AddressesTable.ForeignKeys[0].RefTable = BusinessesTable
-	BusinessesTable.ForeignKeys[0].RefTable = UsersTable
 	TimetablesTable.ForeignKeys[0].RefTable = AddressesTable
 	BusinessTagsTable.ForeignKeys[0].RefTable = BusinessesTable
 	BusinessTagsTable.ForeignKeys[1].RefTable = TagsTable
+	BusinessUsersTable.ForeignKeys[0].RefTable = BusinessesTable
+	BusinessUsersTable.ForeignKeys[1].RefTable = UsersTable
 	TimetableUsersOnDutyTable.ForeignKeys[0].RefTable = TimetablesTable
 	TimetableUsersOnDutyTable.ForeignKeys[1].RefTable = UsersTable
 	UserTagsTable.ForeignKeys[0].RefTable = UsersTable

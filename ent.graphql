@@ -338,7 +338,7 @@ type Business implements Node {
   active: Boolean!
   addresses: [Address!]
   tags: [Tag!]
-  users: User
+  users: [User!]
 }
 """A connection to a list of items."""
 type BusinessConnection {
@@ -560,7 +560,7 @@ input CreateBusinessInput {
   active: Boolean
   addressIDs: [ID!]
   tagIDs: [ID!]
-  usersID: ID
+  userIDs: [ID!]
 }
 """
 CreateTimetableInput is used for create Timetable object.
@@ -1013,6 +1013,7 @@ type User implements Node {
   createdAt: Time!
   updatedAt: Time!
   deletedAt: Time
+  login: String!
   """The surname of a user"""
   surname: String!
   """The first name of a user"""
@@ -1024,8 +1025,9 @@ type User implements Node {
   comment: String
   """Is the user active?"""
   active: Boolean!
-  """The role of the user (0 = user, 1 = admin)"""
+  """The role of the user"""
   role: Int!
+  """The businesses this user is associated with"""
   businesses: [Business!]
   tags: [Tag!]
   """The persons on duty for this timetable entry"""
@@ -1088,6 +1090,20 @@ input UserWhereInput {
   deletedAtLTE: Time
   deletedAtIsNil: Boolean
   deletedAtNotNil: Boolean
+  """login field predicates"""
+  login: String
+  loginNEQ: String
+  loginIn: [String!]
+  loginNotIn: [String!]
+  loginGT: String
+  loginGTE: String
+  loginLT: String
+  loginLTE: String
+  loginContains: String
+  loginHasPrefix: String
+  loginHasSuffix: String
+  loginEqualFold: String
+  loginContainsFold: String
   """surname field predicates"""
   surname: String
   surnameNEQ: String

@@ -25,6 +25,8 @@ type User struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// DeletedAt holds the value of the "deleted_at" field.
 	DeletedAt time.Time `json:"deleted_at,omitempty"`
+	// Login holds the value of the "login" field.
+	Login string `json:"login,omitempty"`
 	// The surname of a user
 	Surname string `json:"surname,omitempty"`
 	// The first name of a user
@@ -39,7 +41,7 @@ type User struct {
 	Comment string `json:"comment,omitempty"`
 	// Is the user active?
 	Active bool `json:"active,omitempty"`
-	// The role of the user (0 = user, 1 = admin)
+	// The role of the user
 	Role int `json:"role,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserQuery when eager-loading is set.
@@ -49,7 +51,7 @@ type User struct {
 
 // UserEdges holds the relations/edges for other nodes in the graph.
 type UserEdges struct {
-	// Businesses holds the value of the businesses edge.
+	// The businesses this user is associated with
 	Businesses []*Business `json:"businesses,omitempty"`
 	// Tags holds the value of the tags edge.
 	Tags []*Tag `json:"tags,omitempty"`
@@ -102,7 +104,7 @@ func (*User) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case user.FieldRole:
 			values[i] = new(sql.NullInt64)
-		case user.FieldSurname, user.FieldFirstname, user.FieldTitle, user.FieldEmail, user.FieldPasswordhash, user.FieldComment:
+		case user.FieldLogin, user.FieldSurname, user.FieldFirstname, user.FieldTitle, user.FieldEmail, user.FieldPasswordhash, user.FieldComment:
 			values[i] = new(sql.NullString)
 		case user.FieldCreatedAt, user.FieldUpdatedAt, user.FieldDeletedAt:
 			values[i] = new(sql.NullTime)
@@ -146,6 +148,12 @@ func (u *User) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field deleted_at", values[i])
 			} else if value.Valid {
 				u.DeletedAt = value.Time
+			}
+		case user.FieldLogin:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field login", values[i])
+			} else if value.Valid {
+				u.Login = value.String
 			}
 		case user.FieldSurname:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -254,6 +262,9 @@ func (u *User) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("deleted_at=")
 	builder.WriteString(u.DeletedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("login=")
+	builder.WriteString(u.Login)
 	builder.WriteString(", ")
 	builder.WriteString("surname=")
 	builder.WriteString(u.Surname)

@@ -3055,6 +3055,21 @@ type UserWhereInput struct {
 	DeletedAtIsNil  bool        `json:"deletedAtIsNil,omitempty"`
 	DeletedAtNotNil bool        `json:"deletedAtNotNil,omitempty"`
 
+	// "login" field predicates.
+	Login             *string  `json:"login,omitempty"`
+	LoginNEQ          *string  `json:"loginNEQ,omitempty"`
+	LoginIn           []string `json:"loginIn,omitempty"`
+	LoginNotIn        []string `json:"loginNotIn,omitempty"`
+	LoginGT           *string  `json:"loginGT,omitempty"`
+	LoginGTE          *string  `json:"loginGTE,omitempty"`
+	LoginLT           *string  `json:"loginLT,omitempty"`
+	LoginLTE          *string  `json:"loginLTE,omitempty"`
+	LoginContains     *string  `json:"loginContains,omitempty"`
+	LoginHasPrefix    *string  `json:"loginHasPrefix,omitempty"`
+	LoginHasSuffix    *string  `json:"loginHasSuffix,omitempty"`
+	LoginEqualFold    *string  `json:"loginEqualFold,omitempty"`
+	LoginContainsFold *string  `json:"loginContainsFold,omitempty"`
+
 	// "surname" field predicates.
 	Surname             *string  `json:"surname,omitempty"`
 	SurnameNEQ          *string  `json:"surnameNEQ,omitempty"`
@@ -3350,6 +3365,45 @@ func (i *UserWhereInput) P() (predicate.User, error) {
 	}
 	if i.DeletedAtNotNil {
 		predicates = append(predicates, user.DeletedAtNotNil())
+	}
+	if i.Login != nil {
+		predicates = append(predicates, user.LoginEQ(*i.Login))
+	}
+	if i.LoginNEQ != nil {
+		predicates = append(predicates, user.LoginNEQ(*i.LoginNEQ))
+	}
+	if len(i.LoginIn) > 0 {
+		predicates = append(predicates, user.LoginIn(i.LoginIn...))
+	}
+	if len(i.LoginNotIn) > 0 {
+		predicates = append(predicates, user.LoginNotIn(i.LoginNotIn...))
+	}
+	if i.LoginGT != nil {
+		predicates = append(predicates, user.LoginGT(*i.LoginGT))
+	}
+	if i.LoginGTE != nil {
+		predicates = append(predicates, user.LoginGTE(*i.LoginGTE))
+	}
+	if i.LoginLT != nil {
+		predicates = append(predicates, user.LoginLT(*i.LoginLT))
+	}
+	if i.LoginLTE != nil {
+		predicates = append(predicates, user.LoginLTE(*i.LoginLTE))
+	}
+	if i.LoginContains != nil {
+		predicates = append(predicates, user.LoginContains(*i.LoginContains))
+	}
+	if i.LoginHasPrefix != nil {
+		predicates = append(predicates, user.LoginHasPrefix(*i.LoginHasPrefix))
+	}
+	if i.LoginHasSuffix != nil {
+		predicates = append(predicates, user.LoginHasSuffix(*i.LoginHasSuffix))
+	}
+	if i.LoginEqualFold != nil {
+		predicates = append(predicates, user.LoginEqualFold(*i.LoginEqualFold))
+	}
+	if i.LoginContainsFold != nil {
+		predicates = append(predicates, user.LoginContainsFold(*i.LoginContainsFold))
 	}
 	if i.Surname != nil {
 		predicates = append(predicates, user.SurnameEQ(*i.Surname))

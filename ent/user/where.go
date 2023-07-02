@@ -72,6 +72,11 @@ func DeletedAt(v time.Time) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldDeletedAt, v))
 }
 
+// Login applies equality check predicate on the "login" field. It's identical to LoginEQ.
+func Login(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldLogin, v))
+}
+
 // Surname applies equality check predicate on the "surname" field. It's identical to SurnameEQ.
 func Surname(v string) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldSurname, v))
@@ -240,6 +245,71 @@ func DeletedAtIsNil() predicate.User {
 // DeletedAtNotNil applies the NotNil predicate on the "deleted_at" field.
 func DeletedAtNotNil() predicate.User {
 	return predicate.User(sql.FieldNotNull(FieldDeletedAt))
+}
+
+// LoginEQ applies the EQ predicate on the "login" field.
+func LoginEQ(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldLogin, v))
+}
+
+// LoginNEQ applies the NEQ predicate on the "login" field.
+func LoginNEQ(v string) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldLogin, v))
+}
+
+// LoginIn applies the In predicate on the "login" field.
+func LoginIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldIn(FieldLogin, vs...))
+}
+
+// LoginNotIn applies the NotIn predicate on the "login" field.
+func LoginNotIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldLogin, vs...))
+}
+
+// LoginGT applies the GT predicate on the "login" field.
+func LoginGT(v string) predicate.User {
+	return predicate.User(sql.FieldGT(FieldLogin, v))
+}
+
+// LoginGTE applies the GTE predicate on the "login" field.
+func LoginGTE(v string) predicate.User {
+	return predicate.User(sql.FieldGTE(FieldLogin, v))
+}
+
+// LoginLT applies the LT predicate on the "login" field.
+func LoginLT(v string) predicate.User {
+	return predicate.User(sql.FieldLT(FieldLogin, v))
+}
+
+// LoginLTE applies the LTE predicate on the "login" field.
+func LoginLTE(v string) predicate.User {
+	return predicate.User(sql.FieldLTE(FieldLogin, v))
+}
+
+// LoginContains applies the Contains predicate on the "login" field.
+func LoginContains(v string) predicate.User {
+	return predicate.User(sql.FieldContains(FieldLogin, v))
+}
+
+// LoginHasPrefix applies the HasPrefix predicate on the "login" field.
+func LoginHasPrefix(v string) predicate.User {
+	return predicate.User(sql.FieldHasPrefix(FieldLogin, v))
+}
+
+// LoginHasSuffix applies the HasSuffix predicate on the "login" field.
+func LoginHasSuffix(v string) predicate.User {
+	return predicate.User(sql.FieldHasSuffix(FieldLogin, v))
+}
+
+// LoginEqualFold applies the EqualFold predicate on the "login" field.
+func LoginEqualFold(v string) predicate.User {
+	return predicate.User(sql.FieldEqualFold(FieldLogin, v))
+}
+
+// LoginContainsFold applies the ContainsFold predicate on the "login" field.
+func LoginContainsFold(v string) predicate.User {
+	return predicate.User(sql.FieldContainsFold(FieldLogin, v))
 }
 
 // SurnameEQ applies the EQ predicate on the "surname" field.
@@ -717,7 +787,7 @@ func HasBusinesses() predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, BusinessesTable, BusinessesColumn),
+			sqlgraph.Edge(sqlgraph.M2M, true, BusinessesTable, BusinessesPrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})

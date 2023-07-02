@@ -1958,7 +1958,8 @@ type BusinessMutation struct {
 	tags             map[uuid.UUID]struct{}
 	removedtags      map[uuid.UUID]struct{}
 	clearedtags      bool
-	users            *uuid.UUID
+	users            map[uuid.UUID]struct{}
+	removedusers     map[uuid.UUID]struct{}
 	clearedusers     bool
 	done             bool
 	oldValue         func(context.Context) (*Business, error)
@@ -2651,9 +2652,14 @@ func (m *BusinessMutation) ResetTags() {
 	m.removedtags = nil
 }
 
-// SetUsersID sets the "users" edge to the User entity by id.
-func (m *BusinessMutation) SetUsersID(id uuid.UUID) {
-	m.users = &id
+// AddUserIDs adds the "users" edge to the User entity by ids.
+func (m *BusinessMutation) AddUserIDs(ids ...uuid.UUID) {
+	if m.users == nil {
+		m.users = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.users[ids[i]] = struct{}{}
+	}
 }
 
 // ClearUsers clears the "users" edge to the User entity.
@@ -2666,20 +2672,29 @@ func (m *BusinessMutation) UsersCleared() bool {
 	return m.clearedusers
 }
 
-// UsersID returns the "users" edge ID in the mutation.
-func (m *BusinessMutation) UsersID() (id uuid.UUID, exists bool) {
-	if m.users != nil {
-		return *m.users, true
+// RemoveUserIDs removes the "users" edge to the User entity by IDs.
+func (m *BusinessMutation) RemoveUserIDs(ids ...uuid.UUID) {
+	if m.removedusers == nil {
+		m.removedusers = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.users, ids[i])
+		m.removedusers[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedUsers returns the removed IDs of the "users" edge to the User entity.
+func (m *BusinessMutation) RemovedUsersIDs() (ids []uuid.UUID) {
+	for id := range m.removedusers {
+		ids = append(ids, id)
 	}
 	return
 }
 
 // UsersIDs returns the "users" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// UsersID instead. It exists only for internal usage by the builders.
 func (m *BusinessMutation) UsersIDs() (ids []uuid.UUID) {
-	if id := m.users; id != nil {
-		ids = append(ids, *id)
+	for id := range m.users {
+		ids = append(ids, id)
 	}
 	return
 }
@@ -2688,6 +2703,7 @@ func (m *BusinessMutation) UsersIDs() (ids []uuid.UUID) {
 func (m *BusinessMutation) ResetUsers() {
 	m.users = nil
 	m.clearedusers = false
+	m.removedusers = nil
 }
 
 // Where appends a list predicates to the BusinessMutation builder.
@@ -3062,9 +3078,11 @@ func (m *BusinessMutation) AddedIDs(name string) []ent.Value {
 		}
 		return ids
 	case business.EdgeUsers:
-		if id := m.users; id != nil {
-			return []ent.Value{*id}
+		ids := make([]ent.Value, 0, len(m.users))
+		for id := range m.users {
+			ids = append(ids, id)
 		}
+		return ids
 	}
 	return nil
 }
@@ -3077,6 +3095,9 @@ func (m *BusinessMutation) RemovedEdges() []string {
 	}
 	if m.removedtags != nil {
 		edges = append(edges, business.EdgeTags)
+	}
+	if m.removedusers != nil {
+		edges = append(edges, business.EdgeUsers)
 	}
 	return edges
 }
@@ -3094,6 +3115,12 @@ func (m *BusinessMutation) RemovedIDs(name string) []ent.Value {
 	case business.EdgeTags:
 		ids := make([]ent.Value, 0, len(m.removedtags))
 		for id := range m.removedtags {
+			ids = append(ids, id)
+		}
+		return ids
+	case business.EdgeUsers:
+		ids := make([]ent.Value, 0, len(m.removedusers))
+		for id := range m.removedusers {
 			ids = append(ids, id)
 		}
 		return ids
@@ -3134,9 +3161,6 @@ func (m *BusinessMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *BusinessMutation) ClearEdge(name string) error {
 	switch name {
-	case business.EdgeUsers:
-		m.ClearUsers()
-		return nil
 	}
 	return fmt.Errorf("unknown Business unique edge %s", name)
 }
@@ -5165,6 +5189,7 @@ type UserMutation struct {
 	created_at        *time.Time
 	updated_at        *time.Time
 	deleted_at        *time.Time
+	login             *string
 	surname           *string
 	firstname         *string
 	title             *string
@@ -5412,6 +5437,42 @@ func (m *UserMutation) DeletedAtCleared() bool {
 func (m *UserMutation) ResetDeletedAt() {
 	m.deleted_at = nil
 	delete(m.clearedFields, user.FieldDeletedAt)
+}
+
+// SetLogin sets the "login" field.
+func (m *UserMutation) SetLogin(s string) {
+	m.login = &s
+}
+
+// Login returns the value of the "login" field in the mutation.
+func (m *UserMutation) Login() (r string, exists bool) {
+	v := m.login
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLogin returns the old "login" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldLogin(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLogin is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLogin requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLogin: %w", err)
+	}
+	return oldValue.Login, nil
+}
+
+// ResetLogin resets all changes to the "login" field.
+func (m *UserMutation) ResetLogin() {
+	m.login = nil
 }
 
 // SetSurname sets the "surname" field.
@@ -5957,7 +6018,7 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 11)
+	fields := make([]string, 0, 12)
 	if m.created_at != nil {
 		fields = append(fields, user.FieldCreatedAt)
 	}
@@ -5966,6 +6027,9 @@ func (m *UserMutation) Fields() []string {
 	}
 	if m.deleted_at != nil {
 		fields = append(fields, user.FieldDeletedAt)
+	}
+	if m.login != nil {
+		fields = append(fields, user.FieldLogin)
 	}
 	if m.surname != nil {
 		fields = append(fields, user.FieldSurname)
@@ -6005,6 +6069,8 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.UpdatedAt()
 	case user.FieldDeletedAt:
 		return m.DeletedAt()
+	case user.FieldLogin:
+		return m.Login()
 	case user.FieldSurname:
 		return m.Surname()
 	case user.FieldFirstname:
@@ -6036,6 +6102,8 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldUpdatedAt(ctx)
 	case user.FieldDeletedAt:
 		return m.OldDeletedAt(ctx)
+	case user.FieldLogin:
+		return m.OldLogin(ctx)
 	case user.FieldSurname:
 		return m.OldSurname(ctx)
 	case user.FieldFirstname:
@@ -6081,6 +6149,13 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetDeletedAt(v)
+		return nil
+	case user.FieldLogin:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLogin(v)
 		return nil
 	case user.FieldSurname:
 		v, ok := value.(string)
@@ -6237,6 +6312,9 @@ func (m *UserMutation) ResetField(name string) error {
 		return nil
 	case user.FieldDeletedAt:
 		m.ResetDeletedAt()
+		return nil
+	case user.FieldLogin:
+		m.ResetLogin()
 		return nil
 	case user.FieldSurname:
 		m.ResetSurname()

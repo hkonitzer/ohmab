@@ -67,6 +67,12 @@ func (uc *UserCreate) SetNillableDeletedAt(t *time.Time) *UserCreate {
 	return uc
 }
 
+// SetLogin sets the "login" field.
+func (uc *UserCreate) SetLogin(s string) *UserCreate {
+	uc.mutation.SetLogin(s)
+	return uc
+}
+
 // SetSurname sets the "surname" field.
 func (uc *UserCreate) SetSurname(s string) *UserCreate {
 	uc.mutation.SetSurname(s)
@@ -291,6 +297,14 @@ func (uc *UserCreate) check() error {
 	if _, ok := uc.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "User.updated_at"`)}
 	}
+	if _, ok := uc.mutation.Login(); !ok {
+		return &ValidationError{Name: "login", err: errors.New(`ent: missing required field "User.login"`)}
+	}
+	if v, ok := uc.mutation.Login(); ok {
+		if err := user.LoginValidator(v); err != nil {
+			return &ValidationError{Name: "login", err: fmt.Errorf(`ent: validator failed for field "User.login": %w`, err)}
+		}
+	}
 	if _, ok := uc.mutation.Surname(); !ok {
 		return &ValidationError{Name: "surname", err: errors.New(`ent: missing required field "User.surname"`)}
 	}
@@ -358,6 +372,10 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		_spec.SetField(user.FieldDeletedAt, field.TypeTime, value)
 		_node.DeletedAt = value
 	}
+	if value, ok := uc.mutation.Login(); ok {
+		_spec.SetField(user.FieldLogin, field.TypeString, value)
+		_node.Login = value
+	}
 	if value, ok := uc.mutation.Surname(); ok {
 		_spec.SetField(user.FieldSurname, field.TypeString, value)
 		_node.Surname = value
@@ -392,10 +410,10 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	}
 	if nodes := uc.mutation.BusinessesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
 			Table:   user.BusinessesTable,
-			Columns: []string{user.BusinessesColumn},
+			Columns: user.BusinessesPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(business.FieldID, field.TypeUUID),

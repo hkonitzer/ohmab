@@ -187,6 +187,7 @@ type ComplexityRoot struct {
 		Email      func(childComplexity int) int
 		Firstname  func(childComplexity int) int
 		ID         func(childComplexity int) int
+		Login      func(childComplexity int) int
 		Role       func(childComplexity int) int
 		Surname    func(childComplexity int) int
 		Tags       func(childComplexity int) int
@@ -905,6 +906,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.User.ID(childComplexity), true
+
+	case "User.login":
+		if e.complexity.User.Login == nil {
+			break
+		}
+
+		return e.complexity.User.Login(childComplexity), true
 
 	case "User.role":
 		if e.complexity.User.Role == nil {
@@ -3274,9 +3282,9 @@ func (ec *executionContext) _Business_users(ctx context.Context, field graphql.C
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*ent.User)
+	res := resTmp.([]*ent.User)
 	fc.Result = res
-	return ec.marshalOUser2ᚖhynieᚗdeᚋohmabᚋentᚐUser(ctx, field.Selections, res)
+	return ec.marshalOUser2ᚕᚖhynieᚗdeᚋohmabᚋentᚐUserᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Business_users(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3295,6 +3303,8 @@ func (ec *executionContext) fieldContext_Business_users(ctx context.Context, fie
 				return ec.fieldContext_User_updatedAt(ctx, field)
 			case "deletedAt":
 				return ec.fieldContext_User_deletedAt(ctx, field)
+			case "login":
+				return ec.fieldContext_User_login(ctx, field)
 			case "surname":
 				return ec.fieldContext_User_surname(ctx, field)
 			case "firstname":
@@ -4638,6 +4648,8 @@ func (ec *executionContext) fieldContext_Tag_user(ctx context.Context, field gra
 				return ec.fieldContext_User_updatedAt(ctx, field)
 			case "deletedAt":
 				return ec.fieldContext_User_deletedAt(ctx, field)
+			case "login":
+				return ec.fieldContext_User_login(ctx, field)
 			case "surname":
 				return ec.fieldContext_User_surname(ctx, field)
 			case "firstname":
@@ -5333,6 +5345,8 @@ func (ec *executionContext) fieldContext_Timetable_usersOnDuty(ctx context.Conte
 				return ec.fieldContext_User_updatedAt(ctx, field)
 			case "deletedAt":
 				return ec.fieldContext_User_deletedAt(ctx, field)
+			case "login":
+				return ec.fieldContext_User_login(ctx, field)
 			case "surname":
 				return ec.fieldContext_User_surname(ctx, field)
 			case "firstname":
@@ -5790,6 +5804,50 @@ func (ec *executionContext) fieldContext_User_deletedAt(ctx context.Context, fie
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _User_login(ctx context.Context, field graphql.CollectedField, obj *ent.User) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_User_login(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Login, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_User_login(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "User",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -11622,7 +11680,7 @@ func (ec *executionContext) unmarshalInputCreateBusinessInput(ctx context.Contex
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"createdAt", "updatedAt", "deletedAt", "name1", "name2", "alias", "telephone", "email", "website", "comment", "active", "addressIDs", "tagIDs", "usersID"}
+	fieldsInOrder := [...]string{"createdAt", "updatedAt", "deletedAt", "name1", "name2", "alias", "telephone", "email", "website", "comment", "active", "addressIDs", "tagIDs", "userIDs"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -11746,15 +11804,15 @@ func (ec *executionContext) unmarshalInputCreateBusinessInput(ctx context.Contex
 				return it, err
 			}
 			it.TagIDs = data
-		case "usersID":
+		case "userIDs":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("usersID"))
-			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userIDs"))
+			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.UsersID = data
+			it.UserIDs = data
 		}
 	}
 
@@ -13979,7 +14037,7 @@ func (ec *executionContext) unmarshalInputUserWhereInput(ctx context.Context, ob
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createdAt", "createdAtNEQ", "createdAtIn", "createdAtNotIn", "createdAtGT", "createdAtGTE", "createdAtLT", "createdAtLTE", "updatedAt", "updatedAtNEQ", "updatedAtIn", "updatedAtNotIn", "updatedAtGT", "updatedAtGTE", "updatedAtLT", "updatedAtLTE", "deletedAt", "deletedAtNEQ", "deletedAtIn", "deletedAtNotIn", "deletedAtGT", "deletedAtGTE", "deletedAtLT", "deletedAtLTE", "deletedAtIsNil", "deletedAtNotNil", "surname", "surnameNEQ", "surnameIn", "surnameNotIn", "surnameGT", "surnameGTE", "surnameLT", "surnameLTE", "surnameContains", "surnameHasPrefix", "surnameHasSuffix", "surnameEqualFold", "surnameContainsFold", "firstname", "firstnameNEQ", "firstnameIn", "firstnameNotIn", "firstnameGT", "firstnameGTE", "firstnameLT", "firstnameLTE", "firstnameContains", "firstnameHasPrefix", "firstnameHasSuffix", "firstnameEqualFold", "firstnameContainsFold", "title", "titleNEQ", "titleIn", "titleNotIn", "titleGT", "titleGTE", "titleLT", "titleLTE", "titleContains", "titleHasPrefix", "titleHasSuffix", "titleIsNil", "titleNotNil", "titleEqualFold", "titleContainsFold", "email", "emailNEQ", "emailIn", "emailNotIn", "emailGT", "emailGTE", "emailLT", "emailLTE", "emailContains", "emailHasPrefix", "emailHasSuffix", "emailEqualFold", "emailContainsFold", "comment", "commentNEQ", "commentIn", "commentNotIn", "commentGT", "commentGTE", "commentLT", "commentLTE", "commentContains", "commentHasPrefix", "commentHasSuffix", "commentIsNil", "commentNotNil", "commentEqualFold", "commentContainsFold", "active", "activeNEQ", "role", "roleNEQ", "roleIn", "roleNotIn", "roleGT", "roleGTE", "roleLT", "roleLTE", "hasBusinesses", "hasBusinessesWith", "hasTags", "hasTagsWith", "hasTimetable", "hasTimetableWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createdAt", "createdAtNEQ", "createdAtIn", "createdAtNotIn", "createdAtGT", "createdAtGTE", "createdAtLT", "createdAtLTE", "updatedAt", "updatedAtNEQ", "updatedAtIn", "updatedAtNotIn", "updatedAtGT", "updatedAtGTE", "updatedAtLT", "updatedAtLTE", "deletedAt", "deletedAtNEQ", "deletedAtIn", "deletedAtNotIn", "deletedAtGT", "deletedAtGTE", "deletedAtLT", "deletedAtLTE", "deletedAtIsNil", "deletedAtNotNil", "login", "loginNEQ", "loginIn", "loginNotIn", "loginGT", "loginGTE", "loginLT", "loginLTE", "loginContains", "loginHasPrefix", "loginHasSuffix", "loginEqualFold", "loginContainsFold", "surname", "surnameNEQ", "surnameIn", "surnameNotIn", "surnameGT", "surnameGTE", "surnameLT", "surnameLTE", "surnameContains", "surnameHasPrefix", "surnameHasSuffix", "surnameEqualFold", "surnameContainsFold", "firstname", "firstnameNEQ", "firstnameIn", "firstnameNotIn", "firstnameGT", "firstnameGTE", "firstnameLT", "firstnameLTE", "firstnameContains", "firstnameHasPrefix", "firstnameHasSuffix", "firstnameEqualFold", "firstnameContainsFold", "title", "titleNEQ", "titleIn", "titleNotIn", "titleGT", "titleGTE", "titleLT", "titleLTE", "titleContains", "titleHasPrefix", "titleHasSuffix", "titleIsNil", "titleNotNil", "titleEqualFold", "titleContainsFold", "email", "emailNEQ", "emailIn", "emailNotIn", "emailGT", "emailGTE", "emailLT", "emailLTE", "emailContains", "emailHasPrefix", "emailHasSuffix", "emailEqualFold", "emailContainsFold", "comment", "commentNEQ", "commentIn", "commentNotIn", "commentGT", "commentGTE", "commentLT", "commentLTE", "commentContains", "commentHasPrefix", "commentHasSuffix", "commentIsNil", "commentNotNil", "commentEqualFold", "commentContainsFold", "active", "activeNEQ", "role", "roleNEQ", "roleIn", "roleNotIn", "roleGT", "roleGTE", "roleLT", "roleLTE", "hasBusinesses", "hasBusinessesWith", "hasTags", "hasTagsWith", "hasTimetable", "hasTimetableWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -14319,6 +14377,123 @@ func (ec *executionContext) unmarshalInputUserWhereInput(ctx context.Context, ob
 				return it, err
 			}
 			it.DeletedAtNotNil = data
+		case "login":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("login"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Login = data
+		case "loginNEQ":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("loginNEQ"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.LoginNEQ = data
+		case "loginIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("loginIn"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.LoginIn = data
+		case "loginNotIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("loginNotIn"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.LoginNotIn = data
+		case "loginGT":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("loginGT"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.LoginGT = data
+		case "loginGTE":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("loginGTE"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.LoginGTE = data
+		case "loginLT":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("loginLT"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.LoginLT = data
+		case "loginLTE":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("loginLTE"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.LoginLTE = data
+		case "loginContains":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("loginContains"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.LoginContains = data
+		case "loginHasPrefix":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("loginHasPrefix"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.LoginHasPrefix = data
+		case "loginHasSuffix":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("loginHasSuffix"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.LoginHasSuffix = data
+		case "loginEqualFold":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("loginEqualFold"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.LoginEqualFold = data
+		case "loginContainsFold":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("loginContainsFold"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.LoginContainsFold = data
 		case "surname":
 			var err error
 
@@ -16352,6 +16527,11 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 			}
 		case "deletedAt":
 			out.Values[i] = ec._User_deletedAt(ctx, field, obj)
+		case "login":
+			out.Values[i] = ec._User_login(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
 		case "surname":
 			out.Values[i] = ec._User_surname(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -18424,13 +18604,6 @@ func (ec *executionContext) marshalOUser2ᚕᚖhynieᚗdeᚋohmabᚋentᚐUser�
 	}
 
 	return ret
-}
-
-func (ec *executionContext) marshalOUser2ᚖhynieᚗdeᚋohmabᚋentᚐUser(ctx context.Context, sel ast.SelectionSet, v *ent.User) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return ec._User(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOUserWhereInput2ᚕᚖhynieᚗdeᚋohmabᚋentᚐUserWhereInputᚄ(ctx context.Context, v interface{}) ([]*ent.UserWhereInput, error) {

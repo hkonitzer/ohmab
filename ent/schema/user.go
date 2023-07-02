@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 	"hynie.de/ohmab/ent/schema/constants"
 	"hynie.de/ohmab/ent/schema/hooks"
+	"hynie.de/ohmab/internal/pkg/privacy"
 )
 
 // User holds the schema definition for the User entity.
@@ -21,6 +22,7 @@ func (User) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID(constants.IDFieldName, uuid.UUID{}).
 			Immutable().Default(uuid.New),
+		field.Text("login").NotEmpty(),
 		field.Text("surname").
 			NotEmpty().Annotations(entgql.OrderField("SURNAME")).Comment("The surname of a user"),
 		field.Text("firstname").
@@ -34,7 +36,7 @@ func (User) Fields() []ent.Field {
 		field.Text("comment").
 			Optional().Comment("A comment for this user"),
 		field.Bool(constants.ActiveFieldName).Default(true).Comment("Is the user active?"),
-		field.Int("role").Default(0).Comment("The role of the user (0 = user, 1 = admin)"),
+		field.Int("role").Default(privacy.ViewerRoleAsInt()).Comment("The role of the user"),
 	}
 }
 
@@ -46,7 +48,7 @@ func (User) Mixin() []ent.Mixin {
 
 func (User) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("businesses", Business.Type),
+		edge.From("businesses", Business.Type).Ref("users").Comment("The businesses this user is associated with"),
 		edge.To("tags", Tag.Type),
 		edge.From("timetable", Timetable.Type).Ref("users_on_duty").Comment("The persons on duty for this timetable entry"),
 	}

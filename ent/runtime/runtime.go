@@ -4,6 +4,7 @@
 package runtime
 
 import (
+	"context"
 	"time"
 
 	"github.com/google/uuid"
@@ -14,6 +15,9 @@ import (
 	"hynie.de/ohmab/ent/tag"
 	"hynie.de/ohmab/ent/timetable"
 	"hynie.de/ohmab/ent/user"
+
+	"entgo.io/ent"
+	"entgo.io/ent/privacy"
 )
 
 // The init function reads all schema descriptors with runtime code
@@ -69,9 +73,20 @@ func init() {
 	// auditlog.DefaultID holds the default value on creation for the id field.
 	auditlog.DefaultID = auditlogDescID.Default.(func() uuid.UUID)
 	businessMixin := schema.Business{}.Mixin()
+	business.Policy = privacy.NewPolicies(schema.Business{})
+	business.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := business.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
 	businessHooks := schema.Business{}.Hooks()
-	business.Hooks[0] = businessHooks[0]
-	business.Hooks[1] = businessHooks[1]
+
+	business.Hooks[1] = businessHooks[0]
+
+	business.Hooks[2] = businessHooks[1]
 	businessMixinFields0 := businessMixin[0].Fields()
 	_ = businessMixinFields0
 	businessFields := schema.Business{}.Fields()
@@ -167,16 +182,20 @@ func init() {
 	user.DefaultUpdatedAt = userDescUpdatedAt.Default.(func() time.Time)
 	// user.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	user.UpdateDefaultUpdatedAt = userDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// userDescLogin is the schema descriptor for login field.
+	userDescLogin := userFields[1].Descriptor()
+	// user.LoginValidator is a validator for the "login" field. It is called by the builders before save.
+	user.LoginValidator = userDescLogin.Validators[0].(func(string) error)
 	// userDescSurname is the schema descriptor for surname field.
-	userDescSurname := userFields[1].Descriptor()
+	userDescSurname := userFields[2].Descriptor()
 	// user.SurnameValidator is a validator for the "surname" field. It is called by the builders before save.
 	user.SurnameValidator = userDescSurname.Validators[0].(func(string) error)
 	// userDescActive is the schema descriptor for active field.
-	userDescActive := userFields[7].Descriptor()
+	userDescActive := userFields[8].Descriptor()
 	// user.DefaultActive holds the default value on creation for the active field.
 	user.DefaultActive = userDescActive.Default.(bool)
 	// userDescRole is the schema descriptor for role field.
-	userDescRole := userFields[8].Descriptor()
+	userDescRole := userFields[9].Descriptor()
 	// user.DefaultRole holds the default value on creation for the role field.
 	user.DefaultRole = userDescRole.Default.(int)
 	// userDescID is the schema descriptor for id field.

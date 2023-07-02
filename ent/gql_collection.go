@@ -307,7 +307,9 @@ func (b *BusinessQuery) collectField(ctx context.Context, opCtx *graphql.Operati
 			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
 				return err
 			}
-			b.withUsers = query
+			b.WithNamedUsers(alias, func(wq *UserQuery) {
+				*wq = *query
+			})
 		case "createdAt":
 			if _, ok := fieldSeen[business.FieldCreatedAt]; !ok {
 				selectedFields = append(selectedFields, business.FieldCreatedAt)
@@ -808,6 +810,11 @@ func (u *UserQuery) collectField(ctx context.Context, opCtx *graphql.OperationCo
 			if _, ok := fieldSeen[user.FieldDeletedAt]; !ok {
 				selectedFields = append(selectedFields, user.FieldDeletedAt)
 				fieldSeen[user.FieldDeletedAt] = struct{}{}
+			}
+		case "login":
+			if _, ok := fieldSeen[user.FieldLogin]; !ok {
+				selectedFields = append(selectedFields, user.FieldLogin)
+				fieldSeen[user.FieldLogin] = struct{}{}
 			}
 		case "surname":
 			if _, ok := fieldSeen[user.FieldSurname]; !ok {

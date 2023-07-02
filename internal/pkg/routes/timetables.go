@@ -35,7 +35,9 @@ func (s *Server) Timetables(w http.ResponseWriter, r *http.Request) {
 		bsMap[a.ID.String()] = a.Edges.Business
 	}
 	// get timetables
-	timetablesQuery := s.Client.Timetable.Query().Where(timetable.DatetimeFromGTE(time.Now())).WithAddress().
+	t := time.Now()
+	midnight := time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, time.Local)
+	timetablesQuery := s.Client.Timetable.Query().Where(timetable.DatetimeFromGTE(midnight)).WithAddress().
 		Order(ent.Asc(timetable.FieldDatetimeFrom))
 	ttType := r.URL.Query().Get("type")
 	if ttType != "" {

@@ -6,6 +6,8 @@ import (
 	"sync"
 )
 
+const DevelopmentEnvironment = "DEVELOPMENT"
+
 // Configurations exported
 type Configurations struct {
 	Server         ServerConfigurations
@@ -82,7 +84,7 @@ func ReadConfiguration() (*Configurations, error) {
 	viper.SetDefault("database.dbname", "ohmab")
 	viper.SetDefault("database.dbuser", "ohmab")
 	viper.SetDefault("DEBUG", 0)
-	viper.SetDefault("ENVIRONMENT", "DEVELOPMENT")
+	viper.SetDefault("ENVIRONMENT", DevelopmentEnvironment)
 	viper.SetDefault("OAUTHSECRETKEY", "OHMAB-Secret-Key")
 
 	if err := viper.ReadInConfig(); err != nil {

@@ -6,9 +6,15 @@ import (
 	"fmt"
 	"hynie.de/ohmab/ent"
 	"hynie.de/ohmab/internal/pkg/config"
-	"hynie.de/ohmab/internal/pkg/db/postgresql"
-	"hynie.de/ohmab/internal/pkg/db/sqlite"
+	"hynie.de/ohmab/internal/pkg/log"
 )
+
+// Get logger
+var logger = log.GetLoggerInstance()
+
+func ClientDebuglog(v ...any) {
+	logger.Printf("%v", v...)
+}
 
 func CreateClient(ctx context.Context, configurations *config.Configurations) (*ent.Client, error) {
 	if configurations.Database.DSN == "" {
@@ -23,11 +29,12 @@ func CreateClient(ctx context.Context, configurations *config.Configurations) (*
 	case dialect.MySQL:
 		return nil, fmt.Errorf("MySQL not implemented yet")
 	case dialect.Postgres:
-		client = postgresql.CreatePGClient(configurations.Database.DSN, ctx, debug)
+		client = CreatePGClient(configurations.Database.DSN, ctx, debug)
 	case dialect.SQLite:
-		client = sqlite.CreateSQLiteClient(configurations.Database.DSN, ctx, debug)
+		client = CreateSQLiteClient(configurations.Database.DSN, ctx, debug)
 	default:
 		return nil, fmt.Errorf("unknown dialect: %v", configurations.Database.Dialect)
 	}
+	client.Debug()
 	return client, nil
 }

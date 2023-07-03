@@ -1,4 +1,4 @@
-package sqlite
+package db
 
 import (
 	"context"
@@ -13,7 +13,7 @@ func CreateSQLiteClient(dsn string, ctx context.Context, debug bool) *ent.Client
 	logger := log.GetLoggerInstance()
 
 	// Create entutils.Client and run the schema migration.
-	client, err := ent.Open(dialect.SQLite, dsn)
+	client, err := ent.Open(dialect.SQLite, dsn, ent.Log(ClientDebuglog))
 	if err != nil {
 		logger.Fatal().Msgf("opening entutils sqlite client", err)
 	}

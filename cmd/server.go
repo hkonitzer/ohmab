@@ -4,16 +4,23 @@ import (
 	"context"
 	"fmt"
 	"github.com/99designs/gqlgen/graphql/handler"
+	"github.com/99designs/gqlgen/graphql/handler/extension"
+	"github.com/99designs/gqlgen/graphql/handler/lru"
+	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/oauth"
 	ESDRA "hynie.de/ohmab"
 	"hynie.de/ohmab/ent"
+	"hynie.de/ohmab/ent/intercept"
 	_ "hynie.de/ohmab/ent/runtime"
+	"hynie.de/ohmab/ent/schema"
+	"hynie.de/ohmab/ent/user"
 	"hynie.de/ohmab/internal/pkg/config"
 	"hynie.de/ohmab/internal/pkg/db"
 	"hynie.de/ohmab/internal/pkg/log"
+	"hynie.de/ohmab/internal/pkg/privacy"
 	"hynie.de/ohmab/internal/pkg/routes"
 	"math/rand"
 	"net/http"
@@ -46,6 +53,21 @@ func main() {
 	if clientError != nil {
 		logger.Fatal().Msgf("Error creating client: %v", clientError)
 	}
+	client.User.Intercept( // do not expose users on public api routes
+		intercept.TraverseUser(func(ctx context.Context, q *ent.UserQuery) error {
+			uv := privacy.FromContext(ctx)
+			if uv != nil { // auth in context found, skip
+				return nil
+			}
+			rc := chi.RouteContext(ctx)
+			if !routes.HasPublicRoute(rc.RoutePatterns) {
+				return nil
+			}
+			q.Where(user.UsePublicapiEQ(schema.UsePublicApiValue), user.Active(true), user.RoleEQ(privacy.OwnerRoleAsString()))
+			// q.Select(user.FieldTitle, user.FieldFirstname, user.FieldSurname) doesn't work
+			return nil
+		}),
+	)
 	defer client.Close()
 
 	// Setup client
@@ -69,13 +91,12 @@ func main() {
 // newRouter creates a new router with the blog handlers mounted.
 func newRouter(srv *routes.Server) chi.Router {
 	r := chi.NewRouter()
-	//r.Use(middleware.Logger)
+	r.Use(middleware.RequestID)
+	r.Use(middleware.RealIP)
 	configs, _ := config.GetConfiguration()
 	if configs.DEBUG > 0 {
 		r.Use(log.RequestLogger)
 	}
-	r.Use(middleware.RequestID)
-	r.Use(middleware.RealIP)
 	r.Use(middleware.Recoverer)
 	r.Use(ESDRACtx)
 	r.Use(SetHeadersHandler)
@@ -83,18 +104,34 @@ func newRouter(srv *routes.Server) chi.Router {
 
 	routes.RegisterOAuthAPI(r, srv)
 
+	// standard api routes, protected with OAuth
 	r.Route("/", func(r chi.Router) {
 		r.Use(oauth.Authorize(configs.OAUTHSECRETKEY, nil))
-		r.Use(routes.CheckUser)
-		r.Handle("/",
-			playground.Handler("OHMAB", "/query"),
-		)
+		r.Use(srv.CheckUser)
+		if configs.ENVIRONMENT == config.DevelopmentEnvironment {
+			r.Handle("/",
+				playground.Handler("OHMAB", "/query"),
+			)
+		}
 		entServer := handler.NewDefaultServer(ESDRA.NewSchema(srv.Client))
 		r.Handle("/query", entServer)
 	})
 
-	// html exports
-	r.Get("/exports/timetables", srv.Timetables)
+	// anonymous routes (GET only)
+	gqlsrv := handler.New(ESDRA.NewSchema(srv.Client))
+	gqlsrv.AddTransport(transport.Options{})
+	gqlsrv.AddTransport(transport.GET{})
+	gqlsrv.SetQueryCache(lru.New(1000))
+	gqlsrv.Use(extension.Introspection{})
+	gqlsrv.Use(extension.AutomaticPersistedQuery{
+		Cache: lru.New(100),
+	})
+	r.Route(routes.PublicAPIRoute, func(r chi.Router) {
+		r.Handle("/query", gqlsrv)
+		// html exports
+		r.Get("/exports/timetables", srv.Timetables)
+	})
+
 	return r
 }
 
@@ -128,7 +165,7 @@ func createTestData(client *ent.Client) {
 	logger := log.GetLoggerInstance()
 
 	var ctx = context.Background()
-
+	ctx = privacy.NewContext(ctx, privacy.UserViewer{Role: privacy.Admin})
 	// Check if database is empty
 	count, err := client.Business.Query().Count(ctx)
 	if err != nil {
@@ -199,9 +236,10 @@ func createTestData(client *ent.Client) {
 	client.User.Create().
 		SetFirstname("unknown").
 		SetSurname("developer").
+		SetLogin("developer").
 		SetEmail("dev@localhost").
 		SetComment("TESTDATA").
-		SetRole(1).
+		SetRole(privacy.AdminRoleAsString()).
 		AddBusinesses(knownBussiness...).
 		SaveX(ctx)
 	logger.Debug().Msgf("test data created")

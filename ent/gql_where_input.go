@@ -3055,6 +3055,21 @@ type UserWhereInput struct {
 	DeletedAtIsNil  bool        `json:"deletedAtIsNil,omitempty"`
 	DeletedAtNotNil bool        `json:"deletedAtNotNil,omitempty"`
 
+	// "use_publicapi" field predicates.
+	UsePublicapi             *string  `json:"usePublicapi,omitempty"`
+	UsePublicapiNEQ          *string  `json:"usePublicapiNEQ,omitempty"`
+	UsePublicapiIn           []string `json:"usePublicapiIn,omitempty"`
+	UsePublicapiNotIn        []string `json:"usePublicapiNotIn,omitempty"`
+	UsePublicapiGT           *string  `json:"usePublicapiGT,omitempty"`
+	UsePublicapiGTE          *string  `json:"usePublicapiGTE,omitempty"`
+	UsePublicapiLT           *string  `json:"usePublicapiLT,omitempty"`
+	UsePublicapiLTE          *string  `json:"usePublicapiLTE,omitempty"`
+	UsePublicapiContains     *string  `json:"usePublicapiContains,omitempty"`
+	UsePublicapiHasPrefix    *string  `json:"usePublicapiHasPrefix,omitempty"`
+	UsePublicapiHasSuffix    *string  `json:"usePublicapiHasSuffix,omitempty"`
+	UsePublicapiEqualFold    *string  `json:"usePublicapiEqualFold,omitempty"`
+	UsePublicapiContainsFold *string  `json:"usePublicapiContainsFold,omitempty"`
+
 	// "login" field predicates.
 	Login             *string  `json:"login,omitempty"`
 	LoginNEQ          *string  `json:"loginNEQ,omitempty"`
@@ -3171,14 +3186,19 @@ type UserWhereInput struct {
 	ActiveNEQ *bool `json:"activeNEQ,omitempty"`
 
 	// "role" field predicates.
-	Role      *int  `json:"role,omitempty"`
-	RoleNEQ   *int  `json:"roleNEQ,omitempty"`
-	RoleIn    []int `json:"roleIn,omitempty"`
-	RoleNotIn []int `json:"roleNotIn,omitempty"`
-	RoleGT    *int  `json:"roleGT,omitempty"`
-	RoleGTE   *int  `json:"roleGTE,omitempty"`
-	RoleLT    *int  `json:"roleLT,omitempty"`
-	RoleLTE   *int  `json:"roleLTE,omitempty"`
+	Role             *string  `json:"role,omitempty"`
+	RoleNEQ          *string  `json:"roleNEQ,omitempty"`
+	RoleIn           []string `json:"roleIn,omitempty"`
+	RoleNotIn        []string `json:"roleNotIn,omitempty"`
+	RoleGT           *string  `json:"roleGT,omitempty"`
+	RoleGTE          *string  `json:"roleGTE,omitempty"`
+	RoleLT           *string  `json:"roleLT,omitempty"`
+	RoleLTE          *string  `json:"roleLTE,omitempty"`
+	RoleContains     *string  `json:"roleContains,omitempty"`
+	RoleHasPrefix    *string  `json:"roleHasPrefix,omitempty"`
+	RoleHasSuffix    *string  `json:"roleHasSuffix,omitempty"`
+	RoleEqualFold    *string  `json:"roleEqualFold,omitempty"`
+	RoleContainsFold *string  `json:"roleContainsFold,omitempty"`
 
 	// "businesses" edge predicates.
 	HasBusinesses     *bool                 `json:"hasBusinesses,omitempty"`
@@ -3365,6 +3385,45 @@ func (i *UserWhereInput) P() (predicate.User, error) {
 	}
 	if i.DeletedAtNotNil {
 		predicates = append(predicates, user.DeletedAtNotNil())
+	}
+	if i.UsePublicapi != nil {
+		predicates = append(predicates, user.UsePublicapiEQ(*i.UsePublicapi))
+	}
+	if i.UsePublicapiNEQ != nil {
+		predicates = append(predicates, user.UsePublicapiNEQ(*i.UsePublicapiNEQ))
+	}
+	if len(i.UsePublicapiIn) > 0 {
+		predicates = append(predicates, user.UsePublicapiIn(i.UsePublicapiIn...))
+	}
+	if len(i.UsePublicapiNotIn) > 0 {
+		predicates = append(predicates, user.UsePublicapiNotIn(i.UsePublicapiNotIn...))
+	}
+	if i.UsePublicapiGT != nil {
+		predicates = append(predicates, user.UsePublicapiGT(*i.UsePublicapiGT))
+	}
+	if i.UsePublicapiGTE != nil {
+		predicates = append(predicates, user.UsePublicapiGTE(*i.UsePublicapiGTE))
+	}
+	if i.UsePublicapiLT != nil {
+		predicates = append(predicates, user.UsePublicapiLT(*i.UsePublicapiLT))
+	}
+	if i.UsePublicapiLTE != nil {
+		predicates = append(predicates, user.UsePublicapiLTE(*i.UsePublicapiLTE))
+	}
+	if i.UsePublicapiContains != nil {
+		predicates = append(predicates, user.UsePublicapiContains(*i.UsePublicapiContains))
+	}
+	if i.UsePublicapiHasPrefix != nil {
+		predicates = append(predicates, user.UsePublicapiHasPrefix(*i.UsePublicapiHasPrefix))
+	}
+	if i.UsePublicapiHasSuffix != nil {
+		predicates = append(predicates, user.UsePublicapiHasSuffix(*i.UsePublicapiHasSuffix))
+	}
+	if i.UsePublicapiEqualFold != nil {
+		predicates = append(predicates, user.UsePublicapiEqualFold(*i.UsePublicapiEqualFold))
+	}
+	if i.UsePublicapiContainsFold != nil {
+		predicates = append(predicates, user.UsePublicapiContainsFold(*i.UsePublicapiContainsFold))
 	}
 	if i.Login != nil {
 		predicates = append(predicates, user.LoginEQ(*i.Login))
@@ -3686,6 +3745,21 @@ func (i *UserWhereInput) P() (predicate.User, error) {
 	}
 	if i.RoleLTE != nil {
 		predicates = append(predicates, user.RoleLTE(*i.RoleLTE))
+	}
+	if i.RoleContains != nil {
+		predicates = append(predicates, user.RoleContains(*i.RoleContains))
+	}
+	if i.RoleHasPrefix != nil {
+		predicates = append(predicates, user.RoleHasPrefix(*i.RoleHasPrefix))
+	}
+	if i.RoleHasSuffix != nil {
+		predicates = append(predicates, user.RoleHasSuffix(*i.RoleHasSuffix))
+	}
+	if i.RoleEqualFold != nil {
+		predicates = append(predicates, user.RoleEqualFold(*i.RoleEqualFold))
+	}
+	if i.RoleContainsFold != nil {
+		predicates = append(predicates, user.RoleContainsFold(*i.RoleContainsFold))
 	}
 
 	if i.HasBusinesses != nil {

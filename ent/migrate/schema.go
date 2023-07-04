@@ -155,6 +155,7 @@ var (
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "deleted_at", Type: field.TypeTime, Nullable: true},
+		{Name: "use_publicapi", Type: field.TypeString, Size: 2147483647, Default: ""},
 		{Name: "login", Type: field.TypeString, Size: 2147483647},
 		{Name: "surname", Type: field.TypeString, Size: 2147483647},
 		{Name: "firstname", Type: field.TypeString, Size: 2147483647},
@@ -163,7 +164,7 @@ var (
 		{Name: "passwordhash", Type: field.TypeString, Nullable: true, Size: 2147483647},
 		{Name: "comment", Type: field.TypeString, Nullable: true, Size: 2147483647},
 		{Name: "active", Type: field.TypeBool, Default: true},
-		{Name: "role", Type: field.TypeInt, Default: 8},
+		{Name: "role", Type: field.TypeString, Default: "8"},
 	}
 	// UsersTable holds the schema information for the "users" table.
 	UsersTable = &schema.Table{
@@ -172,9 +173,14 @@ var (
 		PrimaryKey: []*schema.Column{UsersColumns[0]},
 		Indexes: []*schema.Index{
 			{
+				Name:    "user_use_publicapi",
+				Unique:  false,
+				Columns: []*schema.Column{UsersColumns[4]},
+			},
+			{
 				Name:    "user_email",
 				Unique:  false,
-				Columns: []*schema.Column{UsersColumns[8]},
+				Columns: []*schema.Column{UsersColumns[9]},
 			},
 		},
 	}

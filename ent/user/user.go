@@ -23,6 +23,8 @@ const (
 	FieldUpdatedAt = "updated_at"
 	// FieldDeletedAt holds the string denoting the deleted_at field in the database.
 	FieldDeletedAt = "deleted_at"
+	// FieldUsePublicapi holds the string denoting the use_publicapi field in the database.
+	FieldUsePublicapi = "use_publicapi"
 	// FieldLogin holds the string denoting the login field in the database.
 	FieldLogin = "login"
 	// FieldSurname holds the string denoting the surname field in the database.
@@ -72,6 +74,7 @@ var Columns = []string{
 	FieldCreatedAt,
 	FieldUpdatedAt,
 	FieldDeletedAt,
+	FieldUsePublicapi,
 	FieldLogin,
 	FieldSurname,
 	FieldFirstname,
@@ -118,6 +121,8 @@ var (
 	DefaultUpdatedAt func() time.Time
 	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
 	UpdateDefaultUpdatedAt func() time.Time
+	// DefaultUsePublicapi holds the default value on creation for the "use_publicapi" field.
+	DefaultUsePublicapi string
 	// LoginValidator is a validator for the "login" field. It is called by the builders before save.
 	LoginValidator func(string) error
 	// SurnameValidator is a validator for the "surname" field. It is called by the builders before save.
@@ -125,7 +130,7 @@ var (
 	// DefaultActive holds the default value on creation for the "active" field.
 	DefaultActive bool
 	// DefaultRole holds the default value on creation for the "role" field.
-	DefaultRole int
+	DefaultRole string
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -151,6 +156,11 @@ func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 // ByDeletedAt orders the results by the deleted_at field.
 func ByDeletedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDeletedAt, opts...).ToFunc()
+}
+
+// ByUsePublicapi orders the results by the use_publicapi field.
+func ByUsePublicapi(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUsePublicapi, opts...).ToFunc()
 }
 
 // ByLogin orders the results by the login field.

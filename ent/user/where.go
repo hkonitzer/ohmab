@@ -72,6 +72,11 @@ func DeletedAt(v time.Time) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldDeletedAt, v))
 }
 
+// UsePublicapi applies equality check predicate on the "use_publicapi" field. It's identical to UsePublicapiEQ.
+func UsePublicapi(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldUsePublicapi, v))
+}
+
 // Login applies equality check predicate on the "login" field. It's identical to LoginEQ.
 func Login(v string) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldLogin, v))
@@ -113,7 +118,7 @@ func Active(v bool) predicate.User {
 }
 
 // Role applies equality check predicate on the "role" field. It's identical to RoleEQ.
-func Role(v int) predicate.User {
+func Role(v string) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldRole, v))
 }
 
@@ -245,6 +250,71 @@ func DeletedAtIsNil() predicate.User {
 // DeletedAtNotNil applies the NotNil predicate on the "deleted_at" field.
 func DeletedAtNotNil() predicate.User {
 	return predicate.User(sql.FieldNotNull(FieldDeletedAt))
+}
+
+// UsePublicapiEQ applies the EQ predicate on the "use_publicapi" field.
+func UsePublicapiEQ(v string) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldUsePublicapi, v))
+}
+
+// UsePublicapiNEQ applies the NEQ predicate on the "use_publicapi" field.
+func UsePublicapiNEQ(v string) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldUsePublicapi, v))
+}
+
+// UsePublicapiIn applies the In predicate on the "use_publicapi" field.
+func UsePublicapiIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldIn(FieldUsePublicapi, vs...))
+}
+
+// UsePublicapiNotIn applies the NotIn predicate on the "use_publicapi" field.
+func UsePublicapiNotIn(vs ...string) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldUsePublicapi, vs...))
+}
+
+// UsePublicapiGT applies the GT predicate on the "use_publicapi" field.
+func UsePublicapiGT(v string) predicate.User {
+	return predicate.User(sql.FieldGT(FieldUsePublicapi, v))
+}
+
+// UsePublicapiGTE applies the GTE predicate on the "use_publicapi" field.
+func UsePublicapiGTE(v string) predicate.User {
+	return predicate.User(sql.FieldGTE(FieldUsePublicapi, v))
+}
+
+// UsePublicapiLT applies the LT predicate on the "use_publicapi" field.
+func UsePublicapiLT(v string) predicate.User {
+	return predicate.User(sql.FieldLT(FieldUsePublicapi, v))
+}
+
+// UsePublicapiLTE applies the LTE predicate on the "use_publicapi" field.
+func UsePublicapiLTE(v string) predicate.User {
+	return predicate.User(sql.FieldLTE(FieldUsePublicapi, v))
+}
+
+// UsePublicapiContains applies the Contains predicate on the "use_publicapi" field.
+func UsePublicapiContains(v string) predicate.User {
+	return predicate.User(sql.FieldContains(FieldUsePublicapi, v))
+}
+
+// UsePublicapiHasPrefix applies the HasPrefix predicate on the "use_publicapi" field.
+func UsePublicapiHasPrefix(v string) predicate.User {
+	return predicate.User(sql.FieldHasPrefix(FieldUsePublicapi, v))
+}
+
+// UsePublicapiHasSuffix applies the HasSuffix predicate on the "use_publicapi" field.
+func UsePublicapiHasSuffix(v string) predicate.User {
+	return predicate.User(sql.FieldHasSuffix(FieldUsePublicapi, v))
+}
+
+// UsePublicapiEqualFold applies the EqualFold predicate on the "use_publicapi" field.
+func UsePublicapiEqualFold(v string) predicate.User {
+	return predicate.User(sql.FieldEqualFold(FieldUsePublicapi, v))
+}
+
+// UsePublicapiContainsFold applies the ContainsFold predicate on the "use_publicapi" field.
+func UsePublicapiContainsFold(v string) predicate.User {
+	return predicate.User(sql.FieldContainsFold(FieldUsePublicapi, v))
 }
 
 // LoginEQ applies the EQ predicate on the "login" field.
@@ -743,43 +813,68 @@ func ActiveNEQ(v bool) predicate.User {
 }
 
 // RoleEQ applies the EQ predicate on the "role" field.
-func RoleEQ(v int) predicate.User {
+func RoleEQ(v string) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldRole, v))
 }
 
 // RoleNEQ applies the NEQ predicate on the "role" field.
-func RoleNEQ(v int) predicate.User {
+func RoleNEQ(v string) predicate.User {
 	return predicate.User(sql.FieldNEQ(FieldRole, v))
 }
 
 // RoleIn applies the In predicate on the "role" field.
-func RoleIn(vs ...int) predicate.User {
+func RoleIn(vs ...string) predicate.User {
 	return predicate.User(sql.FieldIn(FieldRole, vs...))
 }
 
 // RoleNotIn applies the NotIn predicate on the "role" field.
-func RoleNotIn(vs ...int) predicate.User {
+func RoleNotIn(vs ...string) predicate.User {
 	return predicate.User(sql.FieldNotIn(FieldRole, vs...))
 }
 
 // RoleGT applies the GT predicate on the "role" field.
-func RoleGT(v int) predicate.User {
+func RoleGT(v string) predicate.User {
 	return predicate.User(sql.FieldGT(FieldRole, v))
 }
 
 // RoleGTE applies the GTE predicate on the "role" field.
-func RoleGTE(v int) predicate.User {
+func RoleGTE(v string) predicate.User {
 	return predicate.User(sql.FieldGTE(FieldRole, v))
 }
 
 // RoleLT applies the LT predicate on the "role" field.
-func RoleLT(v int) predicate.User {
+func RoleLT(v string) predicate.User {
 	return predicate.User(sql.FieldLT(FieldRole, v))
 }
 
 // RoleLTE applies the LTE predicate on the "role" field.
-func RoleLTE(v int) predicate.User {
+func RoleLTE(v string) predicate.User {
 	return predicate.User(sql.FieldLTE(FieldRole, v))
+}
+
+// RoleContains applies the Contains predicate on the "role" field.
+func RoleContains(v string) predicate.User {
+	return predicate.User(sql.FieldContains(FieldRole, v))
+}
+
+// RoleHasPrefix applies the HasPrefix predicate on the "role" field.
+func RoleHasPrefix(v string) predicate.User {
+	return predicate.User(sql.FieldHasPrefix(FieldRole, v))
+}
+
+// RoleHasSuffix applies the HasSuffix predicate on the "role" field.
+func RoleHasSuffix(v string) predicate.User {
+	return predicate.User(sql.FieldHasSuffix(FieldRole, v))
+}
+
+// RoleEqualFold applies the EqualFold predicate on the "role" field.
+func RoleEqualFold(v string) predicate.User {
+	return predicate.User(sql.FieldEqualFold(FieldRole, v))
+}
+
+// RoleContainsFold applies the ContainsFold predicate on the "role" field.
+func RoleContainsFold(v string) predicate.User {
+	return predicate.User(sql.FieldContainsFold(FieldRole, v))
 }
 
 // HasBusinesses applies the HasEdge predicate on the "businesses" edge.

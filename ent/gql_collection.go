@@ -811,11 +811,6 @@ func (u *UserQuery) collectField(ctx context.Context, opCtx *graphql.OperationCo
 				selectedFields = append(selectedFields, user.FieldDeletedAt)
 				fieldSeen[user.FieldDeletedAt] = struct{}{}
 			}
-		case "login":
-			if _, ok := fieldSeen[user.FieldLogin]; !ok {
-				selectedFields = append(selectedFields, user.FieldLogin)
-				fieldSeen[user.FieldLogin] = struct{}{}
-			}
 		case "surname":
 			if _, ok := fieldSeen[user.FieldSurname]; !ok {
 				selectedFields = append(selectedFields, user.FieldSurname)
@@ -845,11 +840,6 @@ func (u *UserQuery) collectField(ctx context.Context, opCtx *graphql.OperationCo
 			if _, ok := fieldSeen[user.FieldActive]; !ok {
 				selectedFields = append(selectedFields, user.FieldActive)
 				fieldSeen[user.FieldActive] = struct{}{}
-			}
-		case "role":
-			if _, ok := fieldSeen[user.FieldRole]; !ok {
-				selectedFields = append(selectedFields, user.FieldRole)
-				fieldSeen[user.FieldRole] = struct{}{}
 			}
 		case "id":
 		case "__typename":

@@ -5189,6 +5189,7 @@ type UserMutation struct {
 	created_at        *time.Time
 	updated_at        *time.Time
 	deleted_at        *time.Time
+	use_publicapi     *string
 	login             *string
 	surname           *string
 	firstname         *string
@@ -5197,8 +5198,7 @@ type UserMutation struct {
 	passwordhash      *string
 	comment           *string
 	active            *bool
-	role              *int
-	addrole           *int
+	role              *string
 	clearedFields     map[string]struct{}
 	businesses        map[uuid.UUID]struct{}
 	removedbusinesses map[uuid.UUID]struct{}
@@ -5437,6 +5437,42 @@ func (m *UserMutation) DeletedAtCleared() bool {
 func (m *UserMutation) ResetDeletedAt() {
 	m.deleted_at = nil
 	delete(m.clearedFields, user.FieldDeletedAt)
+}
+
+// SetUsePublicapi sets the "use_publicapi" field.
+func (m *UserMutation) SetUsePublicapi(s string) {
+	m.use_publicapi = &s
+}
+
+// UsePublicapi returns the value of the "use_publicapi" field in the mutation.
+func (m *UserMutation) UsePublicapi() (r string, exists bool) {
+	v := m.use_publicapi
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUsePublicapi returns the old "use_publicapi" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldUsePublicapi(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUsePublicapi is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUsePublicapi requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUsePublicapi: %w", err)
+	}
+	return oldValue.UsePublicapi, nil
+}
+
+// ResetUsePublicapi resets all changes to the "use_publicapi" field.
+func (m *UserMutation) ResetUsePublicapi() {
+	m.use_publicapi = nil
 }
 
 // SetLogin sets the "login" field.
@@ -5767,13 +5803,12 @@ func (m *UserMutation) ResetActive() {
 }
 
 // SetRole sets the "role" field.
-func (m *UserMutation) SetRole(i int) {
-	m.role = &i
-	m.addrole = nil
+func (m *UserMutation) SetRole(s string) {
+	m.role = &s
 }
 
 // Role returns the value of the "role" field in the mutation.
-func (m *UserMutation) Role() (r int, exists bool) {
+func (m *UserMutation) Role() (r string, exists bool) {
 	v := m.role
 	if v == nil {
 		return
@@ -5784,7 +5819,7 @@ func (m *UserMutation) Role() (r int, exists bool) {
 // OldRole returns the old "role" field's value of the User entity.
 // If the User object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserMutation) OldRole(ctx context.Context) (v int, err error) {
+func (m *UserMutation) OldRole(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldRole is only allowed on UpdateOne operations")
 	}
@@ -5798,28 +5833,9 @@ func (m *UserMutation) OldRole(ctx context.Context) (v int, err error) {
 	return oldValue.Role, nil
 }
 
-// AddRole adds i to the "role" field.
-func (m *UserMutation) AddRole(i int) {
-	if m.addrole != nil {
-		*m.addrole += i
-	} else {
-		m.addrole = &i
-	}
-}
-
-// AddedRole returns the value that was added to the "role" field in this mutation.
-func (m *UserMutation) AddedRole() (r int, exists bool) {
-	v := m.addrole
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
 // ResetRole resets all changes to the "role" field.
 func (m *UserMutation) ResetRole() {
 	m.role = nil
-	m.addrole = nil
 }
 
 // AddBusinessIDs adds the "businesses" edge to the Business entity by ids.
@@ -6018,7 +6034,7 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 12)
+	fields := make([]string, 0, 13)
 	if m.created_at != nil {
 		fields = append(fields, user.FieldCreatedAt)
 	}
@@ -6027,6 +6043,9 @@ func (m *UserMutation) Fields() []string {
 	}
 	if m.deleted_at != nil {
 		fields = append(fields, user.FieldDeletedAt)
+	}
+	if m.use_publicapi != nil {
+		fields = append(fields, user.FieldUsePublicapi)
 	}
 	if m.login != nil {
 		fields = append(fields, user.FieldLogin)
@@ -6069,6 +6088,8 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 		return m.UpdatedAt()
 	case user.FieldDeletedAt:
 		return m.DeletedAt()
+	case user.FieldUsePublicapi:
+		return m.UsePublicapi()
 	case user.FieldLogin:
 		return m.Login()
 	case user.FieldSurname:
@@ -6102,6 +6123,8 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldUpdatedAt(ctx)
 	case user.FieldDeletedAt:
 		return m.OldDeletedAt(ctx)
+	case user.FieldUsePublicapi:
+		return m.OldUsePublicapi(ctx)
 	case user.FieldLogin:
 		return m.OldLogin(ctx)
 	case user.FieldSurname:
@@ -6149,6 +6172,13 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetDeletedAt(v)
+		return nil
+	case user.FieldUsePublicapi:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUsePublicapi(v)
 		return nil
 	case user.FieldLogin:
 		v, ok := value.(string)
@@ -6207,7 +6237,7 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 		m.SetActive(v)
 		return nil
 	case user.FieldRole:
-		v, ok := value.(int)
+		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -6220,21 +6250,13 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
 func (m *UserMutation) AddedFields() []string {
-	var fields []string
-	if m.addrole != nil {
-		fields = append(fields, user.FieldRole)
-	}
-	return fields
+	return nil
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
 func (m *UserMutation) AddedField(name string) (ent.Value, bool) {
-	switch name {
-	case user.FieldRole:
-		return m.AddedRole()
-	}
 	return nil, false
 }
 
@@ -6243,13 +6265,6 @@ func (m *UserMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *UserMutation) AddField(name string, value ent.Value) error {
 	switch name {
-	case user.FieldRole:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddRole(v)
-		return nil
 	}
 	return fmt.Errorf("unknown User numeric field %s", name)
 }
@@ -6312,6 +6327,9 @@ func (m *UserMutation) ResetField(name string) error {
 		return nil
 	case user.FieldDeletedAt:
 		m.ResetDeletedAt()
+		return nil
+	case user.FieldUsePublicapi:
+		m.ResetUsePublicapi()
 		return nil
 	case user.FieldLogin:
 		m.ResetLogin()

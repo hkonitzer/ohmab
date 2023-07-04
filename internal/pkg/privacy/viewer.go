@@ -6,6 +6,8 @@ package privacy
 
 import (
 	"context"
+	"fmt"
+	"hynie.de/ohmab/ent/user"
 )
 
 // Role for viewer actions.
@@ -23,23 +25,28 @@ const (
 type Viewer interface {
 	Admin() bool // If viewer is admin.
 	Owner() bool
+	HasScopes() bool
+	HasScope(scope string) bool
+	GetUserID() string
 }
 
 // UserViewer describes a user-viewer.
 type UserViewer struct {
-	Role Role // Attached roles.
+	Role   Role     // Attached roles.
+	Scopes []string // Attached businesses for this role
+	Claims map[string]string
 }
 
-func AdminRoleAsInt() int {
-	return int(Admin)
+func AdminRoleAsString() string {
+	return fmt.Sprint(Admin)
 }
 
-func OwnerRoleAsInt() int {
-	return int(Owner)
+func OwnerRoleAsString() string {
+	return fmt.Sprint(Owner)
 }
 
-func ViewerRoleAsInt() int {
-	return int(View)
+func ViewerRoleAsString() string {
+	return fmt.Sprint(View)
 }
 
 func (v UserViewer) Admin() bool {
@@ -48,6 +55,29 @@ func (v UserViewer) Admin() bool {
 
 func (v UserViewer) Owner() bool {
 	return v.Role&Owner != 0
+}
+
+func (v UserViewer) HasScopes() bool {
+	return len(v.Scopes) > 0
+}
+
+func (v UserViewer) HasScope(scope string) bool {
+	if !v.HasScopes() {
+		return false
+	}
+	for _, s := range v.Scopes {
+		if s == scope {
+			return true
+		}
+	}
+	return false
+}
+
+func (v UserViewer) GetUserID() string {
+	if len(v.Claims) == 0 {
+		return ""
+	}
+	return v.Claims["user_"+user.FieldID]
 }
 
 type ctxKey struct{}

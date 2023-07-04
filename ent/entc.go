@@ -25,7 +25,7 @@ func main() {
 	}
 	opts := []entc.Option{
 		entc.Extensions(graphqlEx),
-		entc.FeatureNames("privacy"),
+		entc.FeatureNames("privacy", "intercept"),
 	}
 
 	if err := entc.Generate("./ent/schema", &gen.Config{

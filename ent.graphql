@@ -1013,7 +1013,6 @@ type User implements Node {
   createdAt: Time!
   updatedAt: Time!
   deletedAt: Time
-  login: String!
   """The surname of a user"""
   surname: String!
   """The first name of a user"""
@@ -1025,8 +1024,6 @@ type User implements Node {
   comment: String
   """Is the user active?"""
   active: Boolean!
-  """The role of the user"""
-  role: Int!
   """The businesses this user is associated with"""
   businesses: [Business!]
   tags: [Tag!]
@@ -1090,20 +1087,6 @@ input UserWhereInput {
   deletedAtLTE: Time
   deletedAtIsNil: Boolean
   deletedAtNotNil: Boolean
-  """login field predicates"""
-  login: String
-  loginNEQ: String
-  loginIn: [String!]
-  loginNotIn: [String!]
-  loginGT: String
-  loginGTE: String
-  loginLT: String
-  loginLTE: String
-  loginContains: String
-  loginHasPrefix: String
-  loginHasSuffix: String
-  loginEqualFold: String
-  loginContainsFold: String
   """surname field predicates"""
   surname: String
   surnameNEQ: String
@@ -1181,15 +1164,6 @@ input UserWhereInput {
   """active field predicates"""
   active: Boolean
   activeNEQ: Boolean
-  """role field predicates"""
-  role: Int
-  roleNEQ: Int
-  roleIn: [Int!]
-  roleNotIn: [Int!]
-  roleGT: Int
-  roleGTE: Int
-  roleLT: Int
-  roleLTE: Int
   """businesses edge predicates"""
   hasBusinesses: Boolean
   hasBusinessesWith: [BusinessWhereInput!]

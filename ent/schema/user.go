@@ -22,7 +22,8 @@ func (User) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID(constants.IDFieldName, uuid.UUID{}).
 			Immutable().Default(uuid.New),
-		field.Text("login").NotEmpty(),
+		field.Text("login").
+			Sensitive().NotEmpty(),
 		field.Text("surname").
 			NotEmpty().Annotations(entgql.OrderField("SURNAME")).Comment("The surname of a user"),
 		field.Text("firstname").
@@ -36,13 +37,15 @@ func (User) Fields() []ent.Field {
 		field.Text("comment").
 			Optional().Comment("A comment for this user"),
 		field.Bool(constants.ActiveFieldName).Default(true).Comment("Is the user active?"),
-		field.Int("role").Default(privacy.ViewerRoleAsInt()).Comment("The role of the user"),
+		field.String("role").
+			Sensitive().Default(privacy.ViewerRoleAsString()).Comment("The role of the user"),
 	}
 }
 
 func (User) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		TimeMixin{},
+		PublicApiMixin{},
 	}
 }
 

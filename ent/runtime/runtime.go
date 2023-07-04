@@ -170,6 +170,8 @@ func init() {
 	user.Hooks[0] = userHooks[0]
 	userMixinFields0 := userMixin[0].Fields()
 	_ = userMixinFields0
+	userMixinFields1 := userMixin[1].Fields()
+	_ = userMixinFields1
 	userFields := schema.User{}.Fields()
 	_ = userFields
 	// userDescCreatedAt is the schema descriptor for created_at field.
@@ -182,6 +184,10 @@ func init() {
 	user.DefaultUpdatedAt = userDescUpdatedAt.Default.(func() time.Time)
 	// user.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	user.UpdateDefaultUpdatedAt = userDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// userDescUsePublicapi is the schema descriptor for use_publicapi field.
+	userDescUsePublicapi := userMixinFields1[0].Descriptor()
+	// user.DefaultUsePublicapi holds the default value on creation for the use_publicapi field.
+	user.DefaultUsePublicapi = userDescUsePublicapi.Default.(string)
 	// userDescLogin is the schema descriptor for login field.
 	userDescLogin := userFields[1].Descriptor()
 	// user.LoginValidator is a validator for the "login" field. It is called by the builders before save.
@@ -197,7 +203,7 @@ func init() {
 	// userDescRole is the schema descriptor for role field.
 	userDescRole := userFields[9].Descriptor()
 	// user.DefaultRole holds the default value on creation for the role field.
-	user.DefaultRole = userDescRole.Default.(int)
+	user.DefaultRole = userDescRole.Default.(string)
 	// userDescID is the schema descriptor for id field.
 	userDescID := userFields[0].Descriptor()
 	// user.DefaultID holds the default value on creation for the id field.

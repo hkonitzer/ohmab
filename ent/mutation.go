@@ -54,6 +54,7 @@ type AddressMutation struct {
 	zip               *string
 	state             *string
 	country           *string
+	locale            *string
 	primary           *bool
 	telephone         *string
 	comment           *string
@@ -587,6 +588,42 @@ func (m *AddressMutation) ResetCountry() {
 	delete(m.clearedFields, address.FieldCountry)
 }
 
+// SetLocale sets the "locale" field.
+func (m *AddressMutation) SetLocale(s string) {
+	m.locale = &s
+}
+
+// Locale returns the value of the "locale" field in the mutation.
+func (m *AddressMutation) Locale() (r string, exists bool) {
+	v := m.locale
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLocale returns the old "locale" field's value of the Address entity.
+// If the Address object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AddressMutation) OldLocale(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLocale is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLocale requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLocale: %w", err)
+	}
+	return oldValue.Locale, nil
+}
+
+// ResetLocale resets all changes to the "locale" field.
+func (m *AddressMutation) ResetLocale() {
+	m.locale = nil
+}
+
 // SetPrimary sets the "primary" field.
 func (m *AddressMutation) SetPrimary(b bool) {
 	m.primary = &b
@@ -848,7 +885,7 @@ func (m *AddressMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AddressMutation) Fields() []string {
-	fields := make([]string, 0, 12)
+	fields := make([]string, 0, 13)
 	if m.created_at != nil {
 		fields = append(fields, address.FieldCreatedAt)
 	}
@@ -875,6 +912,9 @@ func (m *AddressMutation) Fields() []string {
 	}
 	if m.country != nil {
 		fields = append(fields, address.FieldCountry)
+	}
+	if m.locale != nil {
+		fields = append(fields, address.FieldLocale)
 	}
 	if m.primary != nil {
 		fields = append(fields, address.FieldPrimary)
@@ -911,6 +951,8 @@ func (m *AddressMutation) Field(name string) (ent.Value, bool) {
 		return m.State()
 	case address.FieldCountry:
 		return m.Country()
+	case address.FieldLocale:
+		return m.Locale()
 	case address.FieldPrimary:
 		return m.Primary()
 	case address.FieldTelephone:
@@ -944,6 +986,8 @@ func (m *AddressMutation) OldField(ctx context.Context, name string) (ent.Value,
 		return m.OldState(ctx)
 	case address.FieldCountry:
 		return m.OldCountry(ctx)
+	case address.FieldLocale:
+		return m.OldLocale(ctx)
 	case address.FieldPrimary:
 		return m.OldPrimary(ctx)
 	case address.FieldTelephone:
@@ -1021,6 +1065,13 @@ func (m *AddressMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetCountry(v)
+		return nil
+	case address.FieldLocale:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLocale(v)
 		return nil
 	case address.FieldPrimary:
 		v, ok := value.(bool)
@@ -1175,6 +1226,9 @@ func (m *AddressMutation) ResetField(name string) error {
 		return nil
 	case address.FieldCountry:
 		m.ResetCountry()
+		return nil
+	case address.FieldLocale:
+		m.ResetLocale()
 		return nil
 	case address.FieldPrimary:
 		m.ResetPrimary()

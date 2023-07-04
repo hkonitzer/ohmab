@@ -105,6 +105,11 @@ func (a *AddressQuery) collectField(ctx context.Context, opCtx *graphql.Operatio
 				selectedFields = append(selectedFields, address.FieldCountry)
 				fieldSeen[address.FieldCountry] = struct{}{}
 			}
+		case "locale":
+			if _, ok := fieldSeen[address.FieldLocale]; !ok {
+				selectedFields = append(selectedFields, address.FieldLocale)
+				fieldSeen[address.FieldLocale] = struct{}{}
+			}
 		case "primary":
 			if _, ok := fieldSeen[address.FieldPrimary]; !ok {
 				selectedFields = append(selectedFields, address.FieldPrimary)

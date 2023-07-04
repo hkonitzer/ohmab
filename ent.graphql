@@ -12,6 +12,8 @@ type Address implements Node {
   zip: String
   state: String
   country: String
+  """The ICU locale identifier of the address, e.g. en_US, de_DE, ..."""
+  locale: String!
   """Is this the primary address?"""
   primary: Boolean!
   """Telephone number"""
@@ -179,6 +181,20 @@ input AddressWhereInput {
   countryNotNil: Boolean
   countryEqualFold: String
   countryContainsFold: String
+  """locale field predicates"""
+  locale: String
+  localeNEQ: String
+  localeIn: [String!]
+  localeNotIn: [String!]
+  localeGT: String
+  localeGTE: String
+  localeLT: String
+  localeLTE: String
+  localeContains: String
+  localeHasPrefix: String
+  localeHasSuffix: String
+  localeEqualFold: String
+  localeContainsFold: String
   """primary field predicates"""
   primary: Boolean
   primaryNEQ: Boolean

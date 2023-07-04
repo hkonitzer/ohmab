@@ -8,6 +8,7 @@ require (
 	github.com/99designs/gqlgen v0.17.33
 	github.com/go-chi/chi/v5 v5.0.8
 	github.com/go-chi/oauth v0.0.0-20210913085627-d937e221b3ef
+	github.com/goodsign/monday v1.0.1
 	github.com/google/uuid v1.3.0
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/lib/pq v1.10.9

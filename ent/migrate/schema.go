@@ -21,6 +21,7 @@ var (
 		{Name: "zip", Type: field.TypeString, Nullable: true, Size: 2147483647},
 		{Name: "state", Type: field.TypeString, Nullable: true, Size: 2147483647},
 		{Name: "country", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "locale", Type: field.TypeString, Size: 5, Default: "en_US"},
 		{Name: "primary", Type: field.TypeBool, Default: false},
 		{Name: "telephone", Type: field.TypeString, Unique: true, Nullable: true, Size: 2147483647},
 		{Name: "comment", Type: field.TypeString, Nullable: true, Size: 2147483647},
@@ -34,7 +35,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "addresses_businesses_addresses",
-				Columns:    []*schema.Column{AddressesColumns[13]},
+				Columns:    []*schema.Column{AddressesColumns[14]},
 				RefColumns: []*schema.Column{BusinessesColumns[0]},
 				OnDelete:   schema.Cascade,
 			},

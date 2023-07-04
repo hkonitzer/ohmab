@@ -169,6 +169,21 @@ type AddressWhereInput struct {
 	CountryEqualFold    *string  `json:"countryEqualFold,omitempty"`
 	CountryContainsFold *string  `json:"countryContainsFold,omitempty"`
 
+	// "locale" field predicates.
+	Locale             *string  `json:"locale,omitempty"`
+	LocaleNEQ          *string  `json:"localeNEQ,omitempty"`
+	LocaleIn           []string `json:"localeIn,omitempty"`
+	LocaleNotIn        []string `json:"localeNotIn,omitempty"`
+	LocaleGT           *string  `json:"localeGT,omitempty"`
+	LocaleGTE          *string  `json:"localeGTE,omitempty"`
+	LocaleLT           *string  `json:"localeLT,omitempty"`
+	LocaleLTE          *string  `json:"localeLTE,omitempty"`
+	LocaleContains     *string  `json:"localeContains,omitempty"`
+	LocaleHasPrefix    *string  `json:"localeHasPrefix,omitempty"`
+	LocaleHasSuffix    *string  `json:"localeHasSuffix,omitempty"`
+	LocaleEqualFold    *string  `json:"localeEqualFold,omitempty"`
+	LocaleContainsFold *string  `json:"localeContainsFold,omitempty"`
+
 	// "primary" field predicates.
 	Primary    *bool `json:"primary,omitempty"`
 	PrimaryNEQ *bool `json:"primaryNEQ,omitempty"`
@@ -658,6 +673,45 @@ func (i *AddressWhereInput) P() (predicate.Address, error) {
 	}
 	if i.CountryContainsFold != nil {
 		predicates = append(predicates, address.CountryContainsFold(*i.CountryContainsFold))
+	}
+	if i.Locale != nil {
+		predicates = append(predicates, address.LocaleEQ(*i.Locale))
+	}
+	if i.LocaleNEQ != nil {
+		predicates = append(predicates, address.LocaleNEQ(*i.LocaleNEQ))
+	}
+	if len(i.LocaleIn) > 0 {
+		predicates = append(predicates, address.LocaleIn(i.LocaleIn...))
+	}
+	if len(i.LocaleNotIn) > 0 {
+		predicates = append(predicates, address.LocaleNotIn(i.LocaleNotIn...))
+	}
+	if i.LocaleGT != nil {
+		predicates = append(predicates, address.LocaleGT(*i.LocaleGT))
+	}
+	if i.LocaleGTE != nil {
+		predicates = append(predicates, address.LocaleGTE(*i.LocaleGTE))
+	}
+	if i.LocaleLT != nil {
+		predicates = append(predicates, address.LocaleLT(*i.LocaleLT))
+	}
+	if i.LocaleLTE != nil {
+		predicates = append(predicates, address.LocaleLTE(*i.LocaleLTE))
+	}
+	if i.LocaleContains != nil {
+		predicates = append(predicates, address.LocaleContains(*i.LocaleContains))
+	}
+	if i.LocaleHasPrefix != nil {
+		predicates = append(predicates, address.LocaleHasPrefix(*i.LocaleHasPrefix))
+	}
+	if i.LocaleHasSuffix != nil {
+		predicates = append(predicates, address.LocaleHasSuffix(*i.LocaleHasSuffix))
+	}
+	if i.LocaleEqualFold != nil {
+		predicates = append(predicates, address.LocaleEqualFold(*i.LocaleEqualFold))
+	}
+	if i.LocaleContainsFold != nil {
+		predicates = append(predicates, address.LocaleContainsFold(*i.LocaleContainsFold))
 	}
 	if i.Primary != nil {
 		predicates = append(predicates, address.PrimaryEQ(*i.Primary))

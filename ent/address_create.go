@@ -150,6 +150,20 @@ func (ac *AddressCreate) SetNillableCountry(s *string) *AddressCreate {
 	return ac
 }
 
+// SetLocale sets the "locale" field.
+func (ac *AddressCreate) SetLocale(s string) *AddressCreate {
+	ac.mutation.SetLocale(s)
+	return ac
+}
+
+// SetNillableLocale sets the "locale" field if the given value is not nil.
+func (ac *AddressCreate) SetNillableLocale(s *string) *AddressCreate {
+	if s != nil {
+		ac.SetLocale(*s)
+	}
+	return ac
+}
+
 // SetPrimary sets the "primary" field.
 func (ac *AddressCreate) SetPrimary(b bool) *AddressCreate {
 	ac.mutation.SetPrimary(b)
@@ -291,6 +305,10 @@ func (ac *AddressCreate) defaults() error {
 		v := address.DefaultUpdatedAt()
 		ac.mutation.SetUpdatedAt(v)
 	}
+	if _, ok := ac.mutation.Locale(); !ok {
+		v := address.DefaultLocale
+		ac.mutation.SetLocale(v)
+	}
 	if _, ok := ac.mutation.Primary(); !ok {
 		v := address.DefaultPrimary
 		ac.mutation.SetPrimary(v)
@@ -312,6 +330,14 @@ func (ac *AddressCreate) check() error {
 	}
 	if _, ok := ac.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Address.updated_at"`)}
+	}
+	if _, ok := ac.mutation.Locale(); !ok {
+		return &ValidationError{Name: "locale", err: errors.New(`ent: missing required field "Address.locale"`)}
+	}
+	if v, ok := ac.mutation.Locale(); ok {
+		if err := address.LocaleValidator(v); err != nil {
+			return &ValidationError{Name: "locale", err: fmt.Errorf(`ent: validator failed for field "Address.locale": %w`, err)}
+		}
 	}
 	if _, ok := ac.mutation.Primary(); !ok {
 		return &ValidationError{Name: "primary", err: errors.New(`ent: missing required field "Address.primary"`)}
@@ -386,6 +412,10 @@ func (ac *AddressCreate) createSpec() (*Address, *sqlgraph.CreateSpec) {
 	if value, ok := ac.mutation.Country(); ok {
 		_spec.SetField(address.FieldCountry, field.TypeString, value)
 		_node.Country = value
+	}
+	if value, ok := ac.mutation.Locale(); ok {
+		_spec.SetField(address.FieldLocale, field.TypeString, value)
+		_node.Locale = value
 	}
 	if value, ok := ac.mutation.Primary(); ok {
 		_spec.SetField(address.FieldPrimary, field.TypeBool, value)

@@ -9,7 +9,10 @@ import (
 	"github.com/google/uuid"
 	"hynie.de/ohmab/ent/schema/constants"
 	"hynie.de/ohmab/ent/schema/hooks"
+	"regexp"
 )
+
+var localeRex, _ = regexp.Compile("^[a-z]{2,4}(_[A-Z][a-z]{3})?(_([A-Z]{2}|[0-9]{3}))?$")
 
 // Address holds the schema definition for the Address entity.
 type Address struct {
@@ -33,6 +36,10 @@ func (Address) Fields() []ent.Field {
 			Optional(),
 		field.Text("country").
 			Optional(),
+		field.Text("locale").
+			MinLen(5).MaxLen(5).
+			Match(localeRex).
+			Default("en_US").Comment("The ICU locale identifier of the address, e.g. en_US, de_DE, ..."),
 		field.Bool("primary").
 			Default(false).Comment("Is this the primary address?"),
 		field.Text("telephone").

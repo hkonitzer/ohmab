@@ -42,8 +42,29 @@ func init() {
 	address.DefaultUpdatedAt = addressDescUpdatedAt.Default.(func() time.Time)
 	// address.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	address.UpdateDefaultUpdatedAt = addressDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// addressDescLocale is the schema descriptor for locale field.
+	addressDescLocale := addressFields[7].Descriptor()
+	// address.DefaultLocale holds the default value on creation for the locale field.
+	address.DefaultLocale = addressDescLocale.Default.(string)
+	// address.LocaleValidator is a validator for the "locale" field. It is called by the builders before save.
+	address.LocaleValidator = func() func(string) error {
+		validators := addressDescLocale.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+			validators[2].(func(string) error),
+		}
+		return func(locale string) error {
+			for _, fn := range fns {
+				if err := fn(locale); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
 	// addressDescPrimary is the schema descriptor for primary field.
-	addressDescPrimary := addressFields[7].Descriptor()
+	addressDescPrimary := addressFields[8].Descriptor()
 	// address.DefaultPrimary holds the default value on creation for the primary field.
 	address.DefaultPrimary = addressDescPrimary.Default.(bool)
 	// addressDescID is the schema descriptor for id field.

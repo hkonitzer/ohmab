@@ -38,6 +38,8 @@ type Address struct {
 	State string `json:"state,omitempty"`
 	// Country holds the value of the "country" field.
 	Country string `json:"country,omitempty"`
+	// The ICU locale identifier of the address, e.g. en_US, de_DE, ...
+	Locale string `json:"locale,omitempty"`
 	// Is this the primary address?
 	Primary bool `json:"primary,omitempty"`
 	// Telephone number
@@ -95,7 +97,7 @@ func (*Address) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case address.FieldPrimary:
 			values[i] = new(sql.NullBool)
-		case address.FieldAddition, address.FieldStreet, address.FieldCity, address.FieldZip, address.FieldState, address.FieldCountry, address.FieldTelephone, address.FieldComment:
+		case address.FieldAddition, address.FieldStreet, address.FieldCity, address.FieldZip, address.FieldState, address.FieldCountry, address.FieldLocale, address.FieldTelephone, address.FieldComment:
 			values[i] = new(sql.NullString)
 		case address.FieldCreatedAt, address.FieldUpdatedAt, address.FieldDeletedAt:
 			values[i] = new(sql.NullTime)
@@ -177,6 +179,12 @@ func (a *Address) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field country", values[i])
 			} else if value.Valid {
 				a.Country = value.String
+			}
+		case address.FieldLocale:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field locale", values[i])
+			} else if value.Valid {
+				a.Locale = value.String
 			}
 		case address.FieldPrimary:
 			if value, ok := values[i].(*sql.NullBool); !ok {
@@ -275,6 +283,9 @@ func (a *Address) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("country=")
 	builder.WriteString(a.Country)
+	builder.WriteString(", ")
+	builder.WriteString("locale=")
+	builder.WriteString(a.Locale)
 	builder.WriteString(", ")
 	builder.WriteString("primary=")
 	builder.WriteString(fmt.Sprintf("%v", a.Primary))

@@ -12,6 +12,8 @@ type Address implements Node {
   zip: String
   state: String
   country: String
+  """The ICU locale identifier of the address, e.g. en_US, de_DE, ..."""
+  locale: String!
   """Is this the primary address?"""
   primary: Boolean!
   """Telephone number"""
@@ -179,6 +181,20 @@ input AddressWhereInput {
   countryNotNil: Boolean
   countryEqualFold: String
   countryContainsFold: String
+  """locale field predicates"""
+  locale: String
+  localeNEQ: String
+  localeIn: [String!]
+  localeNotIn: [String!]
+  localeGT: String
+  localeGTE: String
+  localeLT: String
+  localeLTE: String
+  localeContains: String
+  localeHasPrefix: String
+  localeHasSuffix: String
+  localeEqualFold: String
+  localeContainsFold: String
   """primary field predicates"""
   primary: Boolean
   primaryNEQ: Boolean
@@ -338,7 +354,7 @@ type Business implements Node {
   active: Boolean!
   addresses: [Address!]
   tags: [Tag!]
-  users: User
+  users: [User!]
 }
 """A connection to a list of items."""
 type BusinessConnection {
@@ -560,7 +576,7 @@ input CreateBusinessInput {
   active: Boolean
   addressIDs: [ID!]
   tagIDs: [ID!]
-  usersID: ID
+  userIDs: [ID!]
 }
 """
 CreateTimetableInput is used for create Timetable object.
@@ -1024,8 +1040,7 @@ type User implements Node {
   comment: String
   """Is the user active?"""
   active: Boolean!
-  """The role of the user (0 = user, 1 = admin)"""
-  role: Int!
+  """The businesses this user is associated with"""
   businesses: [Business!]
   tags: [Tag!]
   """The persons on duty for this timetable entry"""
@@ -1165,15 +1180,6 @@ input UserWhereInput {
   """active field predicates"""
   active: Boolean
   activeNEQ: Boolean
-  """role field predicates"""
-  role: Int
-  roleNEQ: Int
-  roleIn: [Int!]
-  roleNotIn: [Int!]
-  roleGT: Int
-  roleGTE: Int
-  roleLT: Int
-  roleLTE: Int
   """businesses edge predicates"""
   hasBusinesses: Boolean
   hasBusinessesWith: [BusinessWhereInput!]

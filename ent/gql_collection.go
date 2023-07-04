@@ -105,6 +105,11 @@ func (a *AddressQuery) collectField(ctx context.Context, opCtx *graphql.Operatio
 				selectedFields = append(selectedFields, address.FieldCountry)
 				fieldSeen[address.FieldCountry] = struct{}{}
 			}
+		case "locale":
+			if _, ok := fieldSeen[address.FieldLocale]; !ok {
+				selectedFields = append(selectedFields, address.FieldLocale)
+				fieldSeen[address.FieldLocale] = struct{}{}
+			}
 		case "primary":
 			if _, ok := fieldSeen[address.FieldPrimary]; !ok {
 				selectedFields = append(selectedFields, address.FieldPrimary)
@@ -307,7 +312,9 @@ func (b *BusinessQuery) collectField(ctx context.Context, opCtx *graphql.Operati
 			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
 				return err
 			}
-			b.withUsers = query
+			b.WithNamedUsers(alias, func(wq *UserQuery) {
+				*wq = *query
+			})
 		case "createdAt":
 			if _, ok := fieldSeen[business.FieldCreatedAt]; !ok {
 				selectedFields = append(selectedFields, business.FieldCreatedAt)
@@ -838,11 +845,6 @@ func (u *UserQuery) collectField(ctx context.Context, opCtx *graphql.OperationCo
 			if _, ok := fieldSeen[user.FieldActive]; !ok {
 				selectedFields = append(selectedFields, user.FieldActive)
 				fieldSeen[user.FieldActive] = struct{}{}
-			}
-		case "role":
-			if _, ok := fieldSeen[user.FieldRole]; !ok {
-				selectedFields = append(selectedFields, user.FieldRole)
-				fieldSeen[user.FieldRole] = struct{}{}
 			}
 		case "id":
 		case "__typename":

@@ -25,7 +25,7 @@ type CreateBusinessInput struct {
 	Active     *bool
 	AddressIDs []uuid.UUID
 	TagIDs     []uuid.UUID
-	UsersID    *uuid.UUID
+	UserIDs    []uuid.UUID
 }
 
 // Mutate applies the CreateBusinessInput on the BusinessMutation builder.
@@ -65,8 +65,8 @@ func (i *CreateBusinessInput) Mutate(m *BusinessMutation) {
 	if v := i.TagIDs; len(v) > 0 {
 		m.AddTagIDs(v...)
 	}
-	if v := i.UsersID; v != nil {
-		m.SetUsersID(*v)
+	if v := i.UserIDs; len(v) > 0 {
+		m.AddUserIDs(v...)
 	}
 }
 

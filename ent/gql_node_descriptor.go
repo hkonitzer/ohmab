@@ -42,7 +42,7 @@ func (a *Address) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     a.ID,
 		Type:   "Address",
-		Fields: make([]*Field, 12),
+		Fields: make([]*Field, 13),
 		Edges:  make([]*Edge, 2),
 	}
 	var buf []byte
@@ -118,10 +118,18 @@ func (a *Address) Node(ctx context.Context) (node *Node, err error) {
 		Name:  "country",
 		Value: string(buf),
 	}
-	if buf, err = json.Marshal(a.Primary); err != nil {
+	if buf, err = json.Marshal(a.Locale); err != nil {
 		return nil, err
 	}
 	node.Fields[9] = &Field{
+		Type:  "string",
+		Name:  "locale",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(a.Primary); err != nil {
+		return nil, err
+	}
+	node.Fields[10] = &Field{
 		Type:  "bool",
 		Name:  "primary",
 		Value: string(buf),
@@ -129,7 +137,7 @@ func (a *Address) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(a.Telephone); err != nil {
 		return nil, err
 	}
-	node.Fields[10] = &Field{
+	node.Fields[11] = &Field{
 		Type:  "string",
 		Name:  "telephone",
 		Value: string(buf),
@@ -137,7 +145,7 @@ func (a *Address) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(a.Comment); err != nil {
 		return nil, err
 	}
-	node.Fields[11] = &Field{
+	node.Fields[12] = &Field{
 		Type:  "string",
 		Name:  "comment",
 		Value: string(buf),
@@ -560,7 +568,7 @@ func (u *User) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     u.ID,
 		Type:   "User",
-		Fields: make([]*Field, 11),
+		Fields: make([]*Field, 13),
 		Edges:  make([]*Edge, 3),
 	}
 	var buf []byte
@@ -588,10 +596,26 @@ func (u *User) Node(ctx context.Context) (node *Node, err error) {
 		Name:  "deleted_at",
 		Value: string(buf),
 	}
-	if buf, err = json.Marshal(u.Surname); err != nil {
+	if buf, err = json.Marshal(u.UsePublicapi); err != nil {
 		return nil, err
 	}
 	node.Fields[3] = &Field{
+		Type:  "string",
+		Name:  "use_publicapi",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(u.Login); err != nil {
+		return nil, err
+	}
+	node.Fields[4] = &Field{
+		Type:  "string",
+		Name:  "login",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(u.Surname); err != nil {
+		return nil, err
+	}
+	node.Fields[5] = &Field{
 		Type:  "string",
 		Name:  "surname",
 		Value: string(buf),
@@ -599,7 +623,7 @@ func (u *User) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(u.Firstname); err != nil {
 		return nil, err
 	}
-	node.Fields[4] = &Field{
+	node.Fields[6] = &Field{
 		Type:  "string",
 		Name:  "firstname",
 		Value: string(buf),
@@ -607,7 +631,7 @@ func (u *User) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(u.Title); err != nil {
 		return nil, err
 	}
-	node.Fields[5] = &Field{
+	node.Fields[7] = &Field{
 		Type:  "string",
 		Name:  "title",
 		Value: string(buf),
@@ -615,7 +639,7 @@ func (u *User) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(u.Email); err != nil {
 		return nil, err
 	}
-	node.Fields[6] = &Field{
+	node.Fields[8] = &Field{
 		Type:  "string",
 		Name:  "email",
 		Value: string(buf),
@@ -623,7 +647,7 @@ func (u *User) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(u.Passwordhash); err != nil {
 		return nil, err
 	}
-	node.Fields[7] = &Field{
+	node.Fields[9] = &Field{
 		Type:  "string",
 		Name:  "passwordhash",
 		Value: string(buf),
@@ -631,7 +655,7 @@ func (u *User) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(u.Comment); err != nil {
 		return nil, err
 	}
-	node.Fields[8] = &Field{
+	node.Fields[10] = &Field{
 		Type:  "string",
 		Name:  "comment",
 		Value: string(buf),
@@ -639,7 +663,7 @@ func (u *User) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(u.Active); err != nil {
 		return nil, err
 	}
-	node.Fields[9] = &Field{
+	node.Fields[11] = &Field{
 		Type:  "bool",
 		Name:  "active",
 		Value: string(buf),
@@ -647,8 +671,8 @@ func (u *User) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(u.Role); err != nil {
 		return nil, err
 	}
-	node.Fields[10] = &Field{
-		Type:  "int",
+	node.Fields[12] = &Field{
+		Type:  "string",
 		Name:  "role",
 		Value: string(buf),
 	}

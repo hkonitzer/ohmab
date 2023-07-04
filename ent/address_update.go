@@ -178,6 +178,20 @@ func (au *AddressUpdate) ClearCountry() *AddressUpdate {
 	return au
 }
 
+// SetLocale sets the "locale" field.
+func (au *AddressUpdate) SetLocale(s string) *AddressUpdate {
+	au.mutation.SetLocale(s)
+	return au
+}
+
+// SetNillableLocale sets the "locale" field if the given value is not nil.
+func (au *AddressUpdate) SetNillableLocale(s *string) *AddressUpdate {
+	if s != nil {
+		au.SetLocale(*s)
+	}
+	return au
+}
+
 // SetPrimary sets the "primary" field.
 func (au *AddressUpdate) SetPrimary(b bool) *AddressUpdate {
 	au.mutation.SetPrimary(b)
@@ -340,7 +354,20 @@ func (au *AddressUpdate) defaults() error {
 	return nil
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (au *AddressUpdate) check() error {
+	if v, ok := au.mutation.Locale(); ok {
+		if err := address.LocaleValidator(v); err != nil {
+			return &ValidationError{Name: "locale", err: fmt.Errorf(`ent: validator failed for field "Address.locale": %w`, err)}
+		}
+	}
+	return nil
+}
+
 func (au *AddressUpdate) sqlSave(ctx context.Context) (n int, err error) {
+	if err := au.check(); err != nil {
+		return n, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(address.Table, address.Columns, sqlgraph.NewFieldSpec(address.FieldID, field.TypeUUID))
 	if ps := au.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -393,6 +420,9 @@ func (au *AddressUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if au.mutation.CountryCleared() {
 		_spec.ClearField(address.FieldCountry, field.TypeString)
+	}
+	if value, ok := au.mutation.Locale(); ok {
+		_spec.SetField(address.FieldLocale, field.TypeString, value)
 	}
 	if value, ok := au.mutation.Primary(); ok {
 		_spec.SetField(address.FieldPrimary, field.TypeBool, value)
@@ -649,6 +679,20 @@ func (auo *AddressUpdateOne) ClearCountry() *AddressUpdateOne {
 	return auo
 }
 
+// SetLocale sets the "locale" field.
+func (auo *AddressUpdateOne) SetLocale(s string) *AddressUpdateOne {
+	auo.mutation.SetLocale(s)
+	return auo
+}
+
+// SetNillableLocale sets the "locale" field if the given value is not nil.
+func (auo *AddressUpdateOne) SetNillableLocale(s *string) *AddressUpdateOne {
+	if s != nil {
+		auo.SetLocale(*s)
+	}
+	return auo
+}
+
 // SetPrimary sets the "primary" field.
 func (auo *AddressUpdateOne) SetPrimary(b bool) *AddressUpdateOne {
 	auo.mutation.SetPrimary(b)
@@ -824,7 +868,20 @@ func (auo *AddressUpdateOne) defaults() error {
 	return nil
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (auo *AddressUpdateOne) check() error {
+	if v, ok := auo.mutation.Locale(); ok {
+		if err := address.LocaleValidator(v); err != nil {
+			return &ValidationError{Name: "locale", err: fmt.Errorf(`ent: validator failed for field "Address.locale": %w`, err)}
+		}
+	}
+	return nil
+}
+
 func (auo *AddressUpdateOne) sqlSave(ctx context.Context) (_node *Address, err error) {
+	if err := auo.check(); err != nil {
+		return _node, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(address.Table, address.Columns, sqlgraph.NewFieldSpec(address.FieldID, field.TypeUUID))
 	id, ok := auo.mutation.ID()
 	if !ok {
@@ -894,6 +951,9 @@ func (auo *AddressUpdateOne) sqlSave(ctx context.Context) (_node *Address, err e
 	}
 	if auo.mutation.CountryCleared() {
 		_spec.ClearField(address.FieldCountry, field.TypeString)
+	}
+	if value, ok := auo.mutation.Locale(); ok {
+		_spec.SetField(address.FieldLocale, field.TypeString, value)
 	}
 	if value, ok := auo.mutation.Primary(); ok {
 		_spec.SetField(address.FieldPrimary, field.TypeBool, value)

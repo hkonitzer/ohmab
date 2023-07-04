@@ -207,23 +207,19 @@ func (bc *BusinessCreate) AddTags(t ...*Tag) *BusinessCreate {
 	return bc.AddTagIDs(ids...)
 }
 
-// SetUsersID sets the "users" edge to the User entity by ID.
-func (bc *BusinessCreate) SetUsersID(id uuid.UUID) *BusinessCreate {
-	bc.mutation.SetUsersID(id)
+// AddUserIDs adds the "users" edge to the User entity by IDs.
+func (bc *BusinessCreate) AddUserIDs(ids ...uuid.UUID) *BusinessCreate {
+	bc.mutation.AddUserIDs(ids...)
 	return bc
 }
 
-// SetNillableUsersID sets the "users" edge to the User entity by ID if the given value is not nil.
-func (bc *BusinessCreate) SetNillableUsersID(id *uuid.UUID) *BusinessCreate {
-	if id != nil {
-		bc = bc.SetUsersID(*id)
+// AddUsers adds the "users" edges to the User entity.
+func (bc *BusinessCreate) AddUsers(u ...*User) *BusinessCreate {
+	ids := make([]uuid.UUID, len(u))
+	for i := range u {
+		ids[i] = u[i].ID
 	}
-	return bc
-}
-
-// SetUsers sets the "users" edge to the User entity.
-func (bc *BusinessCreate) SetUsers(u *User) *BusinessCreate {
-	return bc.SetUsersID(u.ID)
+	return bc.AddUserIDs(ids...)
 }
 
 // Mutation returns the BusinessMutation object of the builder.
@@ -431,10 +427,10 @@ func (bc *BusinessCreate) createSpec() (*Business, *sqlgraph.CreateSpec) {
 	}
 	if nodes := bc.mutation.UsersIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
 			Table:   business.UsersTable,
-			Columns: []string{business.UsersColumn},
+			Columns: business.UsersPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
@@ -443,7 +439,6 @@ func (bc *BusinessCreate) createSpec() (*Business, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.user_businesses = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

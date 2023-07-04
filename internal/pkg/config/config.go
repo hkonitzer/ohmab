@@ -6,12 +6,15 @@ import (
 	"sync"
 )
 
+const DevelopmentEnvironment = "DEVELOPMENT"
+
 // Configurations exported
 type Configurations struct {
-	Server      ServerConfigurations
-	Database    DatabaseConfigurations
-	DEBUG       int
-	ENVIRONMENT string
+	Server         ServerConfigurations
+	Database       DatabaseConfigurations
+	DEBUG          int
+	ENVIRONMENT    string
+	OAUTHSECRETKEY string
 }
 
 // ServerConfigurations exported
@@ -51,7 +54,18 @@ func GetConfiguration() (*Configurations, error) {
 	})
 	return configurations, err
 }
-
+func GetConfigurationX() *Configurations {
+	if configurations == nil {
+		once.Do(func() {
+			var err error = nil
+			configurations, err = ReadConfiguration()
+			if err != nil {
+				panic(err)
+			}
+		})
+	}
+	return configurations
+}
 func ReadConfiguration() (*Configurations, error) {
 	viper.SetConfigName("config")
 
@@ -70,7 +84,8 @@ func ReadConfiguration() (*Configurations, error) {
 	viper.SetDefault("database.dbname", "ohmab")
 	viper.SetDefault("database.dbuser", "ohmab")
 	viper.SetDefault("DEBUG", 0)
-	viper.SetDefault("ENVIRONMENT", "DEVELOPMENT")
+	viper.SetDefault("ENVIRONMENT", DevelopmentEnvironment)
+	viper.SetDefault("OAUTHSECRETKEY", "OHMAB-Secret-Key")
 
 	if err := viper.ReadInConfig(); err != nil {
 		fmt.Printf("Error reading config file, %s", err)

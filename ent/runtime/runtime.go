@@ -4,6 +4,7 @@
 package runtime
 
 import (
+	"context"
 	"time"
 
 	"github.com/google/uuid"
@@ -14,6 +15,9 @@ import (
 	"hynie.de/ohmab/ent/tag"
 	"hynie.de/ohmab/ent/timetable"
 	"hynie.de/ohmab/ent/user"
+
+	"entgo.io/ent"
+	"entgo.io/ent/privacy"
 )
 
 // The init function reads all schema descriptors with runtime code
@@ -38,8 +42,29 @@ func init() {
 	address.DefaultUpdatedAt = addressDescUpdatedAt.Default.(func() time.Time)
 	// address.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	address.UpdateDefaultUpdatedAt = addressDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// addressDescLocale is the schema descriptor for locale field.
+	addressDescLocale := addressFields[7].Descriptor()
+	// address.DefaultLocale holds the default value on creation for the locale field.
+	address.DefaultLocale = addressDescLocale.Default.(string)
+	// address.LocaleValidator is a validator for the "locale" field. It is called by the builders before save.
+	address.LocaleValidator = func() func(string) error {
+		validators := addressDescLocale.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+			validators[2].(func(string) error),
+		}
+		return func(locale string) error {
+			for _, fn := range fns {
+				if err := fn(locale); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
 	// addressDescPrimary is the schema descriptor for primary field.
-	addressDescPrimary := addressFields[7].Descriptor()
+	addressDescPrimary := addressFields[8].Descriptor()
 	// address.DefaultPrimary holds the default value on creation for the primary field.
 	address.DefaultPrimary = addressDescPrimary.Default.(bool)
 	// addressDescID is the schema descriptor for id field.
@@ -69,9 +94,20 @@ func init() {
 	// auditlog.DefaultID holds the default value on creation for the id field.
 	auditlog.DefaultID = auditlogDescID.Default.(func() uuid.UUID)
 	businessMixin := schema.Business{}.Mixin()
+	business.Policy = privacy.NewPolicies(schema.Business{})
+	business.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := business.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
 	businessHooks := schema.Business{}.Hooks()
-	business.Hooks[0] = businessHooks[0]
-	business.Hooks[1] = businessHooks[1]
+
+	business.Hooks[1] = businessHooks[0]
+
+	business.Hooks[2] = businessHooks[1]
 	businessMixinFields0 := businessMixin[0].Fields()
 	_ = businessMixinFields0
 	businessFields := schema.Business{}.Fields()
@@ -155,6 +191,8 @@ func init() {
 	user.Hooks[0] = userHooks[0]
 	userMixinFields0 := userMixin[0].Fields()
 	_ = userMixinFields0
+	userMixinFields1 := userMixin[1].Fields()
+	_ = userMixinFields1
 	userFields := schema.User{}.Fields()
 	_ = userFields
 	// userDescCreatedAt is the schema descriptor for created_at field.
@@ -167,18 +205,26 @@ func init() {
 	user.DefaultUpdatedAt = userDescUpdatedAt.Default.(func() time.Time)
 	// user.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	user.UpdateDefaultUpdatedAt = userDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// userDescUsePublicapi is the schema descriptor for use_publicapi field.
+	userDescUsePublicapi := userMixinFields1[0].Descriptor()
+	// user.DefaultUsePublicapi holds the default value on creation for the use_publicapi field.
+	user.DefaultUsePublicapi = userDescUsePublicapi.Default.(string)
+	// userDescLogin is the schema descriptor for login field.
+	userDescLogin := userFields[1].Descriptor()
+	// user.LoginValidator is a validator for the "login" field. It is called by the builders before save.
+	user.LoginValidator = userDescLogin.Validators[0].(func(string) error)
 	// userDescSurname is the schema descriptor for surname field.
-	userDescSurname := userFields[1].Descriptor()
+	userDescSurname := userFields[2].Descriptor()
 	// user.SurnameValidator is a validator for the "surname" field. It is called by the builders before save.
 	user.SurnameValidator = userDescSurname.Validators[0].(func(string) error)
 	// userDescActive is the schema descriptor for active field.
-	userDescActive := userFields[7].Descriptor()
+	userDescActive := userFields[8].Descriptor()
 	// user.DefaultActive holds the default value on creation for the active field.
 	user.DefaultActive = userDescActive.Default.(bool)
 	// userDescRole is the schema descriptor for role field.
-	userDescRole := userFields[8].Descriptor()
+	userDescRole := userFields[9].Descriptor()
 	// user.DefaultRole holds the default value on creation for the role field.
-	user.DefaultRole = userDescRole.Default.(int)
+	user.DefaultRole = userDescRole.Default.(string)
 	// userDescID is the schema descriptor for id field.
 	userDescID := userFields[0].Descriptor()
 	// user.DefaultID holds the default value on creation for the id field.

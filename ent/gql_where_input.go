@@ -169,6 +169,21 @@ type AddressWhereInput struct {
 	CountryEqualFold    *string  `json:"countryEqualFold,omitempty"`
 	CountryContainsFold *string  `json:"countryContainsFold,omitempty"`
 
+	// "locale" field predicates.
+	Locale             *string  `json:"locale,omitempty"`
+	LocaleNEQ          *string  `json:"localeNEQ,omitempty"`
+	LocaleIn           []string `json:"localeIn,omitempty"`
+	LocaleNotIn        []string `json:"localeNotIn,omitempty"`
+	LocaleGT           *string  `json:"localeGT,omitempty"`
+	LocaleGTE          *string  `json:"localeGTE,omitempty"`
+	LocaleLT           *string  `json:"localeLT,omitempty"`
+	LocaleLTE          *string  `json:"localeLTE,omitempty"`
+	LocaleContains     *string  `json:"localeContains,omitempty"`
+	LocaleHasPrefix    *string  `json:"localeHasPrefix,omitempty"`
+	LocaleHasSuffix    *string  `json:"localeHasSuffix,omitempty"`
+	LocaleEqualFold    *string  `json:"localeEqualFold,omitempty"`
+	LocaleContainsFold *string  `json:"localeContainsFold,omitempty"`
+
 	// "primary" field predicates.
 	Primary    *bool `json:"primary,omitempty"`
 	PrimaryNEQ *bool `json:"primaryNEQ,omitempty"`
@@ -658,6 +673,45 @@ func (i *AddressWhereInput) P() (predicate.Address, error) {
 	}
 	if i.CountryContainsFold != nil {
 		predicates = append(predicates, address.CountryContainsFold(*i.CountryContainsFold))
+	}
+	if i.Locale != nil {
+		predicates = append(predicates, address.LocaleEQ(*i.Locale))
+	}
+	if i.LocaleNEQ != nil {
+		predicates = append(predicates, address.LocaleNEQ(*i.LocaleNEQ))
+	}
+	if len(i.LocaleIn) > 0 {
+		predicates = append(predicates, address.LocaleIn(i.LocaleIn...))
+	}
+	if len(i.LocaleNotIn) > 0 {
+		predicates = append(predicates, address.LocaleNotIn(i.LocaleNotIn...))
+	}
+	if i.LocaleGT != nil {
+		predicates = append(predicates, address.LocaleGT(*i.LocaleGT))
+	}
+	if i.LocaleGTE != nil {
+		predicates = append(predicates, address.LocaleGTE(*i.LocaleGTE))
+	}
+	if i.LocaleLT != nil {
+		predicates = append(predicates, address.LocaleLT(*i.LocaleLT))
+	}
+	if i.LocaleLTE != nil {
+		predicates = append(predicates, address.LocaleLTE(*i.LocaleLTE))
+	}
+	if i.LocaleContains != nil {
+		predicates = append(predicates, address.LocaleContains(*i.LocaleContains))
+	}
+	if i.LocaleHasPrefix != nil {
+		predicates = append(predicates, address.LocaleHasPrefix(*i.LocaleHasPrefix))
+	}
+	if i.LocaleHasSuffix != nil {
+		predicates = append(predicates, address.LocaleHasSuffix(*i.LocaleHasSuffix))
+	}
+	if i.LocaleEqualFold != nil {
+		predicates = append(predicates, address.LocaleEqualFold(*i.LocaleEqualFold))
+	}
+	if i.LocaleContainsFold != nil {
+		predicates = append(predicates, address.LocaleContainsFold(*i.LocaleContainsFold))
 	}
 	if i.Primary != nil {
 		predicates = append(predicates, address.PrimaryEQ(*i.Primary))
@@ -3055,6 +3109,36 @@ type UserWhereInput struct {
 	DeletedAtIsNil  bool        `json:"deletedAtIsNil,omitempty"`
 	DeletedAtNotNil bool        `json:"deletedAtNotNil,omitempty"`
 
+	// "use_publicapi" field predicates.
+	UsePublicapi             *string  `json:"usePublicapi,omitempty"`
+	UsePublicapiNEQ          *string  `json:"usePublicapiNEQ,omitempty"`
+	UsePublicapiIn           []string `json:"usePublicapiIn,omitempty"`
+	UsePublicapiNotIn        []string `json:"usePublicapiNotIn,omitempty"`
+	UsePublicapiGT           *string  `json:"usePublicapiGT,omitempty"`
+	UsePublicapiGTE          *string  `json:"usePublicapiGTE,omitempty"`
+	UsePublicapiLT           *string  `json:"usePublicapiLT,omitempty"`
+	UsePublicapiLTE          *string  `json:"usePublicapiLTE,omitempty"`
+	UsePublicapiContains     *string  `json:"usePublicapiContains,omitempty"`
+	UsePublicapiHasPrefix    *string  `json:"usePublicapiHasPrefix,omitempty"`
+	UsePublicapiHasSuffix    *string  `json:"usePublicapiHasSuffix,omitempty"`
+	UsePublicapiEqualFold    *string  `json:"usePublicapiEqualFold,omitempty"`
+	UsePublicapiContainsFold *string  `json:"usePublicapiContainsFold,omitempty"`
+
+	// "login" field predicates.
+	Login             *string  `json:"login,omitempty"`
+	LoginNEQ          *string  `json:"loginNEQ,omitempty"`
+	LoginIn           []string `json:"loginIn,omitempty"`
+	LoginNotIn        []string `json:"loginNotIn,omitempty"`
+	LoginGT           *string  `json:"loginGT,omitempty"`
+	LoginGTE          *string  `json:"loginGTE,omitempty"`
+	LoginLT           *string  `json:"loginLT,omitempty"`
+	LoginLTE          *string  `json:"loginLTE,omitempty"`
+	LoginContains     *string  `json:"loginContains,omitempty"`
+	LoginHasPrefix    *string  `json:"loginHasPrefix,omitempty"`
+	LoginHasSuffix    *string  `json:"loginHasSuffix,omitempty"`
+	LoginEqualFold    *string  `json:"loginEqualFold,omitempty"`
+	LoginContainsFold *string  `json:"loginContainsFold,omitempty"`
+
 	// "surname" field predicates.
 	Surname             *string  `json:"surname,omitempty"`
 	SurnameNEQ          *string  `json:"surnameNEQ,omitempty"`
@@ -3156,14 +3240,19 @@ type UserWhereInput struct {
 	ActiveNEQ *bool `json:"activeNEQ,omitempty"`
 
 	// "role" field predicates.
-	Role      *int  `json:"role,omitempty"`
-	RoleNEQ   *int  `json:"roleNEQ,omitempty"`
-	RoleIn    []int `json:"roleIn,omitempty"`
-	RoleNotIn []int `json:"roleNotIn,omitempty"`
-	RoleGT    *int  `json:"roleGT,omitempty"`
-	RoleGTE   *int  `json:"roleGTE,omitempty"`
-	RoleLT    *int  `json:"roleLT,omitempty"`
-	RoleLTE   *int  `json:"roleLTE,omitempty"`
+	Role             *string  `json:"role,omitempty"`
+	RoleNEQ          *string  `json:"roleNEQ,omitempty"`
+	RoleIn           []string `json:"roleIn,omitempty"`
+	RoleNotIn        []string `json:"roleNotIn,omitempty"`
+	RoleGT           *string  `json:"roleGT,omitempty"`
+	RoleGTE          *string  `json:"roleGTE,omitempty"`
+	RoleLT           *string  `json:"roleLT,omitempty"`
+	RoleLTE          *string  `json:"roleLTE,omitempty"`
+	RoleContains     *string  `json:"roleContains,omitempty"`
+	RoleHasPrefix    *string  `json:"roleHasPrefix,omitempty"`
+	RoleHasSuffix    *string  `json:"roleHasSuffix,omitempty"`
+	RoleEqualFold    *string  `json:"roleEqualFold,omitempty"`
+	RoleContainsFold *string  `json:"roleContainsFold,omitempty"`
 
 	// "businesses" edge predicates.
 	HasBusinesses     *bool                 `json:"hasBusinesses,omitempty"`
@@ -3350,6 +3439,84 @@ func (i *UserWhereInput) P() (predicate.User, error) {
 	}
 	if i.DeletedAtNotNil {
 		predicates = append(predicates, user.DeletedAtNotNil())
+	}
+	if i.UsePublicapi != nil {
+		predicates = append(predicates, user.UsePublicapiEQ(*i.UsePublicapi))
+	}
+	if i.UsePublicapiNEQ != nil {
+		predicates = append(predicates, user.UsePublicapiNEQ(*i.UsePublicapiNEQ))
+	}
+	if len(i.UsePublicapiIn) > 0 {
+		predicates = append(predicates, user.UsePublicapiIn(i.UsePublicapiIn...))
+	}
+	if len(i.UsePublicapiNotIn) > 0 {
+		predicates = append(predicates, user.UsePublicapiNotIn(i.UsePublicapiNotIn...))
+	}
+	if i.UsePublicapiGT != nil {
+		predicates = append(predicates, user.UsePublicapiGT(*i.UsePublicapiGT))
+	}
+	if i.UsePublicapiGTE != nil {
+		predicates = append(predicates, user.UsePublicapiGTE(*i.UsePublicapiGTE))
+	}
+	if i.UsePublicapiLT != nil {
+		predicates = append(predicates, user.UsePublicapiLT(*i.UsePublicapiLT))
+	}
+	if i.UsePublicapiLTE != nil {
+		predicates = append(predicates, user.UsePublicapiLTE(*i.UsePublicapiLTE))
+	}
+	if i.UsePublicapiContains != nil {
+		predicates = append(predicates, user.UsePublicapiContains(*i.UsePublicapiContains))
+	}
+	if i.UsePublicapiHasPrefix != nil {
+		predicates = append(predicates, user.UsePublicapiHasPrefix(*i.UsePublicapiHasPrefix))
+	}
+	if i.UsePublicapiHasSuffix != nil {
+		predicates = append(predicates, user.UsePublicapiHasSuffix(*i.UsePublicapiHasSuffix))
+	}
+	if i.UsePublicapiEqualFold != nil {
+		predicates = append(predicates, user.UsePublicapiEqualFold(*i.UsePublicapiEqualFold))
+	}
+	if i.UsePublicapiContainsFold != nil {
+		predicates = append(predicates, user.UsePublicapiContainsFold(*i.UsePublicapiContainsFold))
+	}
+	if i.Login != nil {
+		predicates = append(predicates, user.LoginEQ(*i.Login))
+	}
+	if i.LoginNEQ != nil {
+		predicates = append(predicates, user.LoginNEQ(*i.LoginNEQ))
+	}
+	if len(i.LoginIn) > 0 {
+		predicates = append(predicates, user.LoginIn(i.LoginIn...))
+	}
+	if len(i.LoginNotIn) > 0 {
+		predicates = append(predicates, user.LoginNotIn(i.LoginNotIn...))
+	}
+	if i.LoginGT != nil {
+		predicates = append(predicates, user.LoginGT(*i.LoginGT))
+	}
+	if i.LoginGTE != nil {
+		predicates = append(predicates, user.LoginGTE(*i.LoginGTE))
+	}
+	if i.LoginLT != nil {
+		predicates = append(predicates, user.LoginLT(*i.LoginLT))
+	}
+	if i.LoginLTE != nil {
+		predicates = append(predicates, user.LoginLTE(*i.LoginLTE))
+	}
+	if i.LoginContains != nil {
+		predicates = append(predicates, user.LoginContains(*i.LoginContains))
+	}
+	if i.LoginHasPrefix != nil {
+		predicates = append(predicates, user.LoginHasPrefix(*i.LoginHasPrefix))
+	}
+	if i.LoginHasSuffix != nil {
+		predicates = append(predicates, user.LoginHasSuffix(*i.LoginHasSuffix))
+	}
+	if i.LoginEqualFold != nil {
+		predicates = append(predicates, user.LoginEqualFold(*i.LoginEqualFold))
+	}
+	if i.LoginContainsFold != nil {
+		predicates = append(predicates, user.LoginContainsFold(*i.LoginContainsFold))
 	}
 	if i.Surname != nil {
 		predicates = append(predicates, user.SurnameEQ(*i.Surname))
@@ -3632,6 +3799,21 @@ func (i *UserWhereInput) P() (predicate.User, error) {
 	}
 	if i.RoleLTE != nil {
 		predicates = append(predicates, user.RoleLTE(*i.RoleLTE))
+	}
+	if i.RoleContains != nil {
+		predicates = append(predicates, user.RoleContains(*i.RoleContains))
+	}
+	if i.RoleHasPrefix != nil {
+		predicates = append(predicates, user.RoleHasPrefix(*i.RoleHasPrefix))
+	}
+	if i.RoleHasSuffix != nil {
+		predicates = append(predicates, user.RoleHasSuffix(*i.RoleHasSuffix))
+	}
+	if i.RoleEqualFold != nil {
+		predicates = append(predicates, user.RoleEqualFold(*i.RoleEqualFold))
+	}
+	if i.RoleContainsFold != nil {
+		predicates = append(predicates, user.RoleContainsFold(*i.RoleContainsFold))
 	}
 
 	if i.HasBusinesses != nil {

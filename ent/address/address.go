@@ -35,6 +35,8 @@ const (
 	FieldState = "state"
 	// FieldCountry holds the string denoting the country field in the database.
 	FieldCountry = "country"
+	// FieldLocale holds the string denoting the locale field in the database.
+	FieldLocale = "locale"
 	// FieldPrimary holds the string denoting the primary field in the database.
 	FieldPrimary = "primary"
 	// FieldTelephone holds the string denoting the telephone field in the database.
@@ -75,6 +77,7 @@ var Columns = []string{
 	FieldZip,
 	FieldState,
 	FieldCountry,
+	FieldLocale,
 	FieldPrimary,
 	FieldTelephone,
 	FieldComment,
@@ -114,6 +117,10 @@ var (
 	DefaultUpdatedAt func() time.Time
 	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
 	UpdateDefaultUpdatedAt func() time.Time
+	// DefaultLocale holds the default value on creation for the "locale" field.
+	DefaultLocale string
+	// LocaleValidator is a validator for the "locale" field. It is called by the builders before save.
+	LocaleValidator func(string) error
 	// DefaultPrimary holds the default value on creation for the "primary" field.
 	DefaultPrimary bool
 	// DefaultID holds the default value on creation for the "id" field.
@@ -171,6 +178,11 @@ func ByState(opts ...sql.OrderTermOption) OrderOption {
 // ByCountry orders the results by the country field.
 func ByCountry(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCountry, opts...).ToFunc()
+}
+
+// ByLocale orders the results by the locale field.
+func ByLocale(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldLocale, opts...).ToFunc()
 }
 
 // ByPrimary orders the results by the primary field.

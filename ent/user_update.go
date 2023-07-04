@@ -59,6 +59,26 @@ func (uu *UserUpdate) ClearDeletedAt() *UserUpdate {
 	return uu
 }
 
+// SetUsePublicapi sets the "use_publicapi" field.
+func (uu *UserUpdate) SetUsePublicapi(s string) *UserUpdate {
+	uu.mutation.SetUsePublicapi(s)
+	return uu
+}
+
+// SetNillableUsePublicapi sets the "use_publicapi" field if the given value is not nil.
+func (uu *UserUpdate) SetNillableUsePublicapi(s *string) *UserUpdate {
+	if s != nil {
+		uu.SetUsePublicapi(*s)
+	}
+	return uu
+}
+
+// SetLogin sets the "login" field.
+func (uu *UserUpdate) SetLogin(s string) *UserUpdate {
+	uu.mutation.SetLogin(s)
+	return uu
+}
+
 // SetSurname sets the "surname" field.
 func (uu *UserUpdate) SetSurname(s string) *UserUpdate {
 	uu.mutation.SetSurname(s)
@@ -152,23 +172,16 @@ func (uu *UserUpdate) SetNillableActive(b *bool) *UserUpdate {
 }
 
 // SetRole sets the "role" field.
-func (uu *UserUpdate) SetRole(i int) *UserUpdate {
-	uu.mutation.ResetRole()
-	uu.mutation.SetRole(i)
+func (uu *UserUpdate) SetRole(s string) *UserUpdate {
+	uu.mutation.SetRole(s)
 	return uu
 }
 
 // SetNillableRole sets the "role" field if the given value is not nil.
-func (uu *UserUpdate) SetNillableRole(i *int) *UserUpdate {
-	if i != nil {
-		uu.SetRole(*i)
+func (uu *UserUpdate) SetNillableRole(s *string) *UserUpdate {
+	if s != nil {
+		uu.SetRole(*s)
 	}
-	return uu
-}
-
-// AddRole adds i to the "role" field.
-func (uu *UserUpdate) AddRole(i int) *UserUpdate {
-	uu.mutation.AddRole(i)
 	return uu
 }
 
@@ -329,6 +342,11 @@ func (uu *UserUpdate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (uu *UserUpdate) check() error {
+	if v, ok := uu.mutation.Login(); ok {
+		if err := user.LoginValidator(v); err != nil {
+			return &ValidationError{Name: "login", err: fmt.Errorf(`ent: validator failed for field "User.login": %w`, err)}
+		}
+	}
 	if v, ok := uu.mutation.Surname(); ok {
 		if err := user.SurnameValidator(v); err != nil {
 			return &ValidationError{Name: "surname", err: fmt.Errorf(`ent: validator failed for field "User.surname": %w`, err)}
@@ -357,6 +375,12 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if uu.mutation.DeletedAtCleared() {
 		_spec.ClearField(user.FieldDeletedAt, field.TypeTime)
+	}
+	if value, ok := uu.mutation.UsePublicapi(); ok {
+		_spec.SetField(user.FieldUsePublicapi, field.TypeString, value)
+	}
+	if value, ok := uu.mutation.Login(); ok {
+		_spec.SetField(user.FieldLogin, field.TypeString, value)
 	}
 	if value, ok := uu.mutation.Surname(); ok {
 		_spec.SetField(user.FieldSurname, field.TypeString, value)
@@ -389,17 +413,14 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		_spec.SetField(user.FieldActive, field.TypeBool, value)
 	}
 	if value, ok := uu.mutation.Role(); ok {
-		_spec.SetField(user.FieldRole, field.TypeInt, value)
-	}
-	if value, ok := uu.mutation.AddedRole(); ok {
-		_spec.AddField(user.FieldRole, field.TypeInt, value)
+		_spec.SetField(user.FieldRole, field.TypeString, value)
 	}
 	if uu.mutation.BusinessesCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
 			Table:   user.BusinessesTable,
-			Columns: []string{user.BusinessesColumn},
+			Columns: user.BusinessesPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(business.FieldID, field.TypeUUID),
@@ -409,10 +430,10 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := uu.mutation.RemovedBusinessesIDs(); len(nodes) > 0 && !uu.mutation.BusinessesCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
 			Table:   user.BusinessesTable,
-			Columns: []string{user.BusinessesColumn},
+			Columns: user.BusinessesPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(business.FieldID, field.TypeUUID),
@@ -425,10 +446,10 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := uu.mutation.BusinessesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
 			Table:   user.BusinessesTable,
-			Columns: []string{user.BusinessesColumn},
+			Columns: user.BusinessesPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(business.FieldID, field.TypeUUID),
@@ -575,6 +596,26 @@ func (uuo *UserUpdateOne) ClearDeletedAt() *UserUpdateOne {
 	return uuo
 }
 
+// SetUsePublicapi sets the "use_publicapi" field.
+func (uuo *UserUpdateOne) SetUsePublicapi(s string) *UserUpdateOne {
+	uuo.mutation.SetUsePublicapi(s)
+	return uuo
+}
+
+// SetNillableUsePublicapi sets the "use_publicapi" field if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableUsePublicapi(s *string) *UserUpdateOne {
+	if s != nil {
+		uuo.SetUsePublicapi(*s)
+	}
+	return uuo
+}
+
+// SetLogin sets the "login" field.
+func (uuo *UserUpdateOne) SetLogin(s string) *UserUpdateOne {
+	uuo.mutation.SetLogin(s)
+	return uuo
+}
+
 // SetSurname sets the "surname" field.
 func (uuo *UserUpdateOne) SetSurname(s string) *UserUpdateOne {
 	uuo.mutation.SetSurname(s)
@@ -668,23 +709,16 @@ func (uuo *UserUpdateOne) SetNillableActive(b *bool) *UserUpdateOne {
 }
 
 // SetRole sets the "role" field.
-func (uuo *UserUpdateOne) SetRole(i int) *UserUpdateOne {
-	uuo.mutation.ResetRole()
-	uuo.mutation.SetRole(i)
+func (uuo *UserUpdateOne) SetRole(s string) *UserUpdateOne {
+	uuo.mutation.SetRole(s)
 	return uuo
 }
 
 // SetNillableRole sets the "role" field if the given value is not nil.
-func (uuo *UserUpdateOne) SetNillableRole(i *int) *UserUpdateOne {
-	if i != nil {
-		uuo.SetRole(*i)
+func (uuo *UserUpdateOne) SetNillableRole(s *string) *UserUpdateOne {
+	if s != nil {
+		uuo.SetRole(*s)
 	}
-	return uuo
-}
-
-// AddRole adds i to the "role" field.
-func (uuo *UserUpdateOne) AddRole(i int) *UserUpdateOne {
-	uuo.mutation.AddRole(i)
 	return uuo
 }
 
@@ -858,6 +892,11 @@ func (uuo *UserUpdateOne) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (uuo *UserUpdateOne) check() error {
+	if v, ok := uuo.mutation.Login(); ok {
+		if err := user.LoginValidator(v); err != nil {
+			return &ValidationError{Name: "login", err: fmt.Errorf(`ent: validator failed for field "User.login": %w`, err)}
+		}
+	}
 	if v, ok := uuo.mutation.Surname(); ok {
 		if err := user.SurnameValidator(v); err != nil {
 			return &ValidationError{Name: "surname", err: fmt.Errorf(`ent: validator failed for field "User.surname": %w`, err)}
@@ -904,6 +943,12 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 	if uuo.mutation.DeletedAtCleared() {
 		_spec.ClearField(user.FieldDeletedAt, field.TypeTime)
 	}
+	if value, ok := uuo.mutation.UsePublicapi(); ok {
+		_spec.SetField(user.FieldUsePublicapi, field.TypeString, value)
+	}
+	if value, ok := uuo.mutation.Login(); ok {
+		_spec.SetField(user.FieldLogin, field.TypeString, value)
+	}
 	if value, ok := uuo.mutation.Surname(); ok {
 		_spec.SetField(user.FieldSurname, field.TypeString, value)
 	}
@@ -935,17 +980,14 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 		_spec.SetField(user.FieldActive, field.TypeBool, value)
 	}
 	if value, ok := uuo.mutation.Role(); ok {
-		_spec.SetField(user.FieldRole, field.TypeInt, value)
-	}
-	if value, ok := uuo.mutation.AddedRole(); ok {
-		_spec.AddField(user.FieldRole, field.TypeInt, value)
+		_spec.SetField(user.FieldRole, field.TypeString, value)
 	}
 	if uuo.mutation.BusinessesCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
 			Table:   user.BusinessesTable,
-			Columns: []string{user.BusinessesColumn},
+			Columns: user.BusinessesPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(business.FieldID, field.TypeUUID),
@@ -955,10 +997,10 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 	}
 	if nodes := uuo.mutation.RemovedBusinessesIDs(); len(nodes) > 0 && !uuo.mutation.BusinessesCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
 			Table:   user.BusinessesTable,
-			Columns: []string{user.BusinessesColumn},
+			Columns: user.BusinessesPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(business.FieldID, field.TypeUUID),
@@ -971,10 +1013,10 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 	}
 	if nodes := uuo.mutation.BusinessesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
 			Table:   user.BusinessesTable,
-			Columns: []string{user.BusinessesColumn},
+			Columns: user.BusinessesPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(business.FieldID, field.TypeUUID),

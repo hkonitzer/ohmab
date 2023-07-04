@@ -54,8 +54,17 @@ func (s *Server) Timetables(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	if err := templates.Tmpl.Execute(w, timetables); err != nil {
+	data := TemplateData{
+		Title: "Timetables",
+		Data:  timetables,
+	}
+	if err := templates.Tmpl.Execute(w, data); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+}
+
+type TemplateData struct {
+	Title string
+	Data  []*ent.Timetable
 }

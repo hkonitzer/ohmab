@@ -18,6 +18,15 @@ var (
 			tel = "0" + tel
 			return strings.ReplaceAll(tel, " ", "")
 		},
+		"convertWebsite": func(website string) string {
+			if strings.HasPrefix(website, "http://") {
+				return website[7:]
+			}
+			if strings.HasPrefix(website, "https://") {
+				return website[8:]
+			}
+			return website
+		},
 	}
 	Tmpl = template.Must(template.New("timetables.tmpl").Funcs(funcMap).ParseFS(resources, "*.tmpl"))
 )

@@ -9,11 +9,12 @@
 
 
     <table>
+        <tbody>
 
 
-                {{- range . }}
+                {{- range .Data }}
                     <tr>
-                    <td><h2>{{ .DatetimeFrom.Format "02.01.2006 15:04" }} &mdash; {{ .DatetimeTo.Format "02.01.2006 15:04" }}</h2></td>
+                    <td><h4>{{ .DatetimeFrom.Format "02.01.2006 15:04" }} &mdash; {{ .DatetimeTo.Format "02.01.2006 15:04" }}</h4></td>
                     </tr>
 
                     <tr>
@@ -35,13 +36,18 @@
                     <tr>
                         <td><a href="tel:{{ .Edges.Address.Telephone }}">{{ convertTel .Edges.Address.Telephone }}</a></td>
                     </tr>
+                    {{ if .Edges.Address.Edges.Business.Website }}
                     <tr>
-                        <td>Stand: {{ .UpdatedAt.Format "01.02.2006 15:04" }}
+                        <td><a href="{{ .Edges.Address.Edges.Business.Website }}">{{ convertWebsite .Edges.Address.Edges.Business.Website }}</a></td>
+                    </tr>
+                    {{ end }}
+                    <tr>
+                        <td class="post-meta">Stand: {{ .UpdatedAt.Format "01.02.2006 15:04" }}</td>
                     </tr>
                     {{end}}
                 {{- end }}
 
-
+        </tbody>
     </table>
 </body>
 </html>

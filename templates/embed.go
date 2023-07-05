@@ -28,5 +28,10 @@ var (
 			return website
 		},
 	}
-	Tmpl = template.Must(template.New("timetables.tmpl").Funcs(funcMap).ParseFS(resources, "*.tmpl"))
+
+	FullTimeTableHTMLTemplate = template.Must(
+		template.New("timetables.tmpl").Funcs(funcMap).ParseFS(resources, "*.tmpl"))
+
+	TableTimeTableHTMLTemplate = template.Must(
+		template.New("table").Funcs(funcMap).ParseFS(resources, "timetablestable.tmpl"))
 )

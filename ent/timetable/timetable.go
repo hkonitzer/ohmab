@@ -273,7 +273,7 @@ func (e *Type) UnmarshalGQL(val interface{}) error {
 	}
 	*e = Type(str)
 	if err := TypeValidator(*e); err != nil {
-		return fmt.Errorf("%s is not a valid Type", str)
+		return fmt.Errorf("%s is not a valid TimetableType", str)
 	}
 	return nil
 }

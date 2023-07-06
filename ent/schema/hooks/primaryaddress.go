@@ -24,5 +24,5 @@ func EnsureOnlyOnePrimaryAddress() ent.Hook {
 			return next.Mutate(ctx, m)
 		})
 	}
-	return hook.On(hk, ent.OpCreate|ent.OpUpdate)
+	return hook.On(hk, ent.OpCreate|ent.OpUpdate|ent.OpUpdateOne)
 }

@@ -45,6 +45,9 @@ type ResolverRoot interface {
 	AuditLog() AuditLogResolver
 	Mutation() MutationResolver
 	Query() QueryResolver
+	Timetable() TimetableResolver
+	CreateTimetableInput() CreateTimetableInputResolver
+	TimetableWhereInput() TimetableWhereInputResolver
 }
 
 type DirectiveRoot struct {
@@ -161,6 +164,7 @@ type ComplexityRoot struct {
 		DatetimeFrom           func(childComplexity int) int
 		DatetimeTo             func(childComplexity int) int
 		DeletedAt              func(childComplexity int) int
+		Duration               func(childComplexity int) int
 		ID                     func(childComplexity int) int
 		TimeWholeDay           func(childComplexity int) int
 		Type                   func(childComplexity int) int
@@ -208,6 +212,23 @@ type QueryResolver interface {
 	Addresses(ctx context.Context, after *entgql.Cursor[uuid.UUID], first *int, before *entgql.Cursor[uuid.UUID], last *int, where *ent.AddressWhereInput) (*ent.AddressConnection, error)
 	Businesses(ctx context.Context, after *entgql.Cursor[uuid.UUID], first *int, before *entgql.Cursor[uuid.UUID], last *int, orderBy []*ent.BusinessOrder, where *ent.BusinessWhereInput) (*ent.BusinessConnection, error)
 	Timetables(ctx context.Context, after *entgql.Cursor[uuid.UUID], first *int, before *entgql.Cursor[uuid.UUID], last *int, orderBy []*ent.TimetableOrder, where *ent.TimetableWhereInput) (*ent.TimetableConnection, error)
+}
+type TimetableResolver interface {
+	Duration(ctx context.Context, obj *ent.Timetable) (*int, error)
+}
+
+type CreateTimetableInputResolver interface {
+	Duration(ctx context.Context, obj *ent.CreateTimetableInput, data *int) error
+}
+type TimetableWhereInputResolver interface {
+	Duration(ctx context.Context, obj *ent.TimetableWhereInput, data *int) error
+	DurationNeq(ctx context.Context, obj *ent.TimetableWhereInput, data *int) error
+	DurationIn(ctx context.Context, obj *ent.TimetableWhereInput, data []int) error
+	DurationNotIn(ctx context.Context, obj *ent.TimetableWhereInput, data []int) error
+	DurationGt(ctx context.Context, obj *ent.TimetableWhereInput, data *int) error
+	DurationGte(ctx context.Context, obj *ent.TimetableWhereInput, data *int) error
+	DurationLt(ctx context.Context, obj *ent.TimetableWhereInput, data *int) error
+	DurationLte(ctx context.Context, obj *ent.TimetableWhereInput, data *int) error
 }
 
 type executableSchema struct {
@@ -786,6 +807,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Timetable.DeletedAt(childComplexity), true
+
+	case "Timetable.duration":
+		if e.complexity.Timetable.Duration == nil {
+			break
+		}
+
+		return e.complexity.Timetable.Duration(childComplexity), true
 
 	case "Timetable.id":
 		if e.complexity.Timetable.ID == nil {
@@ -2064,6 +2092,8 @@ func (ec *executionContext) fieldContext_Address_timetables(ctx context.Context,
 				return ec.fieldContext_Timetable_type(ctx, field)
 			case "datetimeFrom":
 				return ec.fieldContext_Timetable_datetimeFrom(ctx, field)
+			case "duration":
+				return ec.fieldContext_Timetable_duration(ctx, field)
 			case "datetimeTo":
 				return ec.fieldContext_Timetable_datetimeTo(ctx, field)
 			case "timeWholeDay":
@@ -4967,6 +4997,47 @@ func (ec *executionContext) fieldContext_Timetable_datetimeFrom(ctx context.Cont
 	return fc, nil
 }
 
+func (ec *executionContext) _Timetable_duration(ctx context.Context, field graphql.CollectedField, obj *ent.Timetable) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Timetable_duration(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Timetable().Duration(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Timetable_duration(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Timetable",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Timetable_datetimeTo(ctx context.Context, field graphql.CollectedField, obj *ent.Timetable) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Timetable_datetimeTo(ctx, field)
 	if err != nil {
@@ -4988,11 +5059,14 @@ func (ec *executionContext) _Timetable_datetimeTo(ctx context.Context, field gra
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
 	res := resTmp.(time.Time)
 	fc.Result = res
-	return ec.marshalOTime2timeᚐTime(ctx, field.Selections, res)
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Timetable_datetimeTo(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -5597,6 +5671,8 @@ func (ec *executionContext) fieldContext_TimetableEdge_node(ctx context.Context,
 				return ec.fieldContext_Timetable_type(ctx, field)
 			case "datetimeFrom":
 				return ec.fieldContext_Timetable_datetimeFrom(ctx, field)
+			case "duration":
+				return ec.fieldContext_Timetable_duration(ctx, field)
 			case "datetimeTo":
 				return ec.fieldContext_Timetable_datetimeTo(ctx, field)
 			case "timeWholeDay":
@@ -6277,6 +6353,8 @@ func (ec *executionContext) fieldContext_User_timetable(ctx context.Context, fie
 				return ec.fieldContext_Timetable_type(ctx, field)
 			case "datetimeFrom":
 				return ec.fieldContext_Timetable_datetimeFrom(ctx, field)
+			case "duration":
+				return ec.fieldContext_Timetable_duration(ctx, field)
 			case "datetimeTo":
 				return ec.fieldContext_Timetable_datetimeTo(ctx, field)
 			case "timeWholeDay":
@@ -11885,7 +11963,7 @@ func (ec *executionContext) unmarshalInputCreateTimetableInput(ctx context.Conte
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"createdAt", "updatedAt", "deletedAt", "type", "datetimeFrom", "datetimeTo", "timeWholeDay", "comment", "availabilityByPhone", "availabilityByEmail", "availabilityBySms", "availabilityByWhatsapp", "addressID", "usersOnDutyIDs"}
+	fieldsInOrder := [...]string{"createdAt", "updatedAt", "deletedAt", "type", "datetimeFrom", "duration", "datetimeTo", "timeWholeDay", "comment", "availabilityByPhone", "availabilityByEmail", "availabilityBySms", "availabilityByWhatsapp", "addressID", "usersOnDutyIDs"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -11937,11 +12015,22 @@ func (ec *executionContext) unmarshalInputCreateTimetableInput(ctx context.Conte
 				return it, err
 			}
 			it.DatetimeFrom = data
+		case "duration":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("duration"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			if err = ec.resolvers.CreateTimetableInput().Duration(ctx, &it, data); err != nil {
+				return it, err
+			}
 		case "datetimeTo":
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("datetimeTo"))
-			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			data, err := ec.unmarshalNTime2timeᚐTime(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -12756,7 +12845,7 @@ func (ec *executionContext) unmarshalInputTimetableWhereInput(ctx context.Contex
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createdAt", "createdAtNEQ", "createdAtIn", "createdAtNotIn", "createdAtGT", "createdAtGTE", "createdAtLT", "createdAtLTE", "updatedAt", "updatedAtNEQ", "updatedAtIn", "updatedAtNotIn", "updatedAtGT", "updatedAtGTE", "updatedAtLT", "updatedAtLTE", "deletedAt", "deletedAtNEQ", "deletedAtIn", "deletedAtNotIn", "deletedAtGT", "deletedAtGTE", "deletedAtLT", "deletedAtLTE", "deletedAtIsNil", "deletedAtNotNil", "type", "typeNEQ", "typeIn", "typeNotIn", "datetimeFrom", "datetimeFromNEQ", "datetimeFromIn", "datetimeFromNotIn", "datetimeFromGT", "datetimeFromGTE", "datetimeFromLT", "datetimeFromLTE", "datetimeFromIsNil", "datetimeFromNotNil", "datetimeTo", "datetimeToNEQ", "datetimeToIn", "datetimeToNotIn", "datetimeToGT", "datetimeToGTE", "datetimeToLT", "datetimeToLTE", "datetimeToIsNil", "datetimeToNotNil", "timeWholeDay", "timeWholeDayNEQ", "comment", "commentNEQ", "commentIn", "commentNotIn", "commentGT", "commentGTE", "commentLT", "commentLTE", "commentContains", "commentHasPrefix", "commentHasSuffix", "commentIsNil", "commentNotNil", "commentEqualFold", "commentContainsFold", "availabilityByPhone", "availabilityByPhoneNEQ", "availabilityByPhoneIn", "availabilityByPhoneNotIn", "availabilityByPhoneGT", "availabilityByPhoneGTE", "availabilityByPhoneLT", "availabilityByPhoneLTE", "availabilityByPhoneContains", "availabilityByPhoneHasPrefix", "availabilityByPhoneHasSuffix", "availabilityByPhoneIsNil", "availabilityByPhoneNotNil", "availabilityByPhoneEqualFold", "availabilityByPhoneContainsFold", "availabilityByEmail", "availabilityByEmailNEQ", "availabilityByEmailIn", "availabilityByEmailNotIn", "availabilityByEmailGT", "availabilityByEmailGTE", "availabilityByEmailLT", "availabilityByEmailLTE", "availabilityByEmailContains", "availabilityByEmailHasPrefix", "availabilityByEmailHasSuffix", "availabilityByEmailIsNil", "availabilityByEmailNotNil", "availabilityByEmailEqualFold", "availabilityByEmailContainsFold", "availabilityBySms", "availabilityBySmsNEQ", "availabilityBySmsIn", "availabilityBySmsNotIn", "availabilityBySmsGT", "availabilityBySmsGTE", "availabilityBySmsLT", "availabilityBySmsLTE", "availabilityBySmsContains", "availabilityBySmsHasPrefix", "availabilityBySmsHasSuffix", "availabilityBySmsIsNil", "availabilityBySmsNotNil", "availabilityBySmsEqualFold", "availabilityBySmsContainsFold", "availabilityByWhatsapp", "availabilityByWhatsappNEQ", "availabilityByWhatsappIn", "availabilityByWhatsappNotIn", "availabilityByWhatsappGT", "availabilityByWhatsappGTE", "availabilityByWhatsappLT", "availabilityByWhatsappLTE", "availabilityByWhatsappContains", "availabilityByWhatsappHasPrefix", "availabilityByWhatsappHasSuffix", "availabilityByWhatsappIsNil", "availabilityByWhatsappNotNil", "availabilityByWhatsappEqualFold", "availabilityByWhatsappContainsFold", "hasAddress", "hasAddressWith", "hasUsersOnDuty", "hasUsersOnDutyWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createdAt", "createdAtNEQ", "createdAtIn", "createdAtNotIn", "createdAtGT", "createdAtGTE", "createdAtLT", "createdAtLTE", "updatedAt", "updatedAtNEQ", "updatedAtIn", "updatedAtNotIn", "updatedAtGT", "updatedAtGTE", "updatedAtLT", "updatedAtLTE", "deletedAt", "deletedAtNEQ", "deletedAtIn", "deletedAtNotIn", "deletedAtGT", "deletedAtGTE", "deletedAtLT", "deletedAtLTE", "deletedAtIsNil", "deletedAtNotNil", "type", "typeNEQ", "typeIn", "typeNotIn", "datetimeFrom", "datetimeFromNEQ", "datetimeFromIn", "datetimeFromNotIn", "datetimeFromGT", "datetimeFromGTE", "datetimeFromLT", "datetimeFromLTE", "datetimeFromIsNil", "datetimeFromNotNil", "duration", "durationNEQ", "durationIn", "durationNotIn", "durationGT", "durationGTE", "durationLT", "durationLTE", "durationIsNil", "durationNotNil", "datetimeTo", "datetimeToNEQ", "datetimeToIn", "datetimeToNotIn", "datetimeToGT", "datetimeToGTE", "datetimeToLT", "datetimeToLTE", "timeWholeDay", "timeWholeDayNEQ", "comment", "commentNEQ", "commentIn", "commentNotIn", "commentGT", "commentGTE", "commentLT", "commentLTE", "commentContains", "commentHasPrefix", "commentHasSuffix", "commentIsNil", "commentNotNil", "commentEqualFold", "commentContainsFold", "availabilityByPhone", "availabilityByPhoneNEQ", "availabilityByPhoneIn", "availabilityByPhoneNotIn", "availabilityByPhoneGT", "availabilityByPhoneGTE", "availabilityByPhoneLT", "availabilityByPhoneLTE", "availabilityByPhoneContains", "availabilityByPhoneHasPrefix", "availabilityByPhoneHasSuffix", "availabilityByPhoneIsNil", "availabilityByPhoneNotNil", "availabilityByPhoneEqualFold", "availabilityByPhoneContainsFold", "availabilityByEmail", "availabilityByEmailNEQ", "availabilityByEmailIn", "availabilityByEmailNotIn", "availabilityByEmailGT", "availabilityByEmailGTE", "availabilityByEmailLT", "availabilityByEmailLTE", "availabilityByEmailContains", "availabilityByEmailHasPrefix", "availabilityByEmailHasSuffix", "availabilityByEmailIsNil", "availabilityByEmailNotNil", "availabilityByEmailEqualFold", "availabilityByEmailContainsFold", "availabilityBySms", "availabilityBySmsNEQ", "availabilityBySmsIn", "availabilityBySmsNotIn", "availabilityBySmsGT", "availabilityBySmsGTE", "availabilityBySmsLT", "availabilityBySmsLTE", "availabilityBySmsContains", "availabilityBySmsHasPrefix", "availabilityBySmsHasSuffix", "availabilityBySmsIsNil", "availabilityBySmsNotNil", "availabilityBySmsEqualFold", "availabilityBySmsContainsFold", "availabilityByWhatsapp", "availabilityByWhatsappNEQ", "availabilityByWhatsappIn", "availabilityByWhatsappNotIn", "availabilityByWhatsappGT", "availabilityByWhatsappGTE", "availabilityByWhatsappLT", "availabilityByWhatsappLTE", "availabilityByWhatsappContains", "availabilityByWhatsappHasPrefix", "availabilityByWhatsappHasSuffix", "availabilityByWhatsappIsNil", "availabilityByWhatsappNotNil", "availabilityByWhatsappEqualFold", "availabilityByWhatsappContainsFold", "hasAddress", "hasAddressWith", "hasUsersOnDuty", "hasUsersOnDutyWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -13222,6 +13311,112 @@ func (ec *executionContext) unmarshalInputTimetableWhereInput(ctx context.Contex
 				return it, err
 			}
 			it.DatetimeFromNotNil = data
+		case "duration":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("duration"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			if err = ec.resolvers.TimetableWhereInput().Duration(ctx, &it, data); err != nil {
+				return it, err
+			}
+		case "durationNEQ":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("durationNEQ"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			if err = ec.resolvers.TimetableWhereInput().DurationNeq(ctx, &it, data); err != nil {
+				return it, err
+			}
+		case "durationIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("durationIn"))
+			data, err := ec.unmarshalOInt2ᚕintᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			if err = ec.resolvers.TimetableWhereInput().DurationIn(ctx, &it, data); err != nil {
+				return it, err
+			}
+		case "durationNotIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("durationNotIn"))
+			data, err := ec.unmarshalOInt2ᚕintᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			if err = ec.resolvers.TimetableWhereInput().DurationNotIn(ctx, &it, data); err != nil {
+				return it, err
+			}
+		case "durationGT":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("durationGT"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			if err = ec.resolvers.TimetableWhereInput().DurationGt(ctx, &it, data); err != nil {
+				return it, err
+			}
+		case "durationGTE":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("durationGTE"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			if err = ec.resolvers.TimetableWhereInput().DurationGte(ctx, &it, data); err != nil {
+				return it, err
+			}
+		case "durationLT":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("durationLT"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			if err = ec.resolvers.TimetableWhereInput().DurationLt(ctx, &it, data); err != nil {
+				return it, err
+			}
+		case "durationLTE":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("durationLTE"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			if err = ec.resolvers.TimetableWhereInput().DurationLte(ctx, &it, data); err != nil {
+				return it, err
+			}
+		case "durationIsNil":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("durationIsNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DurationIsNil = data
+		case "durationNotNil":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("durationNotNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DurationNotNil = data
 		case "datetimeTo":
 			var err error
 
@@ -13294,24 +13489,6 @@ func (ec *executionContext) unmarshalInputTimetableWhereInput(ctx context.Contex
 				return it, err
 			}
 			it.DatetimeToLTE = data
-		case "datetimeToIsNil":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("datetimeToIsNil"))
-			data, err := ec.unmarshalOBoolean2bool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.DatetimeToIsNil = data
-		case "datetimeToNotNil":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("datetimeToNotNil"))
-			data, err := ec.unmarshalOBoolean2bool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.DatetimeToNotNil = data
 		case "timeWholeDay":
 			var err error
 
@@ -16178,8 +16355,44 @@ func (ec *executionContext) _Timetable(ctx context.Context, sel ast.SelectionSet
 			}
 		case "datetimeFrom":
 			out.Values[i] = ec._Timetable_datetimeFrom(ctx, field, obj)
+		case "duration":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Timetable_duration(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "datetimeTo":
 			out.Values[i] = ec._Timetable_datetimeTo(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
 		case "timeWholeDay":
 			out.Values[i] = ec._Timetable_timeWholeDay(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -17909,6 +18122,44 @@ func (ec *executionContext) marshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ct
 	}
 	res := uuidgql.MarshalUUID(*v)
 	return res
+}
+
+func (ec *executionContext) unmarshalOInt2ᚕintᚄ(ctx context.Context, v interface{}) ([]int, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]int, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNInt2int(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalOInt2ᚕintᚄ(ctx context.Context, sel ast.SelectionSet, v []int) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalNInt2int(ctx, sel, v[i])
+	}
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) unmarshalOInt2ᚖint(ctx context.Context, v interface{}) (*int, error) {

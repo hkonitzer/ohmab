@@ -4012,6 +4012,8 @@ type TimetableMutation struct {
 	deleted_at               *time.Time
 	_type                    *timetable.Type
 	datetime_from            *time.Time
+	duration                 *uint8
+	addduration              *int8
 	datetime_to              *time.Time
 	time_whole_day           *bool
 	comment                  *string
@@ -4340,6 +4342,76 @@ func (m *TimetableMutation) ResetDatetimeFrom() {
 	delete(m.clearedFields, timetable.FieldDatetimeFrom)
 }
 
+// SetDuration sets the "duration" field.
+func (m *TimetableMutation) SetDuration(u uint8) {
+	m.duration = &u
+	m.addduration = nil
+}
+
+// Duration returns the value of the "duration" field in the mutation.
+func (m *TimetableMutation) Duration() (r uint8, exists bool) {
+	v := m.duration
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDuration returns the old "duration" field's value of the Timetable entity.
+// If the Timetable object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TimetableMutation) OldDuration(ctx context.Context) (v uint8, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDuration is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDuration requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDuration: %w", err)
+	}
+	return oldValue.Duration, nil
+}
+
+// AddDuration adds u to the "duration" field.
+func (m *TimetableMutation) AddDuration(u int8) {
+	if m.addduration != nil {
+		*m.addduration += u
+	} else {
+		m.addduration = &u
+	}
+}
+
+// AddedDuration returns the value that was added to the "duration" field in this mutation.
+func (m *TimetableMutation) AddedDuration() (r int8, exists bool) {
+	v := m.addduration
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearDuration clears the value of the "duration" field.
+func (m *TimetableMutation) ClearDuration() {
+	m.duration = nil
+	m.addduration = nil
+	m.clearedFields[timetable.FieldDuration] = struct{}{}
+}
+
+// DurationCleared returns if the "duration" field was cleared in this mutation.
+func (m *TimetableMutation) DurationCleared() bool {
+	_, ok := m.clearedFields[timetable.FieldDuration]
+	return ok
+}
+
+// ResetDuration resets all changes to the "duration" field.
+func (m *TimetableMutation) ResetDuration() {
+	m.duration = nil
+	m.addduration = nil
+	delete(m.clearedFields, timetable.FieldDuration)
+}
+
 // SetDatetimeTo sets the "datetime_to" field.
 func (m *TimetableMutation) SetDatetimeTo(t time.Time) {
 	m.datetime_to = &t
@@ -4371,22 +4443,9 @@ func (m *TimetableMutation) OldDatetimeTo(ctx context.Context) (v time.Time, err
 	return oldValue.DatetimeTo, nil
 }
 
-// ClearDatetimeTo clears the value of the "datetime_to" field.
-func (m *TimetableMutation) ClearDatetimeTo() {
-	m.datetime_to = nil
-	m.clearedFields[timetable.FieldDatetimeTo] = struct{}{}
-}
-
-// DatetimeToCleared returns if the "datetime_to" field was cleared in this mutation.
-func (m *TimetableMutation) DatetimeToCleared() bool {
-	_, ok := m.clearedFields[timetable.FieldDatetimeTo]
-	return ok
-}
-
 // ResetDatetimeTo resets all changes to the "datetime_to" field.
 func (m *TimetableMutation) ResetDatetimeTo() {
 	m.datetime_to = nil
-	delete(m.clearedFields, timetable.FieldDatetimeTo)
 }
 
 // SetTimeWholeDay sets the "time_whole_day" field.
@@ -4797,7 +4856,7 @@ func (m *TimetableMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *TimetableMutation) Fields() []string {
-	fields := make([]string, 0, 12)
+	fields := make([]string, 0, 13)
 	if m.created_at != nil {
 		fields = append(fields, timetable.FieldCreatedAt)
 	}
@@ -4812,6 +4871,9 @@ func (m *TimetableMutation) Fields() []string {
 	}
 	if m.datetime_from != nil {
 		fields = append(fields, timetable.FieldDatetimeFrom)
+	}
+	if m.duration != nil {
+		fields = append(fields, timetable.FieldDuration)
 	}
 	if m.datetime_to != nil {
 		fields = append(fields, timetable.FieldDatetimeTo)
@@ -4852,6 +4914,8 @@ func (m *TimetableMutation) Field(name string) (ent.Value, bool) {
 		return m.GetType()
 	case timetable.FieldDatetimeFrom:
 		return m.DatetimeFrom()
+	case timetable.FieldDuration:
+		return m.Duration()
 	case timetable.FieldDatetimeTo:
 		return m.DatetimeTo()
 	case timetable.FieldTimeWholeDay:
@@ -4885,6 +4949,8 @@ func (m *TimetableMutation) OldField(ctx context.Context, name string) (ent.Valu
 		return m.OldType(ctx)
 	case timetable.FieldDatetimeFrom:
 		return m.OldDatetimeFrom(ctx)
+	case timetable.FieldDuration:
+		return m.OldDuration(ctx)
 	case timetable.FieldDatetimeTo:
 		return m.OldDatetimeTo(ctx)
 	case timetable.FieldTimeWholeDay:
@@ -4943,6 +5009,13 @@ func (m *TimetableMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetDatetimeFrom(v)
 		return nil
+	case timetable.FieldDuration:
+		v, ok := value.(uint8)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDuration(v)
+		return nil
 	case timetable.FieldDatetimeTo:
 		v, ok := value.(time.Time)
 		if !ok {
@@ -4999,13 +5072,21 @@ func (m *TimetableMutation) SetField(name string, value ent.Value) error {
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
 func (m *TimetableMutation) AddedFields() []string {
-	return nil
+	var fields []string
+	if m.addduration != nil {
+		fields = append(fields, timetable.FieldDuration)
+	}
+	return fields
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
 func (m *TimetableMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case timetable.FieldDuration:
+		return m.AddedDuration()
+	}
 	return nil, false
 }
 
@@ -5014,6 +5095,13 @@ func (m *TimetableMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *TimetableMutation) AddField(name string, value ent.Value) error {
 	switch name {
+	case timetable.FieldDuration:
+		v, ok := value.(int8)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddDuration(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Timetable numeric field %s", name)
 }
@@ -5028,8 +5116,8 @@ func (m *TimetableMutation) ClearedFields() []string {
 	if m.FieldCleared(timetable.FieldDatetimeFrom) {
 		fields = append(fields, timetable.FieldDatetimeFrom)
 	}
-	if m.FieldCleared(timetable.FieldDatetimeTo) {
-		fields = append(fields, timetable.FieldDatetimeTo)
+	if m.FieldCleared(timetable.FieldDuration) {
+		fields = append(fields, timetable.FieldDuration)
 	}
 	if m.FieldCleared(timetable.FieldComment) {
 		fields = append(fields, timetable.FieldComment)
@@ -5066,8 +5154,8 @@ func (m *TimetableMutation) ClearField(name string) error {
 	case timetable.FieldDatetimeFrom:
 		m.ClearDatetimeFrom()
 		return nil
-	case timetable.FieldDatetimeTo:
-		m.ClearDatetimeTo()
+	case timetable.FieldDuration:
+		m.ClearDuration()
 		return nil
 	case timetable.FieldComment:
 		m.ClearComment()
@@ -5106,6 +5194,9 @@ func (m *TimetableMutation) ResetField(name string) error {
 		return nil
 	case timetable.FieldDatetimeFrom:
 		m.ResetDatetimeFrom()
+		return nil
+	case timetable.FieldDuration:
+		m.ResetDuration()
 		return nil
 	case timetable.FieldDatetimeTo:
 		m.ResetDatetimeTo()

@@ -92,23 +92,36 @@ func (tu *TimetableUpdate) ClearDatetimeFrom() *TimetableUpdate {
 	return tu
 }
 
-// SetDatetimeTo sets the "datetime_to" field.
-func (tu *TimetableUpdate) SetDatetimeTo(t time.Time) *TimetableUpdate {
-	tu.mutation.SetDatetimeTo(t)
+// SetDuration sets the "duration" field.
+func (tu *TimetableUpdate) SetDuration(u uint8) *TimetableUpdate {
+	tu.mutation.ResetDuration()
+	tu.mutation.SetDuration(u)
 	return tu
 }
 
-// SetNillableDatetimeTo sets the "datetime_to" field if the given value is not nil.
-func (tu *TimetableUpdate) SetNillableDatetimeTo(t *time.Time) *TimetableUpdate {
-	if t != nil {
-		tu.SetDatetimeTo(*t)
+// SetNillableDuration sets the "duration" field if the given value is not nil.
+func (tu *TimetableUpdate) SetNillableDuration(u *uint8) *TimetableUpdate {
+	if u != nil {
+		tu.SetDuration(*u)
 	}
 	return tu
 }
 
-// ClearDatetimeTo clears the value of the "datetime_to" field.
-func (tu *TimetableUpdate) ClearDatetimeTo() *TimetableUpdate {
-	tu.mutation.ClearDatetimeTo()
+// AddDuration adds u to the "duration" field.
+func (tu *TimetableUpdate) AddDuration(u int8) *TimetableUpdate {
+	tu.mutation.AddDuration(u)
+	return tu
+}
+
+// ClearDuration clears the value of the "duration" field.
+func (tu *TimetableUpdate) ClearDuration() *TimetableUpdate {
+	tu.mutation.ClearDuration()
+	return tu
+}
+
+// SetDatetimeTo sets the "datetime_to" field.
+func (tu *TimetableUpdate) SetDatetimeTo(t time.Time) *TimetableUpdate {
+	tu.mutation.SetDatetimeTo(t)
 	return tu
 }
 
@@ -333,6 +346,11 @@ func (tu *TimetableUpdate) check() error {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Timetable.type": %w`, err)}
 		}
 	}
+	if v, ok := tu.mutation.Duration(); ok {
+		if err := timetable.DurationValidator(v); err != nil {
+			return &ValidationError{Name: "duration", err: fmt.Errorf(`ent: validator failed for field "Timetable.duration": %w`, err)}
+		}
+	}
 	if _, ok := tu.mutation.AddressID(); tu.mutation.AddressCleared() && !ok {
 		return errors.New(`ent: clearing a required unique edge "Timetable.address"`)
 	}
@@ -369,11 +387,17 @@ func (tu *TimetableUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if tu.mutation.DatetimeFromCleared() {
 		_spec.ClearField(timetable.FieldDatetimeFrom, field.TypeTime)
 	}
+	if value, ok := tu.mutation.Duration(); ok {
+		_spec.SetField(timetable.FieldDuration, field.TypeUint8, value)
+	}
+	if value, ok := tu.mutation.AddedDuration(); ok {
+		_spec.AddField(timetable.FieldDuration, field.TypeUint8, value)
+	}
+	if tu.mutation.DurationCleared() {
+		_spec.ClearField(timetable.FieldDuration, field.TypeUint8)
+	}
 	if value, ok := tu.mutation.DatetimeTo(); ok {
 		_spec.SetField(timetable.FieldDatetimeTo, field.TypeTime, value)
-	}
-	if tu.mutation.DatetimeToCleared() {
-		_spec.ClearField(timetable.FieldDatetimeTo, field.TypeTime)
 	}
 	if value, ok := tu.mutation.TimeWholeDay(); ok {
 		_spec.SetField(timetable.FieldTimeWholeDay, field.TypeBool, value)
@@ -562,23 +586,36 @@ func (tuo *TimetableUpdateOne) ClearDatetimeFrom() *TimetableUpdateOne {
 	return tuo
 }
 
-// SetDatetimeTo sets the "datetime_to" field.
-func (tuo *TimetableUpdateOne) SetDatetimeTo(t time.Time) *TimetableUpdateOne {
-	tuo.mutation.SetDatetimeTo(t)
+// SetDuration sets the "duration" field.
+func (tuo *TimetableUpdateOne) SetDuration(u uint8) *TimetableUpdateOne {
+	tuo.mutation.ResetDuration()
+	tuo.mutation.SetDuration(u)
 	return tuo
 }
 
-// SetNillableDatetimeTo sets the "datetime_to" field if the given value is not nil.
-func (tuo *TimetableUpdateOne) SetNillableDatetimeTo(t *time.Time) *TimetableUpdateOne {
-	if t != nil {
-		tuo.SetDatetimeTo(*t)
+// SetNillableDuration sets the "duration" field if the given value is not nil.
+func (tuo *TimetableUpdateOne) SetNillableDuration(u *uint8) *TimetableUpdateOne {
+	if u != nil {
+		tuo.SetDuration(*u)
 	}
 	return tuo
 }
 
-// ClearDatetimeTo clears the value of the "datetime_to" field.
-func (tuo *TimetableUpdateOne) ClearDatetimeTo() *TimetableUpdateOne {
-	tuo.mutation.ClearDatetimeTo()
+// AddDuration adds u to the "duration" field.
+func (tuo *TimetableUpdateOne) AddDuration(u int8) *TimetableUpdateOne {
+	tuo.mutation.AddDuration(u)
+	return tuo
+}
+
+// ClearDuration clears the value of the "duration" field.
+func (tuo *TimetableUpdateOne) ClearDuration() *TimetableUpdateOne {
+	tuo.mutation.ClearDuration()
+	return tuo
+}
+
+// SetDatetimeTo sets the "datetime_to" field.
+func (tuo *TimetableUpdateOne) SetDatetimeTo(t time.Time) *TimetableUpdateOne {
+	tuo.mutation.SetDatetimeTo(t)
 	return tuo
 }
 
@@ -816,6 +853,11 @@ func (tuo *TimetableUpdateOne) check() error {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Timetable.type": %w`, err)}
 		}
 	}
+	if v, ok := tuo.mutation.Duration(); ok {
+		if err := timetable.DurationValidator(v); err != nil {
+			return &ValidationError{Name: "duration", err: fmt.Errorf(`ent: validator failed for field "Timetable.duration": %w`, err)}
+		}
+	}
 	if _, ok := tuo.mutation.AddressID(); tuo.mutation.AddressCleared() && !ok {
 		return errors.New(`ent: clearing a required unique edge "Timetable.address"`)
 	}
@@ -869,11 +911,17 @@ func (tuo *TimetableUpdateOne) sqlSave(ctx context.Context) (_node *Timetable, e
 	if tuo.mutation.DatetimeFromCleared() {
 		_spec.ClearField(timetable.FieldDatetimeFrom, field.TypeTime)
 	}
+	if value, ok := tuo.mutation.Duration(); ok {
+		_spec.SetField(timetable.FieldDuration, field.TypeUint8, value)
+	}
+	if value, ok := tuo.mutation.AddedDuration(); ok {
+		_spec.AddField(timetable.FieldDuration, field.TypeUint8, value)
+	}
+	if tuo.mutation.DurationCleared() {
+		_spec.ClearField(timetable.FieldDuration, field.TypeUint8)
+	}
 	if value, ok := tuo.mutation.DatetimeTo(); ok {
 		_spec.SetField(timetable.FieldDatetimeTo, field.TypeTime, value)
-	}
-	if tuo.mutation.DatetimeToCleared() {
-		_spec.ClearField(timetable.FieldDatetimeTo, field.TypeTime)
 	}
 	if value, ok := tuo.mutation.TimeWholeDay(); ok {
 		_spec.SetField(timetable.FieldTimeWholeDay, field.TypeBool, value)

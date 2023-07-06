@@ -83,7 +83,8 @@ type CreateTimetableInput struct {
 	DeletedAt              *time.Time
 	Type                   *timetable.Type
 	DatetimeFrom           *time.Time
-	DatetimeTo             *time.Time
+	Duration               *uint8
+	DatetimeTo             time.Time
 	TimeWholeDay           *bool
 	Comment                *string
 	AvailabilityByPhone    *string
@@ -111,9 +112,10 @@ func (i *CreateTimetableInput) Mutate(m *TimetableMutation) {
 	if v := i.DatetimeFrom; v != nil {
 		m.SetDatetimeFrom(*v)
 	}
-	if v := i.DatetimeTo; v != nil {
-		m.SetDatetimeTo(*v)
+	if v := i.Duration; v != nil {
+		m.SetDuration(*v)
 	}
+	m.SetDatetimeTo(i.DatetimeTo)
 	if v := i.TimeWholeDay; v != nil {
 		m.SetTimeWholeDay(*v)
 	}

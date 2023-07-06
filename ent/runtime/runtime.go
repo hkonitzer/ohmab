@@ -164,6 +164,7 @@ func init() {
 	timetableMixin := schema.Timetable{}.Mixin()
 	timetableHooks := schema.Timetable{}.Hooks()
 	timetable.Hooks[0] = timetableHooks[0]
+	timetable.Hooks[1] = timetableHooks[1]
 	timetableMixinFields0 := timetableMixin[0].Fields()
 	_ = timetableMixinFields0
 	timetableFields := schema.Timetable{}.Fields()
@@ -178,8 +179,26 @@ func init() {
 	timetable.DefaultUpdatedAt = timetableDescUpdatedAt.Default.(func() time.Time)
 	// timetable.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	timetable.UpdateDefaultUpdatedAt = timetableDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// timetableDescDuration is the schema descriptor for duration field.
+	timetableDescDuration := timetableFields[3].Descriptor()
+	// timetable.DurationValidator is a validator for the "duration" field. It is called by the builders before save.
+	timetable.DurationValidator = func() func(uint8) error {
+		validators := timetableDescDuration.Validators
+		fns := [...]func(uint8) error{
+			validators[0].(func(uint8) error),
+			validators[1].(func(uint8) error),
+		}
+		return func(duration uint8) error {
+			for _, fn := range fns {
+				if err := fn(duration); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
 	// timetableDescTimeWholeDay is the schema descriptor for time_whole_day field.
-	timetableDescTimeWholeDay := timetableFields[4].Descriptor()
+	timetableDescTimeWholeDay := timetableFields[5].Descriptor()
 	// timetable.DefaultTimeWholeDay holds the default value on creation for the time_whole_day field.
 	timetable.DefaultTimeWholeDay = timetableDescTimeWholeDay.Default.(bool)
 	// timetableDescID is the schema descriptor for id field.

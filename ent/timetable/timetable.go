@@ -30,6 +30,8 @@ const (
 	FieldType = "type"
 	// FieldDatetimeFrom holds the string denoting the datetime_from field in the database.
 	FieldDatetimeFrom = "datetime_from"
+	// FieldDuration holds the string denoting the duration field in the database.
+	FieldDuration = "duration"
 	// FieldDatetimeTo holds the string denoting the datetime_to field in the database.
 	FieldDatetimeTo = "datetime_to"
 	// FieldTimeWholeDay holds the string denoting the time_whole_day field in the database.
@@ -72,6 +74,7 @@ var Columns = []string{
 	FieldDeletedAt,
 	FieldType,
 	FieldDatetimeFrom,
+	FieldDuration,
 	FieldDatetimeTo,
 	FieldTimeWholeDay,
 	FieldComment,
@@ -114,13 +117,15 @@ func ValidColumn(column string) bool {
 //
 //	import _ "hynie.de/ohmab/ent/runtime"
 var (
-	Hooks [1]ent.Hook
+	Hooks [2]ent.Hook
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
 	DefaultUpdatedAt func() time.Time
 	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
 	UpdateDefaultUpdatedAt func() time.Time
+	// DurationValidator is a validator for the "duration" field. It is called by the builders before save.
+	DurationValidator func(uint8) error
 	// DefaultTimeWholeDay holds the default value on creation for the "time_whole_day" field.
 	DefaultTimeWholeDay bool
 	// DefaultID holds the default value on creation for the "id" field.
@@ -188,6 +193,11 @@ func ByType(opts ...sql.OrderTermOption) OrderOption {
 // ByDatetimeFrom orders the results by the datetime_from field.
 func ByDatetimeFrom(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDatetimeFrom, opts...).ToFunc()
+}
+
+// ByDuration orders the results by the duration field.
+func ByDuration(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDuration, opts...).ToFunc()
 }
 
 // ByDatetimeTo orders the results by the datetime_to field.
@@ -273,7 +283,7 @@ func (e *Type) UnmarshalGQL(val interface{}) error {
 	}
 	*e = Type(str)
 	if err := TypeValidator(*e); err != nil {
-		return fmt.Errorf("%s is not a valid TimetableType", str)
+		return fmt.Errorf("%s is not a valid Type", str)
 	}
 	return nil
 }

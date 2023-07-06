@@ -640,6 +640,11 @@ func (t *TimetableQuery) collectField(ctx context.Context, opCtx *graphql.Operat
 				selectedFields = append(selectedFields, timetable.FieldDatetimeFrom)
 				fieldSeen[timetable.FieldDatetimeFrom] = struct{}{}
 			}
+		case "duration":
+			if _, ok := fieldSeen[timetable.FieldDuration]; !ok {
+				selectedFields = append(selectedFields, timetable.FieldDuration)
+				fieldSeen[timetable.FieldDuration] = struct{}{}
+			}
 		case "datetimeTo":
 			if _, ok := fieldSeen[timetable.FieldDatetimeTo]; !ok {
 				selectedFields = append(selectedFields, timetable.FieldDatetimeTo)

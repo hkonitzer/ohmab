@@ -588,7 +588,10 @@ input CreateTimetableInput {
   deletedAt: Time
   type: TimetableType
   datetimeFrom: Time
-  datetimeTo: Time
+  """The duration of the timetable entry in hours, overwrites datetime_to"""
+  duration: Int
+  """The end of the timetable entry, only used if duration is not set"""
+  datetimeTo: Time!
   timeWholeDay: Boolean
   comment: String
   availabilityByPhone: String
@@ -815,7 +818,10 @@ type Timetable implements Node {
   deletedAt: Time
   type: TimetableType!
   datetimeFrom: Time
-  datetimeTo: Time
+  """The duration of the timetable entry in hours, overwrites datetime_to"""
+  duration: Int
+  """The end of the timetable entry, only used if duration is not set"""
+  datetimeTo: Time!
   timeWholeDay: Boolean!
   comment: String
   availabilityByPhone: String
@@ -923,6 +929,17 @@ input TimetableWhereInput {
   datetimeFromLTE: Time
   datetimeFromIsNil: Boolean
   datetimeFromNotNil: Boolean
+  """duration field predicates"""
+  duration: Int
+  durationNEQ: Int
+  durationIn: [Int!]
+  durationNotIn: [Int!]
+  durationGT: Int
+  durationGTE: Int
+  durationLT: Int
+  durationLTE: Int
+  durationIsNil: Boolean
+  durationNotNil: Boolean
   """datetime_to field predicates"""
   datetimeTo: Time
   datetimeToNEQ: Time
@@ -932,8 +949,6 @@ input TimetableWhereInput {
   datetimeToGTE: Time
   datetimeToLT: Time
   datetimeToLTE: Time
-  datetimeToIsNil: Boolean
-  datetimeToNotNil: Boolean
   """time_whole_day field predicates"""
   timeWholeDay: Boolean
   timeWholeDayNEQ: Boolean

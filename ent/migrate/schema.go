@@ -120,7 +120,8 @@ var (
 		{Name: "deleted_at", Type: field.TypeTime, Nullable: true},
 		{Name: "type", Type: field.TypeEnum, Enums: []string{"DEFAULT", "REGULAR", "CLOSED", "EMERGENCYSERVICE", "HOLIDAY", "SPECIAL"}, Default: "DEFAULT"},
 		{Name: "datetime_from", Type: field.TypeTime, Nullable: true},
-		{Name: "datetime_to", Type: field.TypeTime, Nullable: true},
+		{Name: "duration", Type: field.TypeUint8, Nullable: true, SchemaType: map[string]string{"mysql": "TINYINT", "postgres": "SMALLINT", "sqlite3": "INTEGER"}},
+		{Name: "datetime_to", Type: field.TypeTime},
 		{Name: "time_whole_day", Type: field.TypeBool, Default: false},
 		{Name: "comment", Type: field.TypeString, Nullable: true, Size: 2147483647},
 		{Name: "availability_by_phone", Type: field.TypeString, Nullable: true, Size: 2147483647},
@@ -137,7 +138,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "timetables_addresses_timetables",
-				Columns:    []*schema.Column{TimetablesColumns[13]},
+				Columns:    []*schema.Column{TimetablesColumns[14]},
 				RefColumns: []*schema.Column{AddressesColumns[0]},
 				OnDelete:   schema.NoAction,
 			},

@@ -214,18 +214,19 @@ func main() {
 							}
 							dateOrTime = date_
 						}
-						errSetter := timetableCreate.Mutation().SetField(schemaField, dateOrTime)
-						err_ = errSetter
+						err_ = timetableCreate.Mutation().SetField(schemaField, dateOrTime)
 					case "bool":
 						boolField, _ := strconv.ParseBool(field)
-						errSetter := timetableCreate.Mutation().SetField(schemaField, boolField)
-						err_ = errSetter
+						err_ = timetableCreate.Mutation().SetField(schemaField, boolField)
+					case "uint8":
+						uint64Value, _ := strconv.ParseUint(field, 10, 8)
+						uint8Value := uint8(uint64Value)
+						err_ = timetableCreate.Mutation().SetField(schemaField, uint8Value)
 					default: // string
-						errSetter := timetableCreate.Mutation().SetField(schemaField, field)
-						err_ = errSetter
+						err_ = timetableCreate.Mutation().SetField(schemaField, field)
 					}
 					if err_ != nil {
-						logger.Fatal().Msgf("Error setting timetable field '%s' to '%s': %v", schemaField, field, err)
+						logger.Fatal().Msgf("Error setting timetable field '%s' to '%s': %v", schemaField, field, err_)
 					}
 				}
 			default:
@@ -233,6 +234,8 @@ func main() {
 			}
 
 		}
+		// validate duration against dateTo
+
 		var dateFrom, dateTo time.Time
 		dateFrom, _ = timetableCreate.Mutation().DatetimeFrom()
 		dateTo, _ = timetableCreate.Mutation().DatetimeTo()

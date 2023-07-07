@@ -81,7 +81,7 @@ type CreateTimetableInput struct {
 	CreatedAt              *time.Time
 	UpdatedAt              *time.Time
 	DeletedAt              *time.Time
-	Type                   *timetable.Type
+	TimetableType          *timetable.TimetableType
 	DatetimeFrom           *time.Time
 	Duration               *uint8
 	DatetimeTo             time.Time
@@ -106,8 +106,8 @@ func (i *CreateTimetableInput) Mutate(m *TimetableMutation) {
 	if v := i.DeletedAt; v != nil {
 		m.SetDeletedAt(*v)
 	}
-	if v := i.Type; v != nil {
-		m.SetType(*v)
+	if v := i.TimetableType; v != nil {
+		m.SetTimetableType(*v)
 	}
 	if v := i.DatetimeFrom; v != nil {
 		m.SetDatetimeFrom(*v)

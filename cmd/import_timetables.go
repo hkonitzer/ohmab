@@ -15,6 +15,7 @@ import (
 	"hynie.de/ohmab/internal/pkg/config"
 	"hynie.de/ohmab/internal/pkg/db"
 	"hynie.de/ohmab/internal/pkg/log"
+	"hynie.de/ohmab/internal/pkg/privacy"
 	"os"
 	"strconv"
 	"strings"
@@ -49,6 +50,10 @@ func main() {
 	}
 	// CreateClient client
 	ctx := context.TODO()
+	// Authorize me
+	uv := privacy.UserViewer{Role: privacy.Admin}
+	uv.SetUserID("import")
+	ctx = privacy.NewContext(ctx, &uv)
 	client, clientError := db.CreateClient(ctx, configurations)
 	if clientError != nil {
 		logger.Fatal().Msgf("Error creating client: %v", clientError)
@@ -157,21 +162,20 @@ func main() {
 			case "ADDRESS":
 				continue
 			case "TIMETABLE":
-				if schemaField == "type" {
+				if schemaField == "timetable_type" {
 					switch strings.ToUpper(field) {
-					case timetable.TypeEMERGENCYSERVICE.String():
-						timetableCreate.Mutation().SetType(timetable.TypeEMERGENCYSERVICE)
-					case timetable.TypeCLOSED.String():
-						timetableCreate.Mutation().SetType(timetable.TypeCLOSED)
-					case timetable.TypeHOLIDAY.String():
-						timetableCreate.Mutation().SetType(timetable.TypeHOLIDAY)
-					case timetable.TypeSPECIAL.String():
-						timetableCreate.Mutation().SetType(timetable.TypeSPECIAL)
-					case timetable.TypeREGULAR.String():
-						timetableCreate.Mutation().SetType(timetable.TypeREGULAR)
+					case timetable.TimetableTypeEMERGENCYSERVICE.String():
+						timetableCreate.Mutation().SetTimetableType(timetable.TimetableTypeEMERGENCYSERVICE)
+					case timetable.TimetableTypeCLOSED.String():
+						timetableCreate.Mutation().SetTimetableType(timetable.TimetableTypeCLOSED)
+					case timetable.TimetableTypeHOLIDAY.String():
+						timetableCreate.Mutation().SetTimetableType(timetable.TimetableTypeHOLIDAY)
+					case timetable.TimetableTypeSPECIAL.String():
+						timetableCreate.Mutation().SetTimetableType(timetable.TimetableTypeSPECIAL)
+					case timetable.TimetableTypeREGULAR.String():
+						timetableCreate.Mutation().SetTimetableType(timetable.TimetableTypeREGULAR)
 					default:
-						timetableCreate.Mutation().SetType(timetable.TypeDEFAULT)
-
+						timetableCreate.Mutation().SetTimetableType(timetable.TimetableTypeDEFAULT)
 					}
 				} else {
 					var fieldType string
@@ -239,7 +243,7 @@ func main() {
 		var dateFrom, dateTo time.Time
 		dateFrom, _ = timetableCreate.Mutation().DatetimeFrom()
 		dateTo, _ = timetableCreate.Mutation().DatetimeTo()
-		ttType, _ := timetableCreate.Mutation().GetType()
+		ttType, _ := timetableCreate.Mutation().TimetableType()
 		// check if entry is in the past
 		if !*allTimeentries && dateFrom.Before(time.Now()) {
 			logger.Debug().Msgf("Timetable with type '%v' dateFrom %v is in the past, skipping", ttType, dateFrom)
@@ -249,7 +253,7 @@ func main() {
 		exists := businessAddress.QueryTimetables().
 			Where(timetable.DatetimeFrom(dateFrom)).
 			Where(timetable.DatetimeTo(dateTo)).
-			Where(timetable.TypeEQ(ttType)).
+			Where(timetable.TimetableTypeEQ(ttType)).
 			CountX(ctx)
 		if exists == 0 {
 			timetableCreate.SetAddress(businessAddress).SaveX(ctx)

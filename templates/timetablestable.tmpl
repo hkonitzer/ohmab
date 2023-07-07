@@ -1,8 +1,17 @@
 {{define "table"}}
-{{- range .TypeData }}
-{{ if .HeaderHTML }}
-{{ .HeaderHTML}}
+
+{{- range .TimetableTypeData }}
+
+{{ if .CSSTop }}
+<style>
+{{.CSSTop}}
+</style>
 {{ end }}
+
+{{ if .HTMLTop }}
+        <p class="contentTOP">{{.HTMLTop}}</p>
+{{ end }}
+
 <table class="{{ .TimetableType }}">
     <tbody>
                 {{- range .Data }}
@@ -41,8 +50,16 @@
 
     </tbody>
 </table>
-{{ if .HeaderHTML }}
-{{ .FooterHTML }}
+
+{{ if .CSSBottom }}
+<style>
+{{.CSSBottom}}
+</style>
 {{ end }}
+
+{{ if .HTMLBottom }}
+<p class="contentBOTTOM">{{.HTMLBottom}}</p>
+{{ end }}
+
 {{- end }}
 {{end}}

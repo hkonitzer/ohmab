@@ -12,6 +12,7 @@ import (
 	"hynie.de/ohmab/ent/address"
 	"hynie.de/ohmab/ent/auditlog"
 	"hynie.de/ohmab/ent/business"
+	"hynie.de/ohmab/ent/content"
 	"hynie.de/ohmab/ent/predicate"
 	"hynie.de/ohmab/ent/tag"
 	"hynie.de/ohmab/ent/timetable"
@@ -1966,6 +1967,462 @@ func (i *BusinessWhereInput) P() (predicate.Business, error) {
 	}
 }
 
+// ContentWhereInput represents a where input for filtering Content queries.
+type ContentWhereInput struct {
+	Predicates []predicate.Content  `json:"-"`
+	Not        *ContentWhereInput   `json:"not,omitempty"`
+	Or         []*ContentWhereInput `json:"or,omitempty"`
+	And        []*ContentWhereInput `json:"and,omitempty"`
+
+	// "id" field predicates.
+	ID      *uuid.UUID  `json:"id,omitempty"`
+	IDNEQ   *uuid.UUID  `json:"idNEQ,omitempty"`
+	IDIn    []uuid.UUID `json:"idIn,omitempty"`
+	IDNotIn []uuid.UUID `json:"idNotIn,omitempty"`
+	IDGT    *uuid.UUID  `json:"idGT,omitempty"`
+	IDGTE   *uuid.UUID  `json:"idGTE,omitempty"`
+	IDLT    *uuid.UUID  `json:"idLT,omitempty"`
+	IDLTE   *uuid.UUID  `json:"idLTE,omitempty"`
+
+	// "created_at" field predicates.
+	CreatedAt      *time.Time  `json:"createdAt,omitempty"`
+	CreatedAtNEQ   *time.Time  `json:"createdAtNEQ,omitempty"`
+	CreatedAtIn    []time.Time `json:"createdAtIn,omitempty"`
+	CreatedAtNotIn []time.Time `json:"createdAtNotIn,omitempty"`
+	CreatedAtGT    *time.Time  `json:"createdAtGT,omitempty"`
+	CreatedAtGTE   *time.Time  `json:"createdAtGTE,omitempty"`
+	CreatedAtLT    *time.Time  `json:"createdAtLT,omitempty"`
+	CreatedAtLTE   *time.Time  `json:"createdAtLTE,omitempty"`
+
+	// "updated_at" field predicates.
+	UpdatedAt      *time.Time  `json:"updatedAt,omitempty"`
+	UpdatedAtNEQ   *time.Time  `json:"updatedAtNEQ,omitempty"`
+	UpdatedAtIn    []time.Time `json:"updatedAtIn,omitempty"`
+	UpdatedAtNotIn []time.Time `json:"updatedAtNotIn,omitempty"`
+	UpdatedAtGT    *time.Time  `json:"updatedAtGT,omitempty"`
+	UpdatedAtGTE   *time.Time  `json:"updatedAtGTE,omitempty"`
+	UpdatedAtLT    *time.Time  `json:"updatedAtLT,omitempty"`
+	UpdatedAtLTE   *time.Time  `json:"updatedAtLTE,omitempty"`
+
+	// "deleted_at" field predicates.
+	DeletedAt       *time.Time  `json:"deletedAt,omitempty"`
+	DeletedAtNEQ    *time.Time  `json:"deletedAtNEQ,omitempty"`
+	DeletedAtIn     []time.Time `json:"deletedAtIn,omitempty"`
+	DeletedAtNotIn  []time.Time `json:"deletedAtNotIn,omitempty"`
+	DeletedAtGT     *time.Time  `json:"deletedAtGT,omitempty"`
+	DeletedAtGTE    *time.Time  `json:"deletedAtGTE,omitempty"`
+	DeletedAtLT     *time.Time  `json:"deletedAtLT,omitempty"`
+	DeletedAtLTE    *time.Time  `json:"deletedAtLTE,omitempty"`
+	DeletedAtIsNil  bool        `json:"deletedAtIsNil,omitempty"`
+	DeletedAtNotNil bool        `json:"deletedAtNotNil,omitempty"`
+
+	// "timetable_type" field predicates.
+	TimetableType      *content.TimetableType  `json:"timetableType,omitempty"`
+	TimetableTypeNEQ   *content.TimetableType  `json:"timetableTypeNEQ,omitempty"`
+	TimetableTypeIn    []content.TimetableType `json:"timetableTypeIn,omitempty"`
+	TimetableTypeNotIn []content.TimetableType `json:"timetableTypeNotIn,omitempty"`
+
+	// "type" field predicates.
+	Type      *content.Type  `json:"type,omitempty"`
+	TypeNEQ   *content.Type  `json:"typeNEQ,omitempty"`
+	TypeIn    []content.Type `json:"typeIn,omitempty"`
+	TypeNotIn []content.Type `json:"typeNotIn,omitempty"`
+
+	// "locale" field predicates.
+	Locale             *string  `json:"locale,omitempty"`
+	LocaleNEQ          *string  `json:"localeNEQ,omitempty"`
+	LocaleIn           []string `json:"localeIn,omitempty"`
+	LocaleNotIn        []string `json:"localeNotIn,omitempty"`
+	LocaleGT           *string  `json:"localeGT,omitempty"`
+	LocaleGTE          *string  `json:"localeGTE,omitempty"`
+	LocaleLT           *string  `json:"localeLT,omitempty"`
+	LocaleLTE          *string  `json:"localeLTE,omitempty"`
+	LocaleContains     *string  `json:"localeContains,omitempty"`
+	LocaleHasPrefix    *string  `json:"localeHasPrefix,omitempty"`
+	LocaleHasSuffix    *string  `json:"localeHasSuffix,omitempty"`
+	LocaleEqualFold    *string  `json:"localeEqualFold,omitempty"`
+	LocaleContainsFold *string  `json:"localeContainsFold,omitempty"`
+
+	// "location" field predicates.
+	Location      *content.Location  `json:"location,omitempty"`
+	LocationNEQ   *content.Location  `json:"locationNEQ,omitempty"`
+	LocationIn    []content.Location `json:"locationIn,omitempty"`
+	LocationNotIn []content.Location `json:"locationNotIn,omitempty"`
+
+	// "content" field predicates.
+	Content             *string  `json:"content,omitempty"`
+	ContentNEQ          *string  `json:"contentNEQ,omitempty"`
+	ContentIn           []string `json:"contentIn,omitempty"`
+	ContentNotIn        []string `json:"contentNotIn,omitempty"`
+	ContentGT           *string  `json:"contentGT,omitempty"`
+	ContentGTE          *string  `json:"contentGTE,omitempty"`
+	ContentLT           *string  `json:"contentLT,omitempty"`
+	ContentLTE          *string  `json:"contentLTE,omitempty"`
+	ContentContains     *string  `json:"contentContains,omitempty"`
+	ContentHasPrefix    *string  `json:"contentHasPrefix,omitempty"`
+	ContentHasSuffix    *string  `json:"contentHasSuffix,omitempty"`
+	ContentEqualFold    *string  `json:"contentEqualFold,omitempty"`
+	ContentContainsFold *string  `json:"contentContainsFold,omitempty"`
+
+	// "status" field predicates.
+	Status      *content.Status  `json:"status,omitempty"`
+	StatusNEQ   *content.Status  `json:"statusNEQ,omitempty"`
+	StatusIn    []content.Status `json:"statusIn,omitempty"`
+	StatusNotIn []content.Status `json:"statusNotIn,omitempty"`
+
+	// "published_at" field predicates.
+	PublishedAt       *time.Time  `json:"publishedAt,omitempty"`
+	PublishedAtNEQ    *time.Time  `json:"publishedAtNEQ,omitempty"`
+	PublishedAtIn     []time.Time `json:"publishedAtIn,omitempty"`
+	PublishedAtNotIn  []time.Time `json:"publishedAtNotIn,omitempty"`
+	PublishedAtGT     *time.Time  `json:"publishedAtGT,omitempty"`
+	PublishedAtGTE    *time.Time  `json:"publishedAtGTE,omitempty"`
+	PublishedAtLT     *time.Time  `json:"publishedAtLT,omitempty"`
+	PublishedAtLTE    *time.Time  `json:"publishedAtLTE,omitempty"`
+	PublishedAtIsNil  bool        `json:"publishedAtIsNil,omitempty"`
+	PublishedAtNotNil bool        `json:"publishedAtNotNil,omitempty"`
+}
+
+// AddPredicates adds custom predicates to the where input to be used during the filtering phase.
+func (i *ContentWhereInput) AddPredicates(predicates ...predicate.Content) {
+	i.Predicates = append(i.Predicates, predicates...)
+}
+
+// Filter applies the ContentWhereInput filter on the ContentQuery builder.
+func (i *ContentWhereInput) Filter(q *ContentQuery) (*ContentQuery, error) {
+	if i == nil {
+		return q, nil
+	}
+	p, err := i.P()
+	if err != nil {
+		if err == ErrEmptyContentWhereInput {
+			return q, nil
+		}
+		return nil, err
+	}
+	return q.Where(p), nil
+}
+
+// ErrEmptyContentWhereInput is returned in case the ContentWhereInput is empty.
+var ErrEmptyContentWhereInput = errors.New("ent: empty predicate ContentWhereInput")
+
+// P returns a predicate for filtering contents.
+// An error is returned if the input is empty or invalid.
+func (i *ContentWhereInput) P() (predicate.Content, error) {
+	var predicates []predicate.Content
+	if i.Not != nil {
+		p, err := i.Not.P()
+		if err != nil {
+			return nil, fmt.Errorf("%w: field 'not'", err)
+		}
+		predicates = append(predicates, content.Not(p))
+	}
+	switch n := len(i.Or); {
+	case n == 1:
+		p, err := i.Or[0].P()
+		if err != nil {
+			return nil, fmt.Errorf("%w: field 'or'", err)
+		}
+		predicates = append(predicates, p)
+	case n > 1:
+		or := make([]predicate.Content, 0, n)
+		for _, w := range i.Or {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'or'", err)
+			}
+			or = append(or, p)
+		}
+		predicates = append(predicates, content.Or(or...))
+	}
+	switch n := len(i.And); {
+	case n == 1:
+		p, err := i.And[0].P()
+		if err != nil {
+			return nil, fmt.Errorf("%w: field 'and'", err)
+		}
+		predicates = append(predicates, p)
+	case n > 1:
+		and := make([]predicate.Content, 0, n)
+		for _, w := range i.And {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'and'", err)
+			}
+			and = append(and, p)
+		}
+		predicates = append(predicates, content.And(and...))
+	}
+	predicates = append(predicates, i.Predicates...)
+	if i.ID != nil {
+		predicates = append(predicates, content.IDEQ(*i.ID))
+	}
+	if i.IDNEQ != nil {
+		predicates = append(predicates, content.IDNEQ(*i.IDNEQ))
+	}
+	if len(i.IDIn) > 0 {
+		predicates = append(predicates, content.IDIn(i.IDIn...))
+	}
+	if len(i.IDNotIn) > 0 {
+		predicates = append(predicates, content.IDNotIn(i.IDNotIn...))
+	}
+	if i.IDGT != nil {
+		predicates = append(predicates, content.IDGT(*i.IDGT))
+	}
+	if i.IDGTE != nil {
+		predicates = append(predicates, content.IDGTE(*i.IDGTE))
+	}
+	if i.IDLT != nil {
+		predicates = append(predicates, content.IDLT(*i.IDLT))
+	}
+	if i.IDLTE != nil {
+		predicates = append(predicates, content.IDLTE(*i.IDLTE))
+	}
+	if i.CreatedAt != nil {
+		predicates = append(predicates, content.CreatedAtEQ(*i.CreatedAt))
+	}
+	if i.CreatedAtNEQ != nil {
+		predicates = append(predicates, content.CreatedAtNEQ(*i.CreatedAtNEQ))
+	}
+	if len(i.CreatedAtIn) > 0 {
+		predicates = append(predicates, content.CreatedAtIn(i.CreatedAtIn...))
+	}
+	if len(i.CreatedAtNotIn) > 0 {
+		predicates = append(predicates, content.CreatedAtNotIn(i.CreatedAtNotIn...))
+	}
+	if i.CreatedAtGT != nil {
+		predicates = append(predicates, content.CreatedAtGT(*i.CreatedAtGT))
+	}
+	if i.CreatedAtGTE != nil {
+		predicates = append(predicates, content.CreatedAtGTE(*i.CreatedAtGTE))
+	}
+	if i.CreatedAtLT != nil {
+		predicates = append(predicates, content.CreatedAtLT(*i.CreatedAtLT))
+	}
+	if i.CreatedAtLTE != nil {
+		predicates = append(predicates, content.CreatedAtLTE(*i.CreatedAtLTE))
+	}
+	if i.UpdatedAt != nil {
+		predicates = append(predicates, content.UpdatedAtEQ(*i.UpdatedAt))
+	}
+	if i.UpdatedAtNEQ != nil {
+		predicates = append(predicates, content.UpdatedAtNEQ(*i.UpdatedAtNEQ))
+	}
+	if len(i.UpdatedAtIn) > 0 {
+		predicates = append(predicates, content.UpdatedAtIn(i.UpdatedAtIn...))
+	}
+	if len(i.UpdatedAtNotIn) > 0 {
+		predicates = append(predicates, content.UpdatedAtNotIn(i.UpdatedAtNotIn...))
+	}
+	if i.UpdatedAtGT != nil {
+		predicates = append(predicates, content.UpdatedAtGT(*i.UpdatedAtGT))
+	}
+	if i.UpdatedAtGTE != nil {
+		predicates = append(predicates, content.UpdatedAtGTE(*i.UpdatedAtGTE))
+	}
+	if i.UpdatedAtLT != nil {
+		predicates = append(predicates, content.UpdatedAtLT(*i.UpdatedAtLT))
+	}
+	if i.UpdatedAtLTE != nil {
+		predicates = append(predicates, content.UpdatedAtLTE(*i.UpdatedAtLTE))
+	}
+	if i.DeletedAt != nil {
+		predicates = append(predicates, content.DeletedAtEQ(*i.DeletedAt))
+	}
+	if i.DeletedAtNEQ != nil {
+		predicates = append(predicates, content.DeletedAtNEQ(*i.DeletedAtNEQ))
+	}
+	if len(i.DeletedAtIn) > 0 {
+		predicates = append(predicates, content.DeletedAtIn(i.DeletedAtIn...))
+	}
+	if len(i.DeletedAtNotIn) > 0 {
+		predicates = append(predicates, content.DeletedAtNotIn(i.DeletedAtNotIn...))
+	}
+	if i.DeletedAtGT != nil {
+		predicates = append(predicates, content.DeletedAtGT(*i.DeletedAtGT))
+	}
+	if i.DeletedAtGTE != nil {
+		predicates = append(predicates, content.DeletedAtGTE(*i.DeletedAtGTE))
+	}
+	if i.DeletedAtLT != nil {
+		predicates = append(predicates, content.DeletedAtLT(*i.DeletedAtLT))
+	}
+	if i.DeletedAtLTE != nil {
+		predicates = append(predicates, content.DeletedAtLTE(*i.DeletedAtLTE))
+	}
+	if i.DeletedAtIsNil {
+		predicates = append(predicates, content.DeletedAtIsNil())
+	}
+	if i.DeletedAtNotNil {
+		predicates = append(predicates, content.DeletedAtNotNil())
+	}
+	if i.TimetableType != nil {
+		predicates = append(predicates, content.TimetableTypeEQ(*i.TimetableType))
+	}
+	if i.TimetableTypeNEQ != nil {
+		predicates = append(predicates, content.TimetableTypeNEQ(*i.TimetableTypeNEQ))
+	}
+	if len(i.TimetableTypeIn) > 0 {
+		predicates = append(predicates, content.TimetableTypeIn(i.TimetableTypeIn...))
+	}
+	if len(i.TimetableTypeNotIn) > 0 {
+		predicates = append(predicates, content.TimetableTypeNotIn(i.TimetableTypeNotIn...))
+	}
+	if i.Type != nil {
+		predicates = append(predicates, content.TypeEQ(*i.Type))
+	}
+	if i.TypeNEQ != nil {
+		predicates = append(predicates, content.TypeNEQ(*i.TypeNEQ))
+	}
+	if len(i.TypeIn) > 0 {
+		predicates = append(predicates, content.TypeIn(i.TypeIn...))
+	}
+	if len(i.TypeNotIn) > 0 {
+		predicates = append(predicates, content.TypeNotIn(i.TypeNotIn...))
+	}
+	if i.Locale != nil {
+		predicates = append(predicates, content.LocaleEQ(*i.Locale))
+	}
+	if i.LocaleNEQ != nil {
+		predicates = append(predicates, content.LocaleNEQ(*i.LocaleNEQ))
+	}
+	if len(i.LocaleIn) > 0 {
+		predicates = append(predicates, content.LocaleIn(i.LocaleIn...))
+	}
+	if len(i.LocaleNotIn) > 0 {
+		predicates = append(predicates, content.LocaleNotIn(i.LocaleNotIn...))
+	}
+	if i.LocaleGT != nil {
+		predicates = append(predicates, content.LocaleGT(*i.LocaleGT))
+	}
+	if i.LocaleGTE != nil {
+		predicates = append(predicates, content.LocaleGTE(*i.LocaleGTE))
+	}
+	if i.LocaleLT != nil {
+		predicates = append(predicates, content.LocaleLT(*i.LocaleLT))
+	}
+	if i.LocaleLTE != nil {
+		predicates = append(predicates, content.LocaleLTE(*i.LocaleLTE))
+	}
+	if i.LocaleContains != nil {
+		predicates = append(predicates, content.LocaleContains(*i.LocaleContains))
+	}
+	if i.LocaleHasPrefix != nil {
+		predicates = append(predicates, content.LocaleHasPrefix(*i.LocaleHasPrefix))
+	}
+	if i.LocaleHasSuffix != nil {
+		predicates = append(predicates, content.LocaleHasSuffix(*i.LocaleHasSuffix))
+	}
+	if i.LocaleEqualFold != nil {
+		predicates = append(predicates, content.LocaleEqualFold(*i.LocaleEqualFold))
+	}
+	if i.LocaleContainsFold != nil {
+		predicates = append(predicates, content.LocaleContainsFold(*i.LocaleContainsFold))
+	}
+	if i.Location != nil {
+		predicates = append(predicates, content.LocationEQ(*i.Location))
+	}
+	if i.LocationNEQ != nil {
+		predicates = append(predicates, content.LocationNEQ(*i.LocationNEQ))
+	}
+	if len(i.LocationIn) > 0 {
+		predicates = append(predicates, content.LocationIn(i.LocationIn...))
+	}
+	if len(i.LocationNotIn) > 0 {
+		predicates = append(predicates, content.LocationNotIn(i.LocationNotIn...))
+	}
+	if i.Content != nil {
+		predicates = append(predicates, content.ContentEQ(*i.Content))
+	}
+	if i.ContentNEQ != nil {
+		predicates = append(predicates, content.ContentNEQ(*i.ContentNEQ))
+	}
+	if len(i.ContentIn) > 0 {
+		predicates = append(predicates, content.ContentIn(i.ContentIn...))
+	}
+	if len(i.ContentNotIn) > 0 {
+		predicates = append(predicates, content.ContentNotIn(i.ContentNotIn...))
+	}
+	if i.ContentGT != nil {
+		predicates = append(predicates, content.ContentGT(*i.ContentGT))
+	}
+	if i.ContentGTE != nil {
+		predicates = append(predicates, content.ContentGTE(*i.ContentGTE))
+	}
+	if i.ContentLT != nil {
+		predicates = append(predicates, content.ContentLT(*i.ContentLT))
+	}
+	if i.ContentLTE != nil {
+		predicates = append(predicates, content.ContentLTE(*i.ContentLTE))
+	}
+	if i.ContentContains != nil {
+		predicates = append(predicates, content.ContentContains(*i.ContentContains))
+	}
+	if i.ContentHasPrefix != nil {
+		predicates = append(predicates, content.ContentHasPrefix(*i.ContentHasPrefix))
+	}
+	if i.ContentHasSuffix != nil {
+		predicates = append(predicates, content.ContentHasSuffix(*i.ContentHasSuffix))
+	}
+	if i.ContentEqualFold != nil {
+		predicates = append(predicates, content.ContentEqualFold(*i.ContentEqualFold))
+	}
+	if i.ContentContainsFold != nil {
+		predicates = append(predicates, content.ContentContainsFold(*i.ContentContainsFold))
+	}
+	if i.Status != nil {
+		predicates = append(predicates, content.StatusEQ(*i.Status))
+	}
+	if i.StatusNEQ != nil {
+		predicates = append(predicates, content.StatusNEQ(*i.StatusNEQ))
+	}
+	if len(i.StatusIn) > 0 {
+		predicates = append(predicates, content.StatusIn(i.StatusIn...))
+	}
+	if len(i.StatusNotIn) > 0 {
+		predicates = append(predicates, content.StatusNotIn(i.StatusNotIn...))
+	}
+	if i.PublishedAt != nil {
+		predicates = append(predicates, content.PublishedAtEQ(*i.PublishedAt))
+	}
+	if i.PublishedAtNEQ != nil {
+		predicates = append(predicates, content.PublishedAtNEQ(*i.PublishedAtNEQ))
+	}
+	if len(i.PublishedAtIn) > 0 {
+		predicates = append(predicates, content.PublishedAtIn(i.PublishedAtIn...))
+	}
+	if len(i.PublishedAtNotIn) > 0 {
+		predicates = append(predicates, content.PublishedAtNotIn(i.PublishedAtNotIn...))
+	}
+	if i.PublishedAtGT != nil {
+		predicates = append(predicates, content.PublishedAtGT(*i.PublishedAtGT))
+	}
+	if i.PublishedAtGTE != nil {
+		predicates = append(predicates, content.PublishedAtGTE(*i.PublishedAtGTE))
+	}
+	if i.PublishedAtLT != nil {
+		predicates = append(predicates, content.PublishedAtLT(*i.PublishedAtLT))
+	}
+	if i.PublishedAtLTE != nil {
+		predicates = append(predicates, content.PublishedAtLTE(*i.PublishedAtLTE))
+	}
+	if i.PublishedAtIsNil {
+		predicates = append(predicates, content.PublishedAtIsNil())
+	}
+	if i.PublishedAtNotNil {
+		predicates = append(predicates, content.PublishedAtNotNil())
+	}
+
+	switch len(predicates) {
+	case 0:
+		return nil, ErrEmptyContentWhereInput
+	case 1:
+		return predicates[0], nil
+	default:
+		return content.And(predicates...), nil
+	}
+}
+
 // TagWhereInput represents a where input for filtering Tag queries.
 type TagWhereInput struct {
 	Predicates []predicate.Tag  `json:"-"`
@@ -2409,11 +2866,11 @@ type TimetableWhereInput struct {
 	DeletedAtIsNil  bool        `json:"deletedAtIsNil,omitempty"`
 	DeletedAtNotNil bool        `json:"deletedAtNotNil,omitempty"`
 
-	// "type" field predicates.
-	Type      *timetable.Type  `json:"type,omitempty"`
-	TypeNEQ   *timetable.Type  `json:"typeNEQ,omitempty"`
-	TypeIn    []timetable.Type `json:"typeIn,omitempty"`
-	TypeNotIn []timetable.Type `json:"typeNotIn,omitempty"`
+	// "timetable_type" field predicates.
+	TimetableType      *timetable.TimetableType  `json:"timetableType,omitempty"`
+	TimetableTypeNEQ   *timetable.TimetableType  `json:"timetableTypeNEQ,omitempty"`
+	TimetableTypeIn    []timetable.TimetableType `json:"timetableTypeIn,omitempty"`
+	TimetableTypeNotIn []timetable.TimetableType `json:"timetableTypeNotIn,omitempty"`
 
 	// "datetime_from" field predicates.
 	DatetimeFrom       *time.Time  `json:"datetimeFrom,omitempty"`
@@ -2720,17 +3177,17 @@ func (i *TimetableWhereInput) P() (predicate.Timetable, error) {
 	if i.DeletedAtNotNil {
 		predicates = append(predicates, timetable.DeletedAtNotNil())
 	}
-	if i.Type != nil {
-		predicates = append(predicates, timetable.TypeEQ(*i.Type))
+	if i.TimetableType != nil {
+		predicates = append(predicates, timetable.TimetableTypeEQ(*i.TimetableType))
 	}
-	if i.TypeNEQ != nil {
-		predicates = append(predicates, timetable.TypeNEQ(*i.TypeNEQ))
+	if i.TimetableTypeNEQ != nil {
+		predicates = append(predicates, timetable.TimetableTypeNEQ(*i.TimetableTypeNEQ))
 	}
-	if len(i.TypeIn) > 0 {
-		predicates = append(predicates, timetable.TypeIn(i.TypeIn...))
+	if len(i.TimetableTypeIn) > 0 {
+		predicates = append(predicates, timetable.TimetableTypeIn(i.TimetableTypeIn...))
 	}
-	if len(i.TypeNotIn) > 0 {
-		predicates = append(predicates, timetable.TypeNotIn(i.TypeNotIn...))
+	if len(i.TimetableTypeNotIn) > 0 {
+		predicates = append(predicates, timetable.TimetableTypeNotIn(i.TimetableTypeNotIn...))
 	}
 	if i.DatetimeFrom != nil {
 		predicates = append(predicates, timetable.DatetimeFromEQ(*i.DatetimeFrom))

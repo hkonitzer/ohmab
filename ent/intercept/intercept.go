@@ -12,6 +12,7 @@ import (
 	"hynie.de/ohmab/ent/address"
 	"hynie.de/ohmab/ent/auditlog"
 	"hynie.de/ohmab/ent/business"
+	"hynie.de/ohmab/ent/content"
 	"hynie.de/ohmab/ent/predicate"
 	"hynie.de/ohmab/ent/tag"
 	"hynie.de/ohmab/ent/timetable"
@@ -155,6 +156,33 @@ func (f TraverseBusiness) Traverse(ctx context.Context, q ent.Query) error {
 	return fmt.Errorf("unexpected query type %T. expect *ent.BusinessQuery", q)
 }
 
+// The ContentFunc type is an adapter to allow the use of ordinary function as a Querier.
+type ContentFunc func(context.Context, *ent.ContentQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f ContentFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.ContentQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.ContentQuery", q)
+}
+
+// The TraverseContent type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseContent func(context.Context, *ent.ContentQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseContent) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseContent) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.ContentQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.ContentQuery", q)
+}
+
 // The TagFunc type is an adapter to allow the use of ordinary function as a Querier.
 type TagFunc func(context.Context, *ent.TagQuery) (ent.Value, error)
 
@@ -245,6 +273,8 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.AuditLogQuery, predicate.AuditLog, auditlog.OrderOption]{typ: ent.TypeAuditLog, tq: q}, nil
 	case *ent.BusinessQuery:
 		return &query[*ent.BusinessQuery, predicate.Business, business.OrderOption]{typ: ent.TypeBusiness, tq: q}, nil
+	case *ent.ContentQuery:
+		return &query[*ent.ContentQuery, predicate.Content, content.OrderOption]{typ: ent.TypeContent, tq: q}, nil
 	case *ent.TagQuery:
 		return &query[*ent.TagQuery, predicate.Tag, tag.OrderOption]{typ: ent.TypeTag, tq: q}, nil
 	case *ent.TimetableQuery:

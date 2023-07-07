@@ -43,8 +43,10 @@ func main() {
 	}
 	// Create client
 	ctx := context.TODO()
-	// set admin rights
-	ctx = privacy.NewContext(ctx, &privacy.UserViewer{Role: privacy.Admin})
+	// Authorize me
+	uv := privacy.UserViewer{Role: privacy.Admin}
+	uv.SetUserID("import")
+	ctx = privacy.NewContext(ctx, &uv)
 	client, clientError := db.CreateClient(ctx, configurations)
 	if clientError != nil {
 		logger.Fatal().Msgf("Error creating client: %v", clientError)

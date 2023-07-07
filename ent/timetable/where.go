@@ -247,24 +247,24 @@ func DeletedAtNotNil() predicate.Timetable {
 	return predicate.Timetable(sql.FieldNotNull(FieldDeletedAt))
 }
 
-// TypeEQ applies the EQ predicate on the "type" field.
-func TypeEQ(v Type) predicate.Timetable {
-	return predicate.Timetable(sql.FieldEQ(FieldType, v))
+// TimetableTypeEQ applies the EQ predicate on the "timetable_type" field.
+func TimetableTypeEQ(v TimetableType) predicate.Timetable {
+	return predicate.Timetable(sql.FieldEQ(FieldTimetableType, v))
 }
 
-// TypeNEQ applies the NEQ predicate on the "type" field.
-func TypeNEQ(v Type) predicate.Timetable {
-	return predicate.Timetable(sql.FieldNEQ(FieldType, v))
+// TimetableTypeNEQ applies the NEQ predicate on the "timetable_type" field.
+func TimetableTypeNEQ(v TimetableType) predicate.Timetable {
+	return predicate.Timetable(sql.FieldNEQ(FieldTimetableType, v))
 }
 
-// TypeIn applies the In predicate on the "type" field.
-func TypeIn(vs ...Type) predicate.Timetable {
-	return predicate.Timetable(sql.FieldIn(FieldType, vs...))
+// TimetableTypeIn applies the In predicate on the "timetable_type" field.
+func TimetableTypeIn(vs ...TimetableType) predicate.Timetable {
+	return predicate.Timetable(sql.FieldIn(FieldTimetableType, vs...))
 }
 
-// TypeNotIn applies the NotIn predicate on the "type" field.
-func TypeNotIn(vs ...Type) predicate.Timetable {
-	return predicate.Timetable(sql.FieldNotIn(FieldType, vs...))
+// TimetableTypeNotIn applies the NotIn predicate on the "timetable_type" field.
+func TimetableTypeNotIn(vs ...TimetableType) predicate.Timetable {
+	return predicate.Timetable(sql.FieldNotIn(FieldTimetableType, vs...))
 }
 
 // DatetimeFromEQ applies the EQ predicate on the "datetime_from" field.

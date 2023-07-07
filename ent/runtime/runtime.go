@@ -11,6 +11,7 @@ import (
 	"hynie.de/ohmab/ent/address"
 	"hynie.de/ohmab/ent/auditlog"
 	"hynie.de/ohmab/ent/business"
+	"hynie.de/ohmab/ent/content"
 	"hynie.de/ohmab/ent/schema"
 	"hynie.de/ohmab/ent/tag"
 	"hynie.de/ohmab/ent/timetable"
@@ -138,6 +139,50 @@ func init() {
 	businessDescID := businessFields[0].Descriptor()
 	// business.DefaultID holds the default value on creation for the id field.
 	business.DefaultID = businessDescID.Default.(func() uuid.UUID)
+	contentMixin := schema.Content{}.Mixin()
+	contentHooks := schema.Content{}.Hooks()
+	content.Hooks[0] = contentHooks[0]
+	contentMixinFields0 := contentMixin[0].Fields()
+	_ = contentMixinFields0
+	contentMixinFields1 := contentMixin[1].Fields()
+	_ = contentMixinFields1
+	contentFields := schema.Content{}.Fields()
+	_ = contentFields
+	// contentDescCreatedAt is the schema descriptor for created_at field.
+	contentDescCreatedAt := contentMixinFields0[0].Descriptor()
+	// content.DefaultCreatedAt holds the default value on creation for the created_at field.
+	content.DefaultCreatedAt = contentDescCreatedAt.Default.(func() time.Time)
+	// contentDescUpdatedAt is the schema descriptor for updated_at field.
+	contentDescUpdatedAt := contentMixinFields0[1].Descriptor()
+	// content.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	content.DefaultUpdatedAt = contentDescUpdatedAt.Default.(func() time.Time)
+	// content.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	content.UpdateDefaultUpdatedAt = contentDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// contentDescLocale is the schema descriptor for locale field.
+	contentDescLocale := contentFields[2].Descriptor()
+	// content.DefaultLocale holds the default value on creation for the locale field.
+	content.DefaultLocale = contentDescLocale.Default.(string)
+	// content.LocaleValidator is a validator for the "locale" field. It is called by the builders before save.
+	content.LocaleValidator = func() func(string) error {
+		validators := contentDescLocale.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+			validators[2].(func(string) error),
+		}
+		return func(locale string) error {
+			for _, fn := range fns {
+				if err := fn(locale); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// contentDescID is the schema descriptor for id field.
+	contentDescID := contentFields[0].Descriptor()
+	// content.DefaultID holds the default value on creation for the id field.
+	content.DefaultID = contentDescID.Default.(func() uuid.UUID)
 	tagMixin := schema.Tag{}.Mixin()
 	tagMixinFields0 := tagMixin[0].Fields()
 	_ = tagMixinFields0
@@ -167,6 +212,8 @@ func init() {
 	timetable.Hooks[1] = timetableHooks[1]
 	timetableMixinFields0 := timetableMixin[0].Fields()
 	_ = timetableMixinFields0
+	timetableMixinFields1 := timetableMixin[1].Fields()
+	_ = timetableMixinFields1
 	timetableFields := schema.Timetable{}.Fields()
 	_ = timetableFields
 	// timetableDescCreatedAt is the schema descriptor for created_at field.
@@ -180,7 +227,7 @@ func init() {
 	// timetable.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	timetable.UpdateDefaultUpdatedAt = timetableDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// timetableDescDuration is the schema descriptor for duration field.
-	timetableDescDuration := timetableFields[3].Descriptor()
+	timetableDescDuration := timetableFields[2].Descriptor()
 	// timetable.DurationValidator is a validator for the "duration" field. It is called by the builders before save.
 	timetable.DurationValidator = func() func(uint8) error {
 		validators := timetableDescDuration.Validators
@@ -198,7 +245,7 @@ func init() {
 		}
 	}()
 	// timetableDescTimeWholeDay is the schema descriptor for time_whole_day field.
-	timetableDescTimeWholeDay := timetableFields[5].Descriptor()
+	timetableDescTimeWholeDay := timetableFields[4].Descriptor()
 	// timetable.DefaultTimeWholeDay holds the default value on creation for the time_whole_day field.
 	timetable.DefaultTimeWholeDay = timetableDescTimeWholeDay.Default.(bool)
 	// timetableDescID is the schema descriptor for id field.

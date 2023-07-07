@@ -46,6 +46,18 @@ func (f BusinessFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, er
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.BusinessMutation", m)
 }
 
+// The ContentFunc type is an adapter to allow the use of ordinary
+// function as Content mutator.
+type ContentFunc func(context.Context, *ent.ContentMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ContentFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.ContentMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ContentMutation", m)
+}
+
 // The TagFunc type is an adapter to allow the use of ordinary
 // function as Tag mutator.
 type TagFunc func(context.Context, *ent.TagMutation) (ent.Value, error)

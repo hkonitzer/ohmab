@@ -121,6 +121,25 @@ func (al *AuditLog) AuditLogForAddress() ent.Hook {
 	return hook.On(hk, ent.OpCreate|ent.OpUpdate|ent.OpDelete|ent.OpDeleteOne|ent.OpUpdateOne)
 }
 
+func (al *AuditLog) AuditLogForContent() ent.Hook {
+	hk := func(next ent.Mutator) ent.Mutator {
+		return hook.ContentFunc(func(ctx context.Context, m *ent.ContentMutation) (ent.Value, error) {
+			// get authorize from context, request will be denied if the viewer has not the admin role
+			err := al.getAuth(ctx)
+			if err != nil || !al.viewer.Admin() {
+				return nil, err
+			}
+			contentID, _ := m.ID()
+			err = al.createLogEntry(m.Client(), ctx, m, contentID.String())
+			if err != nil {
+				return nil, errors.New("could not create audit log")
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	return hook.On(hk, ent.OpCreate|ent.OpUpdate|ent.OpDelete|ent.OpDeleteOne|ent.OpUpdateOne)
+}
+
 func extractFieldsandherValues(m ent.Mutation) map[string]string {
 	fieldsAndValues := make(map[string]string)
 	for _, field := range m.Fields() {

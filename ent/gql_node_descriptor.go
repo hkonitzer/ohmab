@@ -364,6 +364,98 @@ func (b *Business) Node(ctx context.Context) (node *Node, err error) {
 }
 
 // Node implements Noder interface
+func (c *Content) Node(ctx context.Context) (node *Node, err error) {
+	node = &Node{
+		ID:     c.ID,
+		Type:   "Content",
+		Fields: make([]*Field, 10),
+		Edges:  make([]*Edge, 0),
+	}
+	var buf []byte
+	if buf, err = json.Marshal(c.CreatedAt); err != nil {
+		return nil, err
+	}
+	node.Fields[0] = &Field{
+		Type:  "time.Time",
+		Name:  "created_at",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(c.UpdatedAt); err != nil {
+		return nil, err
+	}
+	node.Fields[1] = &Field{
+		Type:  "time.Time",
+		Name:  "updated_at",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(c.DeletedAt); err != nil {
+		return nil, err
+	}
+	node.Fields[2] = &Field{
+		Type:  "time.Time",
+		Name:  "deleted_at",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(c.TimetableType); err != nil {
+		return nil, err
+	}
+	node.Fields[3] = &Field{
+		Type:  "content.TimetableType",
+		Name:  "timetable_type",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(c.Type); err != nil {
+		return nil, err
+	}
+	node.Fields[4] = &Field{
+		Type:  "content.Type",
+		Name:  "type",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(c.Locale); err != nil {
+		return nil, err
+	}
+	node.Fields[5] = &Field{
+		Type:  "string",
+		Name:  "locale",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(c.Location); err != nil {
+		return nil, err
+	}
+	node.Fields[6] = &Field{
+		Type:  "content.Location",
+		Name:  "location",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(c.Content); err != nil {
+		return nil, err
+	}
+	node.Fields[7] = &Field{
+		Type:  "string",
+		Name:  "content",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(c.Status); err != nil {
+		return nil, err
+	}
+	node.Fields[8] = &Field{
+		Type:  "content.Status",
+		Name:  "status",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(c.PublishedAt); err != nil {
+		return nil, err
+	}
+	node.Fields[9] = &Field{
+		Type:  "time.Time",
+		Name:  "published_at",
+		Value: string(buf),
+	}
+	return node, nil
+}
+
+// Node implements Noder interface
 func (t *Tag) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     t.ID,
@@ -468,12 +560,12 @@ func (t *Timetable) Node(ctx context.Context) (node *Node, err error) {
 		Name:  "deleted_at",
 		Value: string(buf),
 	}
-	if buf, err = json.Marshal(t.Type); err != nil {
+	if buf, err = json.Marshal(t.TimetableType); err != nil {
 		return nil, err
 	}
 	node.Fields[3] = &Field{
-		Type:  "timetable.Type",
-		Name:  "type",
+		Type:  "timetable.TimetableType",
+		Name:  "timetable_type",
 		Value: string(buf),
 	}
 	if buf, err = json.Marshal(t.DatetimeFrom); err != nil {

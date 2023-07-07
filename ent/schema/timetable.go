@@ -24,8 +24,6 @@ func (Timetable) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID(constants.IDFieldName, uuid.UUID{}).
 			Immutable().Default(uuid.New),
-		field.Enum("type").
-			Values("DEFAULT", "REGULAR", "CLOSED", "EMERGENCYSERVICE", "HOLIDAY", "SPECIAL").Default("DEFAULT"),
 		field.Time("datetime_from").
 			Annotations(entgql.OrderField("datetime_from")).
 			Optional(),
@@ -50,6 +48,7 @@ func (Timetable) Fields() []ent.Field {
 func (Timetable) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		TimeMixin{},
+		TimetableTypeMixin{},
 	}
 }
 

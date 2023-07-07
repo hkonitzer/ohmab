@@ -26,8 +26,8 @@ type Timetable struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// DeletedAt holds the value of the "deleted_at" field.
 	DeletedAt time.Time `json:"deleted_at,omitempty"`
-	// Type holds the value of the "type" field.
-	Type timetable.Type `json:"type,omitempty"`
+	// The type of the timetable entry
+	TimetableType timetable.TimetableType `json:"timetable_type,omitempty"`
 	// DatetimeFrom holds the value of the "datetime_from" field.
 	DatetimeFrom time.Time `json:"datetime_from,omitempty"`
 	// The duration of the timetable entry in hours, overwrites datetime_to
@@ -99,7 +99,7 @@ func (*Timetable) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case timetable.FieldDuration:
 			values[i] = new(sql.NullInt64)
-		case timetable.FieldType, timetable.FieldComment, timetable.FieldAvailabilityByPhone, timetable.FieldAvailabilityByEmail, timetable.FieldAvailabilityBySms, timetable.FieldAvailabilityByWhatsapp:
+		case timetable.FieldTimetableType, timetable.FieldComment, timetable.FieldAvailabilityByPhone, timetable.FieldAvailabilityByEmail, timetable.FieldAvailabilityBySms, timetable.FieldAvailabilityByWhatsapp:
 			values[i] = new(sql.NullString)
 		case timetable.FieldCreatedAt, timetable.FieldUpdatedAt, timetable.FieldDeletedAt, timetable.FieldDatetimeFrom, timetable.FieldDatetimeTo:
 			values[i] = new(sql.NullTime)
@@ -146,11 +146,11 @@ func (t *Timetable) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				t.DeletedAt = value.Time
 			}
-		case timetable.FieldType:
+		case timetable.FieldTimetableType:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field type", values[i])
+				return fmt.Errorf("unexpected type %T for field timetable_type", values[i])
 			} else if value.Valid {
-				t.Type = timetable.Type(value.String)
+				t.TimetableType = timetable.TimetableType(value.String)
 			}
 		case timetable.FieldDatetimeFrom:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -268,8 +268,8 @@ func (t *Timetable) String() string {
 	builder.WriteString("deleted_at=")
 	builder.WriteString(t.DeletedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
-	builder.WriteString("type=")
-	builder.WriteString(fmt.Sprintf("%v", t.Type))
+	builder.WriteString("timetable_type=")
+	builder.WriteString(fmt.Sprintf("%v", t.TimetableType))
 	builder.WriteString(", ")
 	builder.WriteString("datetime_from=")
 	builder.WriteString(t.DatetimeFrom.Format(time.ANSIC))

@@ -58,16 +58,16 @@ func (tu *TimetableUpdate) ClearDeletedAt() *TimetableUpdate {
 	return tu
 }
 
-// SetType sets the "type" field.
-func (tu *TimetableUpdate) SetType(t timetable.Type) *TimetableUpdate {
-	tu.mutation.SetType(t)
+// SetTimetableType sets the "timetable_type" field.
+func (tu *TimetableUpdate) SetTimetableType(tt timetable.TimetableType) *TimetableUpdate {
+	tu.mutation.SetTimetableType(tt)
 	return tu
 }
 
-// SetNillableType sets the "type" field if the given value is not nil.
-func (tu *TimetableUpdate) SetNillableType(t *timetable.Type) *TimetableUpdate {
-	if t != nil {
-		tu.SetType(*t)
+// SetNillableTimetableType sets the "timetable_type" field if the given value is not nil.
+func (tu *TimetableUpdate) SetNillableTimetableType(tt *timetable.TimetableType) *TimetableUpdate {
+	if tt != nil {
+		tu.SetTimetableType(*tt)
 	}
 	return tu
 }
@@ -341,9 +341,9 @@ func (tu *TimetableUpdate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (tu *TimetableUpdate) check() error {
-	if v, ok := tu.mutation.GetType(); ok {
-		if err := timetable.TypeValidator(v); err != nil {
-			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Timetable.type": %w`, err)}
+	if v, ok := tu.mutation.TimetableType(); ok {
+		if err := timetable.TimetableTypeValidator(v); err != nil {
+			return &ValidationError{Name: "timetable_type", err: fmt.Errorf(`ent: validator failed for field "Timetable.timetable_type": %w`, err)}
 		}
 	}
 	if v, ok := tu.mutation.Duration(); ok {
@@ -378,8 +378,8 @@ func (tu *TimetableUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if tu.mutation.DeletedAtCleared() {
 		_spec.ClearField(timetable.FieldDeletedAt, field.TypeTime)
 	}
-	if value, ok := tu.mutation.GetType(); ok {
-		_spec.SetField(timetable.FieldType, field.TypeEnum, value)
+	if value, ok := tu.mutation.TimetableType(); ok {
+		_spec.SetField(timetable.FieldTimetableType, field.TypeEnum, value)
 	}
 	if value, ok := tu.mutation.DatetimeFrom(); ok {
 		_spec.SetField(timetable.FieldDatetimeFrom, field.TypeTime, value)
@@ -552,16 +552,16 @@ func (tuo *TimetableUpdateOne) ClearDeletedAt() *TimetableUpdateOne {
 	return tuo
 }
 
-// SetType sets the "type" field.
-func (tuo *TimetableUpdateOne) SetType(t timetable.Type) *TimetableUpdateOne {
-	tuo.mutation.SetType(t)
+// SetTimetableType sets the "timetable_type" field.
+func (tuo *TimetableUpdateOne) SetTimetableType(tt timetable.TimetableType) *TimetableUpdateOne {
+	tuo.mutation.SetTimetableType(tt)
 	return tuo
 }
 
-// SetNillableType sets the "type" field if the given value is not nil.
-func (tuo *TimetableUpdateOne) SetNillableType(t *timetable.Type) *TimetableUpdateOne {
-	if t != nil {
-		tuo.SetType(*t)
+// SetNillableTimetableType sets the "timetable_type" field if the given value is not nil.
+func (tuo *TimetableUpdateOne) SetNillableTimetableType(tt *timetable.TimetableType) *TimetableUpdateOne {
+	if tt != nil {
+		tuo.SetTimetableType(*tt)
 	}
 	return tuo
 }
@@ -848,9 +848,9 @@ func (tuo *TimetableUpdateOne) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (tuo *TimetableUpdateOne) check() error {
-	if v, ok := tuo.mutation.GetType(); ok {
-		if err := timetable.TypeValidator(v); err != nil {
-			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Timetable.type": %w`, err)}
+	if v, ok := tuo.mutation.TimetableType(); ok {
+		if err := timetable.TimetableTypeValidator(v); err != nil {
+			return &ValidationError{Name: "timetable_type", err: fmt.Errorf(`ent: validator failed for field "Timetable.timetable_type": %w`, err)}
 		}
 	}
 	if v, ok := tuo.mutation.Duration(); ok {
@@ -902,8 +902,8 @@ func (tuo *TimetableUpdateOne) sqlSave(ctx context.Context) (_node *Timetable, e
 	if tuo.mutation.DeletedAtCleared() {
 		_spec.ClearField(timetable.FieldDeletedAt, field.TypeTime)
 	}
-	if value, ok := tuo.mutation.GetType(); ok {
-		_spec.SetField(timetable.FieldType, field.TypeEnum, value)
+	if value, ok := tuo.mutation.TimetableType(); ok {
+		_spec.SetField(timetable.FieldTimetableType, field.TypeEnum, value)
 	}
 	if value, ok := tuo.mutation.DatetimeFrom(); ok {
 		_spec.SetField(timetable.FieldDatetimeFrom, field.TypeTime, value)

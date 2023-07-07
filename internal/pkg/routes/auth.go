@@ -68,7 +68,7 @@ func (s *Server) CheckUser(next http.Handler) http.Handler {
 				logger.Fatal().Msgf("Unknown role: %v for user-id '%v'", u.Role, uuid_)
 			}
 		}
-		next.ServeHTTP(w, r.WithContext(privacy.NewContext(r.Context(), uv)))
+		next.ServeHTTP(w, r.WithContext(privacy.NewContext(r.Context(), &uv)))
 	})
 }
 

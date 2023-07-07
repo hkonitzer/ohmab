@@ -2,7 +2,7 @@ package log
 
 import (
 	"github.com/rs/zerolog"
-	"hynie.de/ohmab/internal/pkg/config"
+	"hynie.de/ohmab/internal/pkg/common/config"
 	"os"
 	"runtime/debug"
 	"sync"

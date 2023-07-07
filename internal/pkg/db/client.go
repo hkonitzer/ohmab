@@ -5,8 +5,8 @@ import (
 	"entgo.io/ent/dialect"
 	"fmt"
 	"hynie.de/ohmab/ent"
-	"hynie.de/ohmab/internal/pkg/config"
-	"hynie.de/ohmab/internal/pkg/log"
+	"hynie.de/ohmab/internal/pkg/common/config"
+	"hynie.de/ohmab/internal/pkg/common/log"
 )
 
 // Get logger

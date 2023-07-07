@@ -5,7 +5,7 @@ import (
 	"errors"
 	"hynie.de/ohmab/ent"
 	"hynie.de/ohmab/ent/hook"
-	"hynie.de/ohmab/internal/pkg/log"
+	"hynie.de/ohmab/internal/pkg/common/log"
 	"time"
 )
 

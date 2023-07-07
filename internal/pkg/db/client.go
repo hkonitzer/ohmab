@@ -35,6 +35,8 @@ func CreateClient(ctx context.Context, configurations *config.Configurations) (*
 	default:
 		return nil, fmt.Errorf("unknown dialect: %v", configurations.Database.Dialect)
 	}
-	client.Debug()
+	if debug {
+		client = client.Debug()
+	}
 	return client, nil
 }

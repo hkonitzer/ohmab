@@ -16,6 +16,7 @@ import (
 // Timetable holds the schema definition for a Timetable entity.
 type Timetable struct {
 	ent.Schema
+	hooks.AuditLog
 }
 
 // Fields of a Timetable.
@@ -77,9 +78,9 @@ func (Timetable) Indexes() []ent.Index {
 		index.Fields("datetime_from"),
 	}
 }
-func (Timetable) Hooks() []ent.Hook {
+func (t Timetable) Hooks() []ent.Hook {
 	return []ent.Hook{
-		hooks.AuditLogForTimetable(),
+		t.AuditLogForTimetable(),
 		hooks.EnsureDurationIsSet(),
 	}
 }

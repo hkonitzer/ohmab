@@ -15,6 +15,7 @@ import (
 // User holds the schema definition for the User entity.
 type User struct {
 	ent.Schema
+	hooks.AuditLog
 }
 
 // Fields of a User.
@@ -63,8 +64,8 @@ func (User) Indexes() []ent.Index {
 	}
 }
 
-func (User) Hooks() []ent.Hook {
+func (u User) Hooks() []ent.Hook {
 	return []ent.Hook{
-		hooks.AuditLogForUser(),
+		u.AuditLogForUser(),
 	}
 }

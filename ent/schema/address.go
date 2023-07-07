@@ -17,6 +17,7 @@ var localeRex, _ = regexp.Compile("^[a-z]{2,4}(_[A-Z][a-z]{3})?(_([A-Z]{2}|[0-9]
 // Address holds the schema definition for the Address entity.
 type Address struct {
 	ent.Schema
+	hooks.AuditLog
 }
 
 // Fields of an Address.
@@ -72,9 +73,9 @@ func (Address) Edges() []ent.Edge {
 	}
 }
 
-func (Address) Hooks() []ent.Hook {
+func (a Address) Hooks() []ent.Hook {
 	return []ent.Hook{
 		hooks.EnsureOnlyOnePrimaryAddress(),
-		hooks.AuditLogForAddress(),
+		a.AuditLogForAddress(),
 	}
 }

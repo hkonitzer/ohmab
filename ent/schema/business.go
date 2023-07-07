@@ -18,6 +18,7 @@ import (
 // Business holds the schema definition for the Business entity.
 type Business struct {
 	ent.Schema
+	hooks.AuditLog
 }
 
 // Fields of the Business.
@@ -81,10 +82,10 @@ func (Business) Indexes() []ent.Index {
 	}
 }
 
-func (Business) Hooks() []ent.Hook {
+func (b Business) Hooks() []ent.Hook {
 	return []ent.Hook{
 		hooks.UpperCaseForBussinessFields(),
-		hooks.AuditLogForBusiness(),
+		b.AuditLogForBusiness(),
 	}
 }
 

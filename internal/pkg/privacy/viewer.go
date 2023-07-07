@@ -80,6 +80,13 @@ func (v UserViewer) GetUserID() string {
 	return v.Claims["user_"+user.FieldID]
 }
 
+func (v UserViewer) SetUserID(id string) {
+	if v.Claims == nil {
+		v.Claims = make(map[string]string)
+	}
+	v.Claims["user_"+user.FieldID] = id
+}
+
 type ctxKey struct{}
 
 // FromContext returns the Viewer stored in a context.

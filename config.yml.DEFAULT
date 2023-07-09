@@ -14,3 +14,14 @@ database:
   sqlite3:
     cache: "shared" # see https://www.sqlite.org/uri.html#recognized_query_parameters"
     mode: "memory"
+ghost:
+  baseurl: "http://localhost:2368"
+  key: "ghost-admin-api-key"
+  locale: ""
+  content:
+    - EMERGENCYSERVICE:
+        post: "ES1"
+        page: "ES2"
+    - DEFAULT:
+        post-id: "D1"
+        page-id: "D2"

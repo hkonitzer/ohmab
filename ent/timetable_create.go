@@ -66,16 +66,16 @@ func (tc *TimetableCreate) SetNillableDeletedAt(t *time.Time) *TimetableCreate {
 	return tc
 }
 
-// SetType sets the "type" field.
-func (tc *TimetableCreate) SetType(t timetable.Type) *TimetableCreate {
-	tc.mutation.SetType(t)
+// SetTimetableType sets the "timetable_type" field.
+func (tc *TimetableCreate) SetTimetableType(tt timetable.TimetableType) *TimetableCreate {
+	tc.mutation.SetTimetableType(tt)
 	return tc
 }
 
-// SetNillableType sets the "type" field if the given value is not nil.
-func (tc *TimetableCreate) SetNillableType(t *timetable.Type) *TimetableCreate {
-	if t != nil {
-		tc.SetType(*t)
+// SetNillableTimetableType sets the "timetable_type" field if the given value is not nil.
+func (tc *TimetableCreate) SetNillableTimetableType(tt *timetable.TimetableType) *TimetableCreate {
+	if tt != nil {
+		tc.SetTimetableType(*tt)
 	}
 	return tc
 }
@@ -94,17 +94,23 @@ func (tc *TimetableCreate) SetNillableDatetimeFrom(t *time.Time) *TimetableCreat
 	return tc
 }
 
-// SetDatetimeTo sets the "datetime_to" field.
-func (tc *TimetableCreate) SetDatetimeTo(t time.Time) *TimetableCreate {
-	tc.mutation.SetDatetimeTo(t)
+// SetDuration sets the "duration" field.
+func (tc *TimetableCreate) SetDuration(u uint8) *TimetableCreate {
+	tc.mutation.SetDuration(u)
 	return tc
 }
 
-// SetNillableDatetimeTo sets the "datetime_to" field if the given value is not nil.
-func (tc *TimetableCreate) SetNillableDatetimeTo(t *time.Time) *TimetableCreate {
-	if t != nil {
-		tc.SetDatetimeTo(*t)
+// SetNillableDuration sets the "duration" field if the given value is not nil.
+func (tc *TimetableCreate) SetNillableDuration(u *uint8) *TimetableCreate {
+	if u != nil {
+		tc.SetDuration(*u)
 	}
+	return tc
+}
+
+// SetDatetimeTo sets the "datetime_to" field.
+func (tc *TimetableCreate) SetDatetimeTo(t time.Time) *TimetableCreate {
+	tc.mutation.SetDatetimeTo(t)
 	return tc
 }
 
@@ -283,9 +289,9 @@ func (tc *TimetableCreate) defaults() error {
 		v := timetable.DefaultUpdatedAt()
 		tc.mutation.SetUpdatedAt(v)
 	}
-	if _, ok := tc.mutation.GetType(); !ok {
-		v := timetable.DefaultType
-		tc.mutation.SetType(v)
+	if _, ok := tc.mutation.TimetableType(); !ok {
+		v := timetable.DefaultTimetableType
+		tc.mutation.SetTimetableType(v)
 	}
 	if _, ok := tc.mutation.TimeWholeDay(); !ok {
 		v := timetable.DefaultTimeWholeDay
@@ -309,13 +315,21 @@ func (tc *TimetableCreate) check() error {
 	if _, ok := tc.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Timetable.updated_at"`)}
 	}
-	if _, ok := tc.mutation.GetType(); !ok {
-		return &ValidationError{Name: "type", err: errors.New(`ent: missing required field "Timetable.type"`)}
+	if _, ok := tc.mutation.TimetableType(); !ok {
+		return &ValidationError{Name: "timetable_type", err: errors.New(`ent: missing required field "Timetable.timetable_type"`)}
 	}
-	if v, ok := tc.mutation.GetType(); ok {
-		if err := timetable.TypeValidator(v); err != nil {
-			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Timetable.type": %w`, err)}
+	if v, ok := tc.mutation.TimetableType(); ok {
+		if err := timetable.TimetableTypeValidator(v); err != nil {
+			return &ValidationError{Name: "timetable_type", err: fmt.Errorf(`ent: validator failed for field "Timetable.timetable_type": %w`, err)}
 		}
+	}
+	if v, ok := tc.mutation.Duration(); ok {
+		if err := timetable.DurationValidator(v); err != nil {
+			return &ValidationError{Name: "duration", err: fmt.Errorf(`ent: validator failed for field "Timetable.duration": %w`, err)}
+		}
+	}
+	if _, ok := tc.mutation.DatetimeTo(); !ok {
+		return &ValidationError{Name: "datetime_to", err: errors.New(`ent: missing required field "Timetable.datetime_to"`)}
 	}
 	if _, ok := tc.mutation.TimeWholeDay(); !ok {
 		return &ValidationError{Name: "time_whole_day", err: errors.New(`ent: missing required field "Timetable.time_whole_day"`)}
@@ -370,13 +384,17 @@ func (tc *TimetableCreate) createSpec() (*Timetable, *sqlgraph.CreateSpec) {
 		_spec.SetField(timetable.FieldDeletedAt, field.TypeTime, value)
 		_node.DeletedAt = value
 	}
-	if value, ok := tc.mutation.GetType(); ok {
-		_spec.SetField(timetable.FieldType, field.TypeEnum, value)
-		_node.Type = value
+	if value, ok := tc.mutation.TimetableType(); ok {
+		_spec.SetField(timetable.FieldTimetableType, field.TypeEnum, value)
+		_node.TimetableType = value
 	}
 	if value, ok := tc.mutation.DatetimeFrom(); ok {
 		_spec.SetField(timetable.FieldDatetimeFrom, field.TypeTime, value)
 		_node.DatetimeFrom = value
+	}
+	if value, ok := tc.mutation.Duration(); ok {
+		_spec.SetField(timetable.FieldDuration, field.TypeUint8, value)
+		_node.Duration = value
 	}
 	if value, ok := tc.mutation.DatetimeTo(); ok {
 		_spec.SetField(timetable.FieldDatetimeTo, field.TypeTime, value)

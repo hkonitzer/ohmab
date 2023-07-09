@@ -8,8 +8,8 @@ import (
 	"github.com/google/uuid"
 	"hynie.de/ohmab/ent"
 	"hynie.de/ohmab/ent/user"
-	"hynie.de/ohmab/internal/pkg/config"
-	"hynie.de/ohmab/internal/pkg/log"
+	"hynie.de/ohmab/internal/pkg/common/config"
+	"hynie.de/ohmab/internal/pkg/common/log"
 	"hynie.de/ohmab/internal/pkg/privacy"
 	"hynie.de/ohmab/internal/pkg/utils"
 	"net/http"
@@ -68,7 +68,7 @@ func (s *Server) CheckUser(next http.Handler) http.Handler {
 				logger.Fatal().Msgf("Unknown role: %v for user-id '%v'", u.Role, uuid_)
 			}
 		}
-		next.ServeHTTP(w, r.WithContext(privacy.NewContext(r.Context(), uv)))
+		next.ServeHTTP(w, r.WithContext(privacy.NewContext(r.Context(), &uv)))
 	})
 }
 

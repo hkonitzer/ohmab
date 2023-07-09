@@ -12,9 +12,10 @@ import (
 	schemas "hynie.de/ohmab/ent/schema"
 	"hynie.de/ohmab/ent/schema/constants"
 	"hynie.de/ohmab/ent/timetable"
-	"hynie.de/ohmab/internal/pkg/config"
+	"hynie.de/ohmab/internal/pkg/common/config"
+	"hynie.de/ohmab/internal/pkg/common/log"
 	"hynie.de/ohmab/internal/pkg/db"
-	"hynie.de/ohmab/internal/pkg/log"
+	"hynie.de/ohmab/internal/pkg/privacy"
 	"os"
 	"strconv"
 	"strings"
@@ -37,6 +38,7 @@ func main() {
 	// Parse cmd line
 	logger.Debug().Msgf("Starting Timetables Import")
 	filename := flag.String("filename", "import.csv", "Filename of the CSV file to import")
+	drop := flag.Bool("drop", false, "Drop all existing timetables before import")
 	allTimeentries := flag.Bool("alltimeentries", false, "Import also time entries in the past")
 	flag.Parse()
 	file, err := os.OpenFile(*filename, os.O_RDONLY, 0644)
@@ -49,11 +51,26 @@ func main() {
 	}
 	// CreateClient client
 	ctx := context.TODO()
+	// Authorize me
+	uv := privacy.UserViewer{Role: privacy.Admin}
+	uv.SetUserID("import")
+	ctx = privacy.NewContext(ctx, &uv)
 	client, clientError := db.CreateClient(ctx, configurations)
 	if clientError != nil {
 		logger.Fatal().Msgf("Error creating client: %v", clientError)
 	}
 	defer client.Close()
+
+	// Drop?
+	if *drop {
+		logger.Info().Msgf("Dropping all existing timetables")
+		co, err := client.Timetable.Delete().Exec(ctx)
+		if err != nil {
+			logger.Fatal().Msgf("Error dropping timetables: %v", err)
+		} else {
+			logger.Debug().Msgf("Dropped %d timetables", co)
+		}
+	}
 
 	logger.Info().Msgf("Start importing file '%s' with size %d bytes", stats.Name(), stats.Size())
 	reader := csv.NewReader(file)
@@ -157,21 +174,20 @@ func main() {
 			case "ADDRESS":
 				continue
 			case "TIMETABLE":
-				if schemaField == "type" {
+				if schemaField == "timetable_type" {
 					switch strings.ToUpper(field) {
-					case timetable.TypeEMERGENCYSERVICE.String():
-						timetableCreate.Mutation().SetType(timetable.TypeEMERGENCYSERVICE)
-					case timetable.TypeCLOSED.String():
-						timetableCreate.Mutation().SetType(timetable.TypeCLOSED)
-					case timetable.TypeHOLIDAY.String():
-						timetableCreate.Mutation().SetType(timetable.TypeHOLIDAY)
-					case timetable.TypeSPECIAL.String():
-						timetableCreate.Mutation().SetType(timetable.TypeSPECIAL)
-					case timetable.TypeREGULAR.String():
-						timetableCreate.Mutation().SetType(timetable.TypeREGULAR)
+					case timetable.TimetableTypeEMERGENCYSERVICE.String():
+						timetableCreate.Mutation().SetTimetableType(timetable.TimetableTypeEMERGENCYSERVICE)
+					case timetable.TimetableTypeCLOSED.String():
+						timetableCreate.Mutation().SetTimetableType(timetable.TimetableTypeCLOSED)
+					case timetable.TimetableTypeHOLIDAY.String():
+						timetableCreate.Mutation().SetTimetableType(timetable.TimetableTypeHOLIDAY)
+					case timetable.TimetableTypeSPECIAL.String():
+						timetableCreate.Mutation().SetTimetableType(timetable.TimetableTypeSPECIAL)
+					case timetable.TimetableTypeREGULAR.String():
+						timetableCreate.Mutation().SetTimetableType(timetable.TimetableTypeREGULAR)
 					default:
-						timetableCreate.Mutation().SetType(timetable.TypeDEFAULT)
-
+						timetableCreate.Mutation().SetTimetableType(timetable.TimetableTypeDEFAULT)
 					}
 				} else {
 					var fieldType string
@@ -214,18 +230,19 @@ func main() {
 							}
 							dateOrTime = date_
 						}
-						errSetter := timetableCreate.Mutation().SetField(schemaField, dateOrTime)
-						err_ = errSetter
+						err_ = timetableCreate.Mutation().SetField(schemaField, dateOrTime)
 					case "bool":
 						boolField, _ := strconv.ParseBool(field)
-						errSetter := timetableCreate.Mutation().SetField(schemaField, boolField)
-						err_ = errSetter
+						err_ = timetableCreate.Mutation().SetField(schemaField, boolField)
+					case "uint8":
+						uint64Value, _ := strconv.ParseUint(field, 10, 8)
+						uint8Value := uint8(uint64Value)
+						err_ = timetableCreate.Mutation().SetField(schemaField, uint8Value)
 					default: // string
-						errSetter := timetableCreate.Mutation().SetField(schemaField, field)
-						err_ = errSetter
+						err_ = timetableCreate.Mutation().SetField(schemaField, field)
 					}
 					if err_ != nil {
-						logger.Fatal().Msgf("Error setting timetable field '%s' to '%s': %v", schemaField, field, err)
+						logger.Fatal().Msgf("Error setting timetable field '%s' to '%s': %v", schemaField, field, err_)
 					}
 				}
 			default:
@@ -233,10 +250,12 @@ func main() {
 			}
 
 		}
+		// validate duration against dateTo
+
 		var dateFrom, dateTo time.Time
 		dateFrom, _ = timetableCreate.Mutation().DatetimeFrom()
 		dateTo, _ = timetableCreate.Mutation().DatetimeTo()
-		ttType, _ := timetableCreate.Mutation().GetType()
+		ttType, _ := timetableCreate.Mutation().TimetableType()
 		// check if entry is in the past
 		if !*allTimeentries && dateFrom.Before(time.Now()) {
 			logger.Debug().Msgf("Timetable with type '%v' dateFrom %v is in the past, skipping", ttType, dateFrom)
@@ -246,7 +265,7 @@ func main() {
 		exists := businessAddress.QueryTimetables().
 			Where(timetable.DatetimeFrom(dateFrom)).
 			Where(timetable.DatetimeTo(dateTo)).
-			Where(timetable.TypeEQ(ttType)).
+			Where(timetable.TimetableTypeEQ(ttType)).
 			CountX(ctx)
 		if exists == 0 {
 			timetableCreate.SetAddress(businessAddress).SaveX(ctx)

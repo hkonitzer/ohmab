@@ -97,6 +97,33 @@ var (
 			},
 		},
 	}
+	// ContentsColumns holds the columns for the "contents" table.
+	ContentsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "deleted_at", Type: field.TypeTime, Nullable: true},
+		{Name: "timetable_type", Type: field.TypeEnum, Enums: []string{"DEFAULT", "REGULAR", "CLOSED", "EMERGENCYSERVICE", "HOLIDAY", "SPECIAL"}, Default: "DEFAULT"},
+		{Name: "type", Type: field.TypeEnum, Enums: []string{"TEXT", "HTML", "CSS", "OTHER"}, Default: "TEXT"},
+		{Name: "locale", Type: field.TypeString, Size: 5, Default: "en_US"},
+		{Name: "location", Type: field.TypeEnum, Enums: []string{"TOP", "BOTTOM"}, Default: "TOP"},
+		{Name: "content", Type: field.TypeString, Size: 2147483647},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"DRAFT", "PUBLISHED"}, Default: "DRAFT"},
+		{Name: "published_at", Type: field.TypeTime, Nullable: true},
+	}
+	// ContentsTable holds the schema information for the "contents" table.
+	ContentsTable = &schema.Table{
+		Name:       "contents",
+		Columns:    ContentsColumns,
+		PrimaryKey: []*schema.Column{ContentsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "content_status_type_location_locale",
+				Unique:  true,
+				Columns: []*schema.Column{ContentsColumns[9], ContentsColumns[5], ContentsColumns[7], ContentsColumns[6]},
+			},
+		},
+	}
 	// TagsColumns holds the columns for the "tags" table.
 	TagsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -118,9 +145,10 @@ var (
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "deleted_at", Type: field.TypeTime, Nullable: true},
-		{Name: "type", Type: field.TypeEnum, Enums: []string{"DEFAULT", "REGULAR", "CLOSED", "EMERGENCYSERVICE", "HOLIDAY", "SPECIAL"}, Default: "DEFAULT"},
+		{Name: "timetable_type", Type: field.TypeEnum, Enums: []string{"DEFAULT", "REGULAR", "CLOSED", "EMERGENCYSERVICE", "HOLIDAY", "SPECIAL"}, Default: "DEFAULT"},
 		{Name: "datetime_from", Type: field.TypeTime, Nullable: true},
-		{Name: "datetime_to", Type: field.TypeTime, Nullable: true},
+		{Name: "duration", Type: field.TypeUint8, Nullable: true, SchemaType: map[string]string{"mysql": "TINYINT", "postgres": "SMALLINT", "sqlite3": "INTEGER"}},
+		{Name: "datetime_to", Type: field.TypeTime},
 		{Name: "time_whole_day", Type: field.TypeBool, Default: false},
 		{Name: "comment", Type: field.TypeString, Nullable: true, Size: 2147483647},
 		{Name: "availability_by_phone", Type: field.TypeString, Nullable: true, Size: 2147483647},
@@ -137,7 +165,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "timetables_addresses_timetables",
-				Columns:    []*schema.Column{TimetablesColumns[13]},
+				Columns:    []*schema.Column{TimetablesColumns[14]},
 				RefColumns: []*schema.Column{AddressesColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -290,6 +318,7 @@ var (
 		AddressesTable,
 		AuditLogsTable,
 		BusinessesTable,
+		ContentsTable,
 		TagsTable,
 		TimetablesTable,
 		UsersTable,

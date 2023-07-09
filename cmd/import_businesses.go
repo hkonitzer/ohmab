@@ -10,9 +10,9 @@ import (
 	"hynie.de/ohmab/ent/business"
 	_ "hynie.de/ohmab/ent/runtime"
 	schemas "hynie.de/ohmab/ent/schema"
-	"hynie.de/ohmab/internal/pkg/config"
+	"hynie.de/ohmab/internal/pkg/common/config"
+	"hynie.de/ohmab/internal/pkg/common/log"
 	"hynie.de/ohmab/internal/pkg/db"
-	"hynie.de/ohmab/internal/pkg/log"
 	"hynie.de/ohmab/internal/pkg/privacy"
 	"hynie.de/ohmab/internal/pkg/utils"
 	"os"
@@ -43,8 +43,10 @@ func main() {
 	}
 	// Create client
 	ctx := context.TODO()
-	// set admin rights
-	ctx = privacy.NewContext(ctx, privacy.UserViewer{Role: privacy.Admin})
+	// Authorize me
+	uv := privacy.UserViewer{Role: privacy.Admin}
+	uv.SetUserID("import")
+	ctx = privacy.NewContext(ctx, &uv)
 	client, clientError := db.CreateClient(ctx, configurations)
 	if clientError != nil {
 		logger.Fatal().Msgf("Error creating client: %v", clientError)
@@ -127,10 +129,16 @@ func main() {
 				switch schema {
 				case "BUSINESS":
 				case "ADDRESS":
-					err := addressCreate.Mutation().SetField(schemaField, field)
-					if err != nil {
-						logger.Fatal().Msgf("Error setting address field '%s' to '%s': %v", schemaField, field, err)
+					if schemaField == "primary" { // @TODO: get field types, see line 199+ below
+						b, _ := strconv.ParseBool(field)
+						addressCreate.Mutation().SetPrimary(b)
+					} else {
+						err := addressCreate.Mutation().SetField(schemaField, field)
+						if err != nil {
+							logger.Fatal().Msgf("Error setting address field '%s' to '%s': %v", schemaField, field, err)
+						}
 					}
+
 				default:
 					logger.Fatal().Msgf("Unknown schema '%s'", schema)
 				}

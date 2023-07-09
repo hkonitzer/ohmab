@@ -1,6 +1,7 @@
 package config
 
 import (
+	"flag"
 	"fmt"
 	"github.com/spf13/viper"
 	"sync"
@@ -12,6 +13,7 @@ const DevelopmentEnvironment = "DEVELOPMENT"
 type Configurations struct {
 	Server         ServerConfigurations
 	Database       DatabaseConfigurations
+	Ghost          GhostConfigurations
 	DEBUG          int
 	ENVIRONMENT    string
 	OAUTHSECRETKEY string
@@ -29,6 +31,19 @@ type PostgresDatabaseConfigurations struct {
 
 type Sqlite3DatabaseConfigurations struct {
 	Cache string // see https://www.sqlite.org/uri.html#recognized_query_parameters
+}
+
+type GhostConfigurations struct {
+	BaseURL string
+	Key     string
+	Locale  string
+	Content []map[string]GhostContentConfigurations `mapstructure:"content"`
+}
+
+type GhostContentConfigurations struct {
+	PostID    string `mapstructure:"post"`
+	PostTitle string `mapstructure:"posttitle"`
+	PageID    string `mapstructure:"page"`
 }
 
 // DatabaseConfigurations exported
@@ -57,7 +72,7 @@ func GetConfiguration() (*Configurations, error) {
 func GetConfigurationX() *Configurations {
 	if configurations == nil {
 		once.Do(func() {
-			var err error = nil
+			var err error
 			configurations, err = ReadConfiguration()
 			if err != nil {
 				panic(err)
@@ -69,8 +84,14 @@ func GetConfigurationX() *Configurations {
 func ReadConfiguration() (*Configurations, error) {
 	viper.SetConfigName("config")
 
-	// Set the path to look for the configurations file
-	viper.AddConfigPath(".")
+	// Set the path to look for the configurations' file
+	configFile := flag.String("config", "", "path to the config file")
+	flag.Parse()
+	if *configFile != "" {
+		viper.AddConfigPath(*configFile)
+	} else {
+		viper.AddConfigPath(".")
+	}
 
 	// Enable VIPER to read Environment Variables
 	viper.AutomaticEnv()
@@ -90,8 +111,6 @@ func ReadConfiguration() (*Configurations, error) {
 	if err := viper.ReadInConfig(); err != nil {
 		fmt.Printf("Error reading config file, %s", err)
 		return nil, err
-	} else {
-		//fmt.Println("Using config file:", viper.ConfigFileUsed())
 	}
 
 	if !viper.IsSet("database.dsn") {

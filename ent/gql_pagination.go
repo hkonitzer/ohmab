@@ -20,6 +20,7 @@ import (
 	"hynie.de/ohmab/ent/address"
 	"hynie.de/ohmab/ent/auditlog"
 	"hynie.de/ohmab/ent/business"
+	"hynie.de/ohmab/ent/content"
 	"hynie.de/ohmab/ent/tag"
 	"hynie.de/ohmab/ent/timetable"
 	"hynie.de/ohmab/ent/user"
@@ -923,6 +924,299 @@ func (b *Business) ToEdge(order *BusinessOrder) *BusinessEdge {
 	return &BusinessEdge{
 		Node:   b,
 		Cursor: order.Field.toCursor(b),
+	}
+}
+
+// ContentEdge is the edge representation of Content.
+type ContentEdge struct {
+	Node   *Content `json:"node"`
+	Cursor Cursor   `json:"cursor"`
+}
+
+// ContentConnection is the connection containing edges to Content.
+type ContentConnection struct {
+	Edges      []*ContentEdge `json:"edges"`
+	PageInfo   PageInfo       `json:"pageInfo"`
+	TotalCount int            `json:"totalCount"`
+}
+
+func (c *ContentConnection) build(nodes []*Content, pager *contentPager, after *Cursor, first *int, before *Cursor, last *int) {
+	c.PageInfo.HasNextPage = before != nil
+	c.PageInfo.HasPreviousPage = after != nil
+	if first != nil && *first+1 == len(nodes) {
+		c.PageInfo.HasNextPage = true
+		nodes = nodes[:len(nodes)-1]
+	} else if last != nil && *last+1 == len(nodes) {
+		c.PageInfo.HasPreviousPage = true
+		nodes = nodes[:len(nodes)-1]
+	}
+	var nodeAt func(int) *Content
+	if last != nil {
+		n := len(nodes) - 1
+		nodeAt = func(i int) *Content {
+			return nodes[n-i]
+		}
+	} else {
+		nodeAt = func(i int) *Content {
+			return nodes[i]
+		}
+	}
+	c.Edges = make([]*ContentEdge, len(nodes))
+	for i := range nodes {
+		node := nodeAt(i)
+		c.Edges[i] = &ContentEdge{
+			Node:   node,
+			Cursor: pager.toCursor(node),
+		}
+	}
+	if l := len(c.Edges); l > 0 {
+		c.PageInfo.StartCursor = &c.Edges[0].Cursor
+		c.PageInfo.EndCursor = &c.Edges[l-1].Cursor
+	}
+	if c.TotalCount == 0 {
+		c.TotalCount = len(nodes)
+	}
+}
+
+// ContentPaginateOption enables pagination customization.
+type ContentPaginateOption func(*contentPager) error
+
+// WithContentOrder configures pagination ordering.
+func WithContentOrder(order *ContentOrder) ContentPaginateOption {
+	if order == nil {
+		order = DefaultContentOrder
+	}
+	o := *order
+	return func(pager *contentPager) error {
+		if err := o.Direction.Validate(); err != nil {
+			return err
+		}
+		if o.Field == nil {
+			o.Field = DefaultContentOrder.Field
+		}
+		pager.order = &o
+		return nil
+	}
+}
+
+// WithContentFilter configures pagination filter.
+func WithContentFilter(filter func(*ContentQuery) (*ContentQuery, error)) ContentPaginateOption {
+	return func(pager *contentPager) error {
+		if filter == nil {
+			return errors.New("ContentQuery filter cannot be nil")
+		}
+		pager.filter = filter
+		return nil
+	}
+}
+
+type contentPager struct {
+	reverse bool
+	order   *ContentOrder
+	filter  func(*ContentQuery) (*ContentQuery, error)
+}
+
+func newContentPager(opts []ContentPaginateOption, reverse bool) (*contentPager, error) {
+	pager := &contentPager{reverse: reverse}
+	for _, opt := range opts {
+		if err := opt(pager); err != nil {
+			return nil, err
+		}
+	}
+	if pager.order == nil {
+		pager.order = DefaultContentOrder
+	}
+	return pager, nil
+}
+
+func (p *contentPager) applyFilter(query *ContentQuery) (*ContentQuery, error) {
+	if p.filter != nil {
+		return p.filter(query)
+	}
+	return query, nil
+}
+
+func (p *contentPager) toCursor(c *Content) Cursor {
+	return p.order.Field.toCursor(c)
+}
+
+func (p *contentPager) applyCursors(query *ContentQuery, after, before *Cursor) (*ContentQuery, error) {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	for _, predicate := range entgql.CursorsPredicate(after, before, DefaultContentOrder.Field.column, p.order.Field.column, direction) {
+		query = query.Where(predicate)
+	}
+	return query, nil
+}
+
+func (p *contentPager) applyOrder(query *ContentQuery) *ContentQuery {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	query = query.Order(p.order.Field.toTerm(direction.OrderTermOption()))
+	if p.order.Field != DefaultContentOrder.Field {
+		query = query.Order(DefaultContentOrder.Field.toTerm(direction.OrderTermOption()))
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(p.order.Field.column)
+	}
+	return query
+}
+
+func (p *contentPager) orderExpr(query *ContentQuery) sql.Querier {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(p.order.Field.column)
+	}
+	return sql.ExprFunc(func(b *sql.Builder) {
+		b.Ident(p.order.Field.column).Pad().WriteString(string(direction))
+		if p.order.Field != DefaultContentOrder.Field {
+			b.Comma().Ident(DefaultContentOrder.Field.column).Pad().WriteString(string(direction))
+		}
+	})
+}
+
+// Paginate executes the query and returns a relay based cursor connection to Content.
+func (c *ContentQuery) Paginate(
+	ctx context.Context, after *Cursor, first *int,
+	before *Cursor, last *int, opts ...ContentPaginateOption,
+) (*ContentConnection, error) {
+	if err := validateFirstLast(first, last); err != nil {
+		return nil, err
+	}
+	pager, err := newContentPager(opts, last != nil)
+	if err != nil {
+		return nil, err
+	}
+	if c, err = pager.applyFilter(c); err != nil {
+		return nil, err
+	}
+	conn := &ContentConnection{Edges: []*ContentEdge{}}
+	ignoredEdges := !hasCollectedField(ctx, edgesField)
+	if hasCollectedField(ctx, totalCountField) || hasCollectedField(ctx, pageInfoField) {
+		hasPagination := after != nil || first != nil || before != nil || last != nil
+		if hasPagination || ignoredEdges {
+			if conn.TotalCount, err = c.Clone().Count(ctx); err != nil {
+				return nil, err
+			}
+			conn.PageInfo.HasNextPage = first != nil && conn.TotalCount > 0
+			conn.PageInfo.HasPreviousPage = last != nil && conn.TotalCount > 0
+		}
+	}
+	if ignoredEdges || (first != nil && *first == 0) || (last != nil && *last == 0) {
+		return conn, nil
+	}
+	if c, err = pager.applyCursors(c, after, before); err != nil {
+		return nil, err
+	}
+	if limit := paginateLimit(first, last); limit != 0 {
+		c.Limit(limit)
+	}
+	if field := collectedField(ctx, edgesField, nodeField); field != nil {
+		if err := c.collectField(ctx, graphql.GetOperationContext(ctx), *field, []string{edgesField, nodeField}); err != nil {
+			return nil, err
+		}
+	}
+	c = pager.applyOrder(c)
+	nodes, err := c.All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	conn.build(nodes, pager, after, first, before, last)
+	return conn, nil
+}
+
+var (
+	// ContentOrderFieldPublishedAt orders Content by published_at.
+	ContentOrderFieldPublishedAt = &ContentOrderField{
+		Value: func(c *Content) (ent.Value, error) {
+			return c.PublishedAt, nil
+		},
+		column: content.FieldPublishedAt,
+		toTerm: content.ByPublishedAt,
+		toCursor: func(c *Content) Cursor {
+			return Cursor{
+				ID:    c.ID,
+				Value: c.PublishedAt,
+			}
+		},
+	}
+)
+
+// String implement fmt.Stringer interface.
+func (f ContentOrderField) String() string {
+	var str string
+	switch f.column {
+	case ContentOrderFieldPublishedAt.column:
+		str = "published_at"
+	}
+	return str
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (f ContentOrderField) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(f.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (f *ContentOrderField) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("ContentOrderField %T must be a string", v)
+	}
+	switch str {
+	case "published_at":
+		*f = *ContentOrderFieldPublishedAt
+	default:
+		return fmt.Errorf("%s is not a valid ContentOrderField", str)
+	}
+	return nil
+}
+
+// ContentOrderField defines the ordering field of Content.
+type ContentOrderField struct {
+	// Value extracts the ordering value from the given Content.
+	Value    func(*Content) (ent.Value, error)
+	column   string // field or computed.
+	toTerm   func(...sql.OrderTermOption) content.OrderOption
+	toCursor func(*Content) Cursor
+}
+
+// ContentOrder defines the ordering of Content.
+type ContentOrder struct {
+	Direction OrderDirection     `json:"direction"`
+	Field     *ContentOrderField `json:"field"`
+}
+
+// DefaultContentOrder is the default ordering of Content.
+var DefaultContentOrder = &ContentOrder{
+	Direction: entgql.OrderDirectionAsc,
+	Field: &ContentOrderField{
+		Value: func(c *Content) (ent.Value, error) {
+			return c.ID, nil
+		},
+		column: content.FieldID,
+		toTerm: content.ByID,
+		toCursor: func(c *Content) Cursor {
+			return Cursor{ID: c.ID}
+		},
+	},
+}
+
+// ToEdge converts Content into ContentEdge.
+func (c *Content) ToEdge(order *ContentOrder) *ContentEdge {
+	if order == nil {
+		order = DefaultContentOrder
+	}
+	return &ContentEdge{
+		Node:   c,
+		Cursor: order.Field.toCursor(c),
 	}
 }
 

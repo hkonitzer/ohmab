@@ -26,10 +26,12 @@ const (
 	FieldUpdatedAt = "updated_at"
 	// FieldDeletedAt holds the string denoting the deleted_at field in the database.
 	FieldDeletedAt = "deleted_at"
-	// FieldType holds the string denoting the type field in the database.
-	FieldType = "type"
+	// FieldTimetableType holds the string denoting the timetable_type field in the database.
+	FieldTimetableType = "timetable_type"
 	// FieldDatetimeFrom holds the string denoting the datetime_from field in the database.
 	FieldDatetimeFrom = "datetime_from"
+	// FieldDuration holds the string denoting the duration field in the database.
+	FieldDuration = "duration"
 	// FieldDatetimeTo holds the string denoting the datetime_to field in the database.
 	FieldDatetimeTo = "datetime_to"
 	// FieldTimeWholeDay holds the string denoting the time_whole_day field in the database.
@@ -70,8 +72,9 @@ var Columns = []string{
 	FieldCreatedAt,
 	FieldUpdatedAt,
 	FieldDeletedAt,
-	FieldType,
+	FieldTimetableType,
 	FieldDatetimeFrom,
+	FieldDuration,
 	FieldDatetimeTo,
 	FieldTimeWholeDay,
 	FieldComment,
@@ -114,46 +117,48 @@ func ValidColumn(column string) bool {
 //
 //	import _ "hynie.de/ohmab/ent/runtime"
 var (
-	Hooks [1]ent.Hook
+	Hooks [2]ent.Hook
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
 	DefaultUpdatedAt func() time.Time
 	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
 	UpdateDefaultUpdatedAt func() time.Time
+	// DurationValidator is a validator for the "duration" field. It is called by the builders before save.
+	DurationValidator func(uint8) error
 	// DefaultTimeWholeDay holds the default value on creation for the "time_whole_day" field.
 	DefaultTimeWholeDay bool
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
 
-// Type defines the type for the "type" enum field.
-type Type string
+// TimetableType defines the type for the "timetable_type" enum field.
+type TimetableType string
 
-// TypeDEFAULT is the default value of the Type enum.
-const DefaultType = TypeDEFAULT
+// TimetableTypeDEFAULT is the default value of the TimetableType enum.
+const DefaultTimetableType = TimetableTypeDEFAULT
 
-// Type values.
+// TimetableType values.
 const (
-	TypeDEFAULT          Type = "DEFAULT"
-	TypeREGULAR          Type = "REGULAR"
-	TypeCLOSED           Type = "CLOSED"
-	TypeEMERGENCYSERVICE Type = "EMERGENCYSERVICE"
-	TypeHOLIDAY          Type = "HOLIDAY"
-	TypeSPECIAL          Type = "SPECIAL"
+	TimetableTypeDEFAULT          TimetableType = "DEFAULT"
+	TimetableTypeREGULAR          TimetableType = "REGULAR"
+	TimetableTypeCLOSED           TimetableType = "CLOSED"
+	TimetableTypeEMERGENCYSERVICE TimetableType = "EMERGENCYSERVICE"
+	TimetableTypeHOLIDAY          TimetableType = "HOLIDAY"
+	TimetableTypeSPECIAL          TimetableType = "SPECIAL"
 )
 
-func (_type Type) String() string {
-	return string(_type)
+func (tt TimetableType) String() string {
+	return string(tt)
 }
 
-// TypeValidator is a validator for the "type" field enum values. It is called by the builders before save.
-func TypeValidator(_type Type) error {
-	switch _type {
-	case TypeDEFAULT, TypeREGULAR, TypeCLOSED, TypeEMERGENCYSERVICE, TypeHOLIDAY, TypeSPECIAL:
+// TimetableTypeValidator is a validator for the "timetable_type" field enum values. It is called by the builders before save.
+func TimetableTypeValidator(tt TimetableType) error {
+	switch tt {
+	case TimetableTypeDEFAULT, TimetableTypeREGULAR, TimetableTypeCLOSED, TimetableTypeEMERGENCYSERVICE, TimetableTypeHOLIDAY, TimetableTypeSPECIAL:
 		return nil
 	default:
-		return fmt.Errorf("timetable: invalid enum value for type field: %q", _type)
+		return fmt.Errorf("timetable: invalid enum value for timetable_type field: %q", tt)
 	}
 }
 
@@ -180,14 +185,19 @@ func ByDeletedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDeletedAt, opts...).ToFunc()
 }
 
-// ByType orders the results by the type field.
-func ByType(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldType, opts...).ToFunc()
+// ByTimetableType orders the results by the timetable_type field.
+func ByTimetableType(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTimetableType, opts...).ToFunc()
 }
 
 // ByDatetimeFrom orders the results by the datetime_from field.
 func ByDatetimeFrom(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDatetimeFrom, opts...).ToFunc()
+}
+
+// ByDuration orders the results by the duration field.
+func ByDuration(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDuration, opts...).ToFunc()
 }
 
 // ByDatetimeTo orders the results by the datetime_to field.
@@ -261,19 +271,19 @@ func newUsersOnDutyStep() *sqlgraph.Step {
 }
 
 // MarshalGQL implements graphql.Marshaler interface.
-func (e Type) MarshalGQL(w io.Writer) {
+func (e TimetableType) MarshalGQL(w io.Writer) {
 	io.WriteString(w, strconv.Quote(e.String()))
 }
 
 // UnmarshalGQL implements graphql.Unmarshaler interface.
-func (e *Type) UnmarshalGQL(val interface{}) error {
+func (e *TimetableType) UnmarshalGQL(val interface{}) error {
 	str, ok := val.(string)
 	if !ok {
 		return fmt.Errorf("enum %T must be a string", val)
 	}
-	*e = Type(str)
-	if err := TypeValidator(*e); err != nil {
-		return fmt.Errorf("%s is not a valid Type", str)
+	*e = TimetableType(str)
+	if err := TimetableTypeValidator(*e); err != nil {
+		return fmt.Errorf("%s is not a valid TimetableType", str)
 	}
 	return nil
 }

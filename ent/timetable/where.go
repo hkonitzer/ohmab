@@ -77,6 +77,11 @@ func DatetimeFrom(v time.Time) predicate.Timetable {
 	return predicate.Timetable(sql.FieldEQ(FieldDatetimeFrom, v))
 }
 
+// Duration applies equality check predicate on the "duration" field. It's identical to DurationEQ.
+func Duration(v uint8) predicate.Timetable {
+	return predicate.Timetable(sql.FieldEQ(FieldDuration, v))
+}
+
 // DatetimeTo applies equality check predicate on the "datetime_to" field. It's identical to DatetimeToEQ.
 func DatetimeTo(v time.Time) predicate.Timetable {
 	return predicate.Timetable(sql.FieldEQ(FieldDatetimeTo, v))
@@ -242,24 +247,24 @@ func DeletedAtNotNil() predicate.Timetable {
 	return predicate.Timetable(sql.FieldNotNull(FieldDeletedAt))
 }
 
-// TypeEQ applies the EQ predicate on the "type" field.
-func TypeEQ(v Type) predicate.Timetable {
-	return predicate.Timetable(sql.FieldEQ(FieldType, v))
+// TimetableTypeEQ applies the EQ predicate on the "timetable_type" field.
+func TimetableTypeEQ(v TimetableType) predicate.Timetable {
+	return predicate.Timetable(sql.FieldEQ(FieldTimetableType, v))
 }
 
-// TypeNEQ applies the NEQ predicate on the "type" field.
-func TypeNEQ(v Type) predicate.Timetable {
-	return predicate.Timetable(sql.FieldNEQ(FieldType, v))
+// TimetableTypeNEQ applies the NEQ predicate on the "timetable_type" field.
+func TimetableTypeNEQ(v TimetableType) predicate.Timetable {
+	return predicate.Timetable(sql.FieldNEQ(FieldTimetableType, v))
 }
 
-// TypeIn applies the In predicate on the "type" field.
-func TypeIn(vs ...Type) predicate.Timetable {
-	return predicate.Timetable(sql.FieldIn(FieldType, vs...))
+// TimetableTypeIn applies the In predicate on the "timetable_type" field.
+func TimetableTypeIn(vs ...TimetableType) predicate.Timetable {
+	return predicate.Timetable(sql.FieldIn(FieldTimetableType, vs...))
 }
 
-// TypeNotIn applies the NotIn predicate on the "type" field.
-func TypeNotIn(vs ...Type) predicate.Timetable {
-	return predicate.Timetable(sql.FieldNotIn(FieldType, vs...))
+// TimetableTypeNotIn applies the NotIn predicate on the "timetable_type" field.
+func TimetableTypeNotIn(vs ...TimetableType) predicate.Timetable {
+	return predicate.Timetable(sql.FieldNotIn(FieldTimetableType, vs...))
 }
 
 // DatetimeFromEQ applies the EQ predicate on the "datetime_from" field.
@@ -312,6 +317,56 @@ func DatetimeFromNotNil() predicate.Timetable {
 	return predicate.Timetable(sql.FieldNotNull(FieldDatetimeFrom))
 }
 
+// DurationEQ applies the EQ predicate on the "duration" field.
+func DurationEQ(v uint8) predicate.Timetable {
+	return predicate.Timetable(sql.FieldEQ(FieldDuration, v))
+}
+
+// DurationNEQ applies the NEQ predicate on the "duration" field.
+func DurationNEQ(v uint8) predicate.Timetable {
+	return predicate.Timetable(sql.FieldNEQ(FieldDuration, v))
+}
+
+// DurationIn applies the In predicate on the "duration" field.
+func DurationIn(vs ...uint8) predicate.Timetable {
+	return predicate.Timetable(sql.FieldIn(FieldDuration, vs...))
+}
+
+// DurationNotIn applies the NotIn predicate on the "duration" field.
+func DurationNotIn(vs ...uint8) predicate.Timetable {
+	return predicate.Timetable(sql.FieldNotIn(FieldDuration, vs...))
+}
+
+// DurationGT applies the GT predicate on the "duration" field.
+func DurationGT(v uint8) predicate.Timetable {
+	return predicate.Timetable(sql.FieldGT(FieldDuration, v))
+}
+
+// DurationGTE applies the GTE predicate on the "duration" field.
+func DurationGTE(v uint8) predicate.Timetable {
+	return predicate.Timetable(sql.FieldGTE(FieldDuration, v))
+}
+
+// DurationLT applies the LT predicate on the "duration" field.
+func DurationLT(v uint8) predicate.Timetable {
+	return predicate.Timetable(sql.FieldLT(FieldDuration, v))
+}
+
+// DurationLTE applies the LTE predicate on the "duration" field.
+func DurationLTE(v uint8) predicate.Timetable {
+	return predicate.Timetable(sql.FieldLTE(FieldDuration, v))
+}
+
+// DurationIsNil applies the IsNil predicate on the "duration" field.
+func DurationIsNil() predicate.Timetable {
+	return predicate.Timetable(sql.FieldIsNull(FieldDuration))
+}
+
+// DurationNotNil applies the NotNil predicate on the "duration" field.
+func DurationNotNil() predicate.Timetable {
+	return predicate.Timetable(sql.FieldNotNull(FieldDuration))
+}
+
 // DatetimeToEQ applies the EQ predicate on the "datetime_to" field.
 func DatetimeToEQ(v time.Time) predicate.Timetable {
 	return predicate.Timetable(sql.FieldEQ(FieldDatetimeTo, v))
@@ -350,16 +405,6 @@ func DatetimeToLT(v time.Time) predicate.Timetable {
 // DatetimeToLTE applies the LTE predicate on the "datetime_to" field.
 func DatetimeToLTE(v time.Time) predicate.Timetable {
 	return predicate.Timetable(sql.FieldLTE(FieldDatetimeTo, v))
-}
-
-// DatetimeToIsNil applies the IsNil predicate on the "datetime_to" field.
-func DatetimeToIsNil() predicate.Timetable {
-	return predicate.Timetable(sql.FieldIsNull(FieldDatetimeTo))
-}
-
-// DatetimeToNotNil applies the NotNil predicate on the "datetime_to" field.
-func DatetimeToNotNil() predicate.Timetable {
-	return predicate.Timetable(sql.FieldNotNull(FieldDatetimeTo))
 }
 
 // TimeWholeDayEQ applies the EQ predicate on the "time_whole_day" field.

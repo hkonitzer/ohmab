@@ -16,6 +16,7 @@ import (
 	"hynie.de/ohmab/ent/address"
 	"hynie.de/ohmab/ent/auditlog"
 	"hynie.de/ohmab/ent/business"
+	"hynie.de/ohmab/ent/content"
 	"hynie.de/ohmab/ent/tag"
 	"hynie.de/ohmab/ent/timetable"
 	"hynie.de/ohmab/ent/user"
@@ -82,6 +83,7 @@ func checkColumn(table, column string) error {
 			address.Table:   address.ValidColumn,
 			auditlog.Table:  auditlog.ValidColumn,
 			business.Table:  business.ValidColumn,
+			content.Table:   content.ValidColumn,
 			tag.Table:       tag.ValidColumn,
 			timetable.Table: timetable.ValidColumn,
 			user.Table:      user.ValidColumn,

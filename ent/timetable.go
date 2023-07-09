@@ -26,11 +26,13 @@ type Timetable struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// DeletedAt holds the value of the "deleted_at" field.
 	DeletedAt time.Time `json:"deleted_at,omitempty"`
-	// Type holds the value of the "type" field.
-	Type timetable.Type `json:"type,omitempty"`
+	// The type of the timetable entry
+	TimetableType timetable.TimetableType `json:"timetable_type,omitempty"`
 	// DatetimeFrom holds the value of the "datetime_from" field.
 	DatetimeFrom time.Time `json:"datetime_from,omitempty"`
-	// DatetimeTo holds the value of the "datetime_to" field.
+	// The duration of the timetable entry in hours, overwrites datetime_to
+	Duration uint8 `json:"duration,omitempty"`
+	// The end of the timetable entry, only used if duration is not set
 	DatetimeTo time.Time `json:"datetime_to,omitempty"`
 	// TimeWholeDay holds the value of the "time_whole_day" field.
 	TimeWholeDay bool `json:"time_whole_day,omitempty"`
@@ -95,7 +97,9 @@ func (*Timetable) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case timetable.FieldTimeWholeDay:
 			values[i] = new(sql.NullBool)
-		case timetable.FieldType, timetable.FieldComment, timetable.FieldAvailabilityByPhone, timetable.FieldAvailabilityByEmail, timetable.FieldAvailabilityBySms, timetable.FieldAvailabilityByWhatsapp:
+		case timetable.FieldDuration:
+			values[i] = new(sql.NullInt64)
+		case timetable.FieldTimetableType, timetable.FieldComment, timetable.FieldAvailabilityByPhone, timetable.FieldAvailabilityByEmail, timetable.FieldAvailabilityBySms, timetable.FieldAvailabilityByWhatsapp:
 			values[i] = new(sql.NullString)
 		case timetable.FieldCreatedAt, timetable.FieldUpdatedAt, timetable.FieldDeletedAt, timetable.FieldDatetimeFrom, timetable.FieldDatetimeTo:
 			values[i] = new(sql.NullTime)
@@ -142,17 +146,23 @@ func (t *Timetable) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				t.DeletedAt = value.Time
 			}
-		case timetable.FieldType:
+		case timetable.FieldTimetableType:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field type", values[i])
+				return fmt.Errorf("unexpected type %T for field timetable_type", values[i])
 			} else if value.Valid {
-				t.Type = timetable.Type(value.String)
+				t.TimetableType = timetable.TimetableType(value.String)
 			}
 		case timetable.FieldDatetimeFrom:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field datetime_from", values[i])
 			} else if value.Valid {
 				t.DatetimeFrom = value.Time
+			}
+		case timetable.FieldDuration:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field duration", values[i])
+			} else if value.Valid {
+				t.Duration = uint8(value.Int64)
 			}
 		case timetable.FieldDatetimeTo:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -258,11 +268,14 @@ func (t *Timetable) String() string {
 	builder.WriteString("deleted_at=")
 	builder.WriteString(t.DeletedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
-	builder.WriteString("type=")
-	builder.WriteString(fmt.Sprintf("%v", t.Type))
+	builder.WriteString("timetable_type=")
+	builder.WriteString(fmt.Sprintf("%v", t.TimetableType))
 	builder.WriteString(", ")
 	builder.WriteString("datetime_from=")
 	builder.WriteString(t.DatetimeFrom.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("duration=")
+	builder.WriteString(fmt.Sprintf("%v", t.Duration))
 	builder.WriteString(", ")
 	builder.WriteString("datetime_to=")
 	builder.WriteString(t.DatetimeTo.Format(time.ANSIC))

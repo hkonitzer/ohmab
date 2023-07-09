@@ -49,19 +49,19 @@ func ViewerRoleAsString() string {
 	return fmt.Sprint(View)
 }
 
-func (v UserViewer) Admin() bool {
+func (v *UserViewer) Admin() bool {
 	return v.Role&Admin != 0
 }
 
-func (v UserViewer) Owner() bool {
+func (v *UserViewer) Owner() bool {
 	return v.Role&Owner != 0
 }
 
-func (v UserViewer) HasScopes() bool {
+func (v *UserViewer) HasScopes() bool {
 	return len(v.Scopes) > 0
 }
 
-func (v UserViewer) HasScope(scope string) bool {
+func (v *UserViewer) HasScope(scope string) bool {
 	if !v.HasScopes() {
 		return false
 	}
@@ -73,11 +73,18 @@ func (v UserViewer) HasScope(scope string) bool {
 	return false
 }
 
-func (v UserViewer) GetUserID() string {
+func (v *UserViewer) GetUserID() string {
 	if len(v.Claims) == 0 {
 		return ""
 	}
 	return v.Claims["user_"+user.FieldID]
+}
+
+func (v *UserViewer) SetUserID(id string) {
+	if v.Claims == nil {
+		v.Claims = make(map[string]string)
+	}
+	v.Claims["user_"+user.FieldID] = id
 }
 
 type ctxKey struct{}

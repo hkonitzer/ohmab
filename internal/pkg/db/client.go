@@ -5,8 +5,8 @@ import (
 	"entgo.io/ent/dialect"
 	"fmt"
 	"hynie.de/ohmab/ent"
-	"hynie.de/ohmab/internal/pkg/config"
-	"hynie.de/ohmab/internal/pkg/log"
+	"hynie.de/ohmab/internal/pkg/common/config"
+	"hynie.de/ohmab/internal/pkg/common/log"
 )
 
 // Get logger
@@ -21,7 +21,7 @@ func CreateClient(ctx context.Context, configurations *config.Configurations) (*
 		return nil, fmt.Errorf("DSN for database (dialect=%v) not set", configurations.Database.Dialect)
 	}
 	debug := false
-	if configurations.DEBUG > 0 {
+	if configurations.DEBUG > 1 {
 		debug = true
 	}
 	var client *ent.Client
@@ -35,6 +35,8 @@ func CreateClient(ctx context.Context, configurations *config.Configurations) (*
 	default:
 		return nil, fmt.Errorf("unknown dialect: %v", configurations.Database.Dialect)
 	}
-	client.Debug()
+	if debug {
+		client = client.Debug()
+	}
 	return client, nil
 }

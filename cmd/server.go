@@ -17,9 +17,9 @@ import (
 	_ "hynie.de/ohmab/ent/runtime"
 	"hynie.de/ohmab/ent/schema"
 	"hynie.de/ohmab/ent/user"
-	"hynie.de/ohmab/internal/pkg/config"
+	"hynie.de/ohmab/internal/pkg/common/config"
+	"hynie.de/ohmab/internal/pkg/common/log"
 	"hynie.de/ohmab/internal/pkg/db"
-	"hynie.de/ohmab/internal/pkg/log"
 	"hynie.de/ohmab/internal/pkg/privacy"
 	"hynie.de/ohmab/internal/pkg/routes"
 	"math/rand"
@@ -165,7 +165,7 @@ func createTestData(client *ent.Client) {
 	logger := log.GetLoggerInstance()
 
 	var ctx = context.Background()
-	ctx = privacy.NewContext(ctx, privacy.UserViewer{Role: privacy.Admin})
+	ctx = privacy.NewContext(ctx, &privacy.UserViewer{Role: privacy.Admin})
 	// Check if database is empty
 	count, err := client.Business.Query().Count(ctx)
 	if err != nil {

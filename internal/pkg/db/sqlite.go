@@ -5,7 +5,7 @@ import (
 	"entgo.io/ent/dialect"
 	"hynie.de/ohmab/ent"
 	"hynie.de/ohmab/ent/migrate"
-	"hynie.de/ohmab/internal/pkg/log"
+	"hynie.de/ohmab/internal/pkg/common/log"
 )
 
 func CreateSQLiteClient(dsn string, ctx context.Context, debug bool) *ent.Client {

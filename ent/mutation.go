@@ -16,6 +16,7 @@ import (
 	"hynie.de/ohmab/ent/address"
 	"hynie.de/ohmab/ent/auditlog"
 	"hynie.de/ohmab/ent/business"
+	"hynie.de/ohmab/ent/content"
 	"hynie.de/ohmab/ent/predicate"
 	"hynie.de/ohmab/ent/tag"
 	"hynie.de/ohmab/ent/timetable"
@@ -34,6 +35,7 @@ const (
 	TypeAddress   = "Address"
 	TypeAuditLog  = "AuditLog"
 	TypeBusiness  = "Business"
+	TypeContent   = "Content"
 	TypeTag       = "Tag"
 	TypeTimetable = "Timetable"
 	TypeUser      = "User"
@@ -3236,6 +3238,865 @@ func (m *BusinessMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown Business edge %s", name)
 }
 
+// ContentMutation represents an operation that mutates the Content nodes in the graph.
+type ContentMutation struct {
+	config
+	op             Op
+	typ            string
+	id             *uuid.UUID
+	created_at     *time.Time
+	updated_at     *time.Time
+	deleted_at     *time.Time
+	timetable_type *content.TimetableType
+	_type          *content.Type
+	locale         *string
+	location       *content.Location
+	content        *string
+	status         *content.Status
+	published_at   *time.Time
+	clearedFields  map[string]struct{}
+	done           bool
+	oldValue       func(context.Context) (*Content, error)
+	predicates     []predicate.Content
+}
+
+var _ ent.Mutation = (*ContentMutation)(nil)
+
+// contentOption allows management of the mutation configuration using functional options.
+type contentOption func(*ContentMutation)
+
+// newContentMutation creates new mutation for the Content entity.
+func newContentMutation(c config, op Op, opts ...contentOption) *ContentMutation {
+	m := &ContentMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeContent,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withContentID sets the ID field of the mutation.
+func withContentID(id uuid.UUID) contentOption {
+	return func(m *ContentMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Content
+		)
+		m.oldValue = func(ctx context.Context) (*Content, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Content.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withContent sets the old Content of the mutation.
+func withContent(node *Content) contentOption {
+	return func(m *ContentMutation) {
+		m.oldValue = func(context.Context) (*Content, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m ContentMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m ContentMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Content entities.
+func (m *ContentMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *ContentMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *ContentMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().Content.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *ContentMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *ContentMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the Content entity.
+// If the Content object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ContentMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *ContentMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *ContentMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *ContentMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the Content entity.
+// If the Content object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ContentMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *ContentMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// SetDeletedAt sets the "deleted_at" field.
+func (m *ContentMutation) SetDeletedAt(t time.Time) {
+	m.deleted_at = &t
+}
+
+// DeletedAt returns the value of the "deleted_at" field in the mutation.
+func (m *ContentMutation) DeletedAt() (r time.Time, exists bool) {
+	v := m.deleted_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeletedAt returns the old "deleted_at" field's value of the Content entity.
+// If the Content object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ContentMutation) OldDeletedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeletedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeletedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeletedAt: %w", err)
+	}
+	return oldValue.DeletedAt, nil
+}
+
+// ClearDeletedAt clears the value of the "deleted_at" field.
+func (m *ContentMutation) ClearDeletedAt() {
+	m.deleted_at = nil
+	m.clearedFields[content.FieldDeletedAt] = struct{}{}
+}
+
+// DeletedAtCleared returns if the "deleted_at" field was cleared in this mutation.
+func (m *ContentMutation) DeletedAtCleared() bool {
+	_, ok := m.clearedFields[content.FieldDeletedAt]
+	return ok
+}
+
+// ResetDeletedAt resets all changes to the "deleted_at" field.
+func (m *ContentMutation) ResetDeletedAt() {
+	m.deleted_at = nil
+	delete(m.clearedFields, content.FieldDeletedAt)
+}
+
+// SetTimetableType sets the "timetable_type" field.
+func (m *ContentMutation) SetTimetableType(ct content.TimetableType) {
+	m.timetable_type = &ct
+}
+
+// TimetableType returns the value of the "timetable_type" field in the mutation.
+func (m *ContentMutation) TimetableType() (r content.TimetableType, exists bool) {
+	v := m.timetable_type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTimetableType returns the old "timetable_type" field's value of the Content entity.
+// If the Content object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ContentMutation) OldTimetableType(ctx context.Context) (v content.TimetableType, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTimetableType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTimetableType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTimetableType: %w", err)
+	}
+	return oldValue.TimetableType, nil
+}
+
+// ResetTimetableType resets all changes to the "timetable_type" field.
+func (m *ContentMutation) ResetTimetableType() {
+	m.timetable_type = nil
+}
+
+// SetType sets the "type" field.
+func (m *ContentMutation) SetType(c content.Type) {
+	m._type = &c
+}
+
+// GetType returns the value of the "type" field in the mutation.
+func (m *ContentMutation) GetType() (r content.Type, exists bool) {
+	v := m._type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldType returns the old "type" field's value of the Content entity.
+// If the Content object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ContentMutation) OldType(ctx context.Context) (v content.Type, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldType: %w", err)
+	}
+	return oldValue.Type, nil
+}
+
+// ResetType resets all changes to the "type" field.
+func (m *ContentMutation) ResetType() {
+	m._type = nil
+}
+
+// SetLocale sets the "locale" field.
+func (m *ContentMutation) SetLocale(s string) {
+	m.locale = &s
+}
+
+// Locale returns the value of the "locale" field in the mutation.
+func (m *ContentMutation) Locale() (r string, exists bool) {
+	v := m.locale
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLocale returns the old "locale" field's value of the Content entity.
+// If the Content object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ContentMutation) OldLocale(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLocale is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLocale requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLocale: %w", err)
+	}
+	return oldValue.Locale, nil
+}
+
+// ResetLocale resets all changes to the "locale" field.
+func (m *ContentMutation) ResetLocale() {
+	m.locale = nil
+}
+
+// SetLocation sets the "location" field.
+func (m *ContentMutation) SetLocation(c content.Location) {
+	m.location = &c
+}
+
+// Location returns the value of the "location" field in the mutation.
+func (m *ContentMutation) Location() (r content.Location, exists bool) {
+	v := m.location
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLocation returns the old "location" field's value of the Content entity.
+// If the Content object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ContentMutation) OldLocation(ctx context.Context) (v content.Location, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLocation is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLocation requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLocation: %w", err)
+	}
+	return oldValue.Location, nil
+}
+
+// ResetLocation resets all changes to the "location" field.
+func (m *ContentMutation) ResetLocation() {
+	m.location = nil
+}
+
+// SetContent sets the "content" field.
+func (m *ContentMutation) SetContent(s string) {
+	m.content = &s
+}
+
+// Content returns the value of the "content" field in the mutation.
+func (m *ContentMutation) Content() (r string, exists bool) {
+	v := m.content
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldContent returns the old "content" field's value of the Content entity.
+// If the Content object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ContentMutation) OldContent(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldContent is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldContent requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldContent: %w", err)
+	}
+	return oldValue.Content, nil
+}
+
+// ResetContent resets all changes to the "content" field.
+func (m *ContentMutation) ResetContent() {
+	m.content = nil
+}
+
+// SetStatus sets the "status" field.
+func (m *ContentMutation) SetStatus(c content.Status) {
+	m.status = &c
+}
+
+// Status returns the value of the "status" field in the mutation.
+func (m *ContentMutation) Status() (r content.Status, exists bool) {
+	v := m.status
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStatus returns the old "status" field's value of the Content entity.
+// If the Content object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ContentMutation) OldStatus(ctx context.Context) (v content.Status, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStatus is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStatus requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStatus: %w", err)
+	}
+	return oldValue.Status, nil
+}
+
+// ResetStatus resets all changes to the "status" field.
+func (m *ContentMutation) ResetStatus() {
+	m.status = nil
+}
+
+// SetPublishedAt sets the "published_at" field.
+func (m *ContentMutation) SetPublishedAt(t time.Time) {
+	m.published_at = &t
+}
+
+// PublishedAt returns the value of the "published_at" field in the mutation.
+func (m *ContentMutation) PublishedAt() (r time.Time, exists bool) {
+	v := m.published_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPublishedAt returns the old "published_at" field's value of the Content entity.
+// If the Content object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ContentMutation) OldPublishedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPublishedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPublishedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPublishedAt: %w", err)
+	}
+	return oldValue.PublishedAt, nil
+}
+
+// ClearPublishedAt clears the value of the "published_at" field.
+func (m *ContentMutation) ClearPublishedAt() {
+	m.published_at = nil
+	m.clearedFields[content.FieldPublishedAt] = struct{}{}
+}
+
+// PublishedAtCleared returns if the "published_at" field was cleared in this mutation.
+func (m *ContentMutation) PublishedAtCleared() bool {
+	_, ok := m.clearedFields[content.FieldPublishedAt]
+	return ok
+}
+
+// ResetPublishedAt resets all changes to the "published_at" field.
+func (m *ContentMutation) ResetPublishedAt() {
+	m.published_at = nil
+	delete(m.clearedFields, content.FieldPublishedAt)
+}
+
+// Where appends a list predicates to the ContentMutation builder.
+func (m *ContentMutation) Where(ps ...predicate.Content) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the ContentMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *ContentMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.Content, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *ContentMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *ContentMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (Content).
+func (m *ContentMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *ContentMutation) Fields() []string {
+	fields := make([]string, 0, 10)
+	if m.created_at != nil {
+		fields = append(fields, content.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, content.FieldUpdatedAt)
+	}
+	if m.deleted_at != nil {
+		fields = append(fields, content.FieldDeletedAt)
+	}
+	if m.timetable_type != nil {
+		fields = append(fields, content.FieldTimetableType)
+	}
+	if m._type != nil {
+		fields = append(fields, content.FieldType)
+	}
+	if m.locale != nil {
+		fields = append(fields, content.FieldLocale)
+	}
+	if m.location != nil {
+		fields = append(fields, content.FieldLocation)
+	}
+	if m.content != nil {
+		fields = append(fields, content.FieldContent)
+	}
+	if m.status != nil {
+		fields = append(fields, content.FieldStatus)
+	}
+	if m.published_at != nil {
+		fields = append(fields, content.FieldPublishedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *ContentMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case content.FieldCreatedAt:
+		return m.CreatedAt()
+	case content.FieldUpdatedAt:
+		return m.UpdatedAt()
+	case content.FieldDeletedAt:
+		return m.DeletedAt()
+	case content.FieldTimetableType:
+		return m.TimetableType()
+	case content.FieldType:
+		return m.GetType()
+	case content.FieldLocale:
+		return m.Locale()
+	case content.FieldLocation:
+		return m.Location()
+	case content.FieldContent:
+		return m.Content()
+	case content.FieldStatus:
+		return m.Status()
+	case content.FieldPublishedAt:
+		return m.PublishedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *ContentMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case content.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case content.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	case content.FieldDeletedAt:
+		return m.OldDeletedAt(ctx)
+	case content.FieldTimetableType:
+		return m.OldTimetableType(ctx)
+	case content.FieldType:
+		return m.OldType(ctx)
+	case content.FieldLocale:
+		return m.OldLocale(ctx)
+	case content.FieldLocation:
+		return m.OldLocation(ctx)
+	case content.FieldContent:
+		return m.OldContent(ctx)
+	case content.FieldStatus:
+		return m.OldStatus(ctx)
+	case content.FieldPublishedAt:
+		return m.OldPublishedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown Content field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ContentMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case content.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case content.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	case content.FieldDeletedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeletedAt(v)
+		return nil
+	case content.FieldTimetableType:
+		v, ok := value.(content.TimetableType)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTimetableType(v)
+		return nil
+	case content.FieldType:
+		v, ok := value.(content.Type)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetType(v)
+		return nil
+	case content.FieldLocale:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLocale(v)
+		return nil
+	case content.FieldLocation:
+		v, ok := value.(content.Location)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLocation(v)
+		return nil
+	case content.FieldContent:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetContent(v)
+		return nil
+	case content.FieldStatus:
+		v, ok := value.(content.Status)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStatus(v)
+		return nil
+	case content.FieldPublishedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPublishedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Content field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *ContentMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *ContentMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ContentMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Content numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *ContentMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(content.FieldDeletedAt) {
+		fields = append(fields, content.FieldDeletedAt)
+	}
+	if m.FieldCleared(content.FieldPublishedAt) {
+		fields = append(fields, content.FieldPublishedAt)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *ContentMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *ContentMutation) ClearField(name string) error {
+	switch name {
+	case content.FieldDeletedAt:
+		m.ClearDeletedAt()
+		return nil
+	case content.FieldPublishedAt:
+		m.ClearPublishedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown Content nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *ContentMutation) ResetField(name string) error {
+	switch name {
+	case content.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case content.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	case content.FieldDeletedAt:
+		m.ResetDeletedAt()
+		return nil
+	case content.FieldTimetableType:
+		m.ResetTimetableType()
+		return nil
+	case content.FieldType:
+		m.ResetType()
+		return nil
+	case content.FieldLocale:
+		m.ResetLocale()
+		return nil
+	case content.FieldLocation:
+		m.ResetLocation()
+		return nil
+	case content.FieldContent:
+		m.ResetContent()
+		return nil
+	case content.FieldStatus:
+		m.ResetStatus()
+		return nil
+	case content.FieldPublishedAt:
+		m.ResetPublishedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown Content field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *ContentMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *ContentMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *ContentMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *ContentMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *ContentMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *ContentMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *ContentMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown Content unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *ContentMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown Content edge %s", name)
+}
+
 // TagMutation represents an operation that mutates the Tag nodes in the graph.
 type TagMutation struct {
 	config
@@ -4010,8 +4871,10 @@ type TimetableMutation struct {
 	created_at               *time.Time
 	updated_at               *time.Time
 	deleted_at               *time.Time
-	_type                    *timetable.Type
+	timetable_type           *timetable.TimetableType
 	datetime_from            *time.Time
+	duration                 *uint8
+	addduration              *int8
 	datetime_to              *time.Time
 	time_whole_day           *bool
 	comment                  *string
@@ -4255,40 +5118,40 @@ func (m *TimetableMutation) ResetDeletedAt() {
 	delete(m.clearedFields, timetable.FieldDeletedAt)
 }
 
-// SetType sets the "type" field.
-func (m *TimetableMutation) SetType(t timetable.Type) {
-	m._type = &t
+// SetTimetableType sets the "timetable_type" field.
+func (m *TimetableMutation) SetTimetableType(tt timetable.TimetableType) {
+	m.timetable_type = &tt
 }
 
-// GetType returns the value of the "type" field in the mutation.
-func (m *TimetableMutation) GetType() (r timetable.Type, exists bool) {
-	v := m._type
+// TimetableType returns the value of the "timetable_type" field in the mutation.
+func (m *TimetableMutation) TimetableType() (r timetable.TimetableType, exists bool) {
+	v := m.timetable_type
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldType returns the old "type" field's value of the Timetable entity.
+// OldTimetableType returns the old "timetable_type" field's value of the Timetable entity.
 // If the Timetable object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TimetableMutation) OldType(ctx context.Context) (v timetable.Type, err error) {
+func (m *TimetableMutation) OldTimetableType(ctx context.Context) (v timetable.TimetableType, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldType is only allowed on UpdateOne operations")
+		return v, errors.New("OldTimetableType is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldType requires an ID field in the mutation")
+		return v, errors.New("OldTimetableType requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldType: %w", err)
+		return v, fmt.Errorf("querying old value for OldTimetableType: %w", err)
 	}
-	return oldValue.Type, nil
+	return oldValue.TimetableType, nil
 }
 
-// ResetType resets all changes to the "type" field.
-func (m *TimetableMutation) ResetType() {
-	m._type = nil
+// ResetTimetableType resets all changes to the "timetable_type" field.
+func (m *TimetableMutation) ResetTimetableType() {
+	m.timetable_type = nil
 }
 
 // SetDatetimeFrom sets the "datetime_from" field.
@@ -4340,6 +5203,76 @@ func (m *TimetableMutation) ResetDatetimeFrom() {
 	delete(m.clearedFields, timetable.FieldDatetimeFrom)
 }
 
+// SetDuration sets the "duration" field.
+func (m *TimetableMutation) SetDuration(u uint8) {
+	m.duration = &u
+	m.addduration = nil
+}
+
+// Duration returns the value of the "duration" field in the mutation.
+func (m *TimetableMutation) Duration() (r uint8, exists bool) {
+	v := m.duration
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDuration returns the old "duration" field's value of the Timetable entity.
+// If the Timetable object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TimetableMutation) OldDuration(ctx context.Context) (v uint8, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDuration is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDuration requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDuration: %w", err)
+	}
+	return oldValue.Duration, nil
+}
+
+// AddDuration adds u to the "duration" field.
+func (m *TimetableMutation) AddDuration(u int8) {
+	if m.addduration != nil {
+		*m.addduration += u
+	} else {
+		m.addduration = &u
+	}
+}
+
+// AddedDuration returns the value that was added to the "duration" field in this mutation.
+func (m *TimetableMutation) AddedDuration() (r int8, exists bool) {
+	v := m.addduration
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearDuration clears the value of the "duration" field.
+func (m *TimetableMutation) ClearDuration() {
+	m.duration = nil
+	m.addduration = nil
+	m.clearedFields[timetable.FieldDuration] = struct{}{}
+}
+
+// DurationCleared returns if the "duration" field was cleared in this mutation.
+func (m *TimetableMutation) DurationCleared() bool {
+	_, ok := m.clearedFields[timetable.FieldDuration]
+	return ok
+}
+
+// ResetDuration resets all changes to the "duration" field.
+func (m *TimetableMutation) ResetDuration() {
+	m.duration = nil
+	m.addduration = nil
+	delete(m.clearedFields, timetable.FieldDuration)
+}
+
 // SetDatetimeTo sets the "datetime_to" field.
 func (m *TimetableMutation) SetDatetimeTo(t time.Time) {
 	m.datetime_to = &t
@@ -4371,22 +5304,9 @@ func (m *TimetableMutation) OldDatetimeTo(ctx context.Context) (v time.Time, err
 	return oldValue.DatetimeTo, nil
 }
 
-// ClearDatetimeTo clears the value of the "datetime_to" field.
-func (m *TimetableMutation) ClearDatetimeTo() {
-	m.datetime_to = nil
-	m.clearedFields[timetable.FieldDatetimeTo] = struct{}{}
-}
-
-// DatetimeToCleared returns if the "datetime_to" field was cleared in this mutation.
-func (m *TimetableMutation) DatetimeToCleared() bool {
-	_, ok := m.clearedFields[timetable.FieldDatetimeTo]
-	return ok
-}
-
 // ResetDatetimeTo resets all changes to the "datetime_to" field.
 func (m *TimetableMutation) ResetDatetimeTo() {
 	m.datetime_to = nil
-	delete(m.clearedFields, timetable.FieldDatetimeTo)
 }
 
 // SetTimeWholeDay sets the "time_whole_day" field.
@@ -4797,7 +5717,7 @@ func (m *TimetableMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *TimetableMutation) Fields() []string {
-	fields := make([]string, 0, 12)
+	fields := make([]string, 0, 13)
 	if m.created_at != nil {
 		fields = append(fields, timetable.FieldCreatedAt)
 	}
@@ -4807,11 +5727,14 @@ func (m *TimetableMutation) Fields() []string {
 	if m.deleted_at != nil {
 		fields = append(fields, timetable.FieldDeletedAt)
 	}
-	if m._type != nil {
-		fields = append(fields, timetable.FieldType)
+	if m.timetable_type != nil {
+		fields = append(fields, timetable.FieldTimetableType)
 	}
 	if m.datetime_from != nil {
 		fields = append(fields, timetable.FieldDatetimeFrom)
+	}
+	if m.duration != nil {
+		fields = append(fields, timetable.FieldDuration)
 	}
 	if m.datetime_to != nil {
 		fields = append(fields, timetable.FieldDatetimeTo)
@@ -4848,10 +5771,12 @@ func (m *TimetableMutation) Field(name string) (ent.Value, bool) {
 		return m.UpdatedAt()
 	case timetable.FieldDeletedAt:
 		return m.DeletedAt()
-	case timetable.FieldType:
-		return m.GetType()
+	case timetable.FieldTimetableType:
+		return m.TimetableType()
 	case timetable.FieldDatetimeFrom:
 		return m.DatetimeFrom()
+	case timetable.FieldDuration:
+		return m.Duration()
 	case timetable.FieldDatetimeTo:
 		return m.DatetimeTo()
 	case timetable.FieldTimeWholeDay:
@@ -4881,10 +5806,12 @@ func (m *TimetableMutation) OldField(ctx context.Context, name string) (ent.Valu
 		return m.OldUpdatedAt(ctx)
 	case timetable.FieldDeletedAt:
 		return m.OldDeletedAt(ctx)
-	case timetable.FieldType:
-		return m.OldType(ctx)
+	case timetable.FieldTimetableType:
+		return m.OldTimetableType(ctx)
 	case timetable.FieldDatetimeFrom:
 		return m.OldDatetimeFrom(ctx)
+	case timetable.FieldDuration:
+		return m.OldDuration(ctx)
 	case timetable.FieldDatetimeTo:
 		return m.OldDatetimeTo(ctx)
 	case timetable.FieldTimeWholeDay:
@@ -4929,12 +5856,12 @@ func (m *TimetableMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetDeletedAt(v)
 		return nil
-	case timetable.FieldType:
-		v, ok := value.(timetable.Type)
+	case timetable.FieldTimetableType:
+		v, ok := value.(timetable.TimetableType)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetType(v)
+		m.SetTimetableType(v)
 		return nil
 	case timetable.FieldDatetimeFrom:
 		v, ok := value.(time.Time)
@@ -4942,6 +5869,13 @@ func (m *TimetableMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetDatetimeFrom(v)
+		return nil
+	case timetable.FieldDuration:
+		v, ok := value.(uint8)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDuration(v)
 		return nil
 	case timetable.FieldDatetimeTo:
 		v, ok := value.(time.Time)
@@ -4999,13 +5933,21 @@ func (m *TimetableMutation) SetField(name string, value ent.Value) error {
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
 func (m *TimetableMutation) AddedFields() []string {
-	return nil
+	var fields []string
+	if m.addduration != nil {
+		fields = append(fields, timetable.FieldDuration)
+	}
+	return fields
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
 func (m *TimetableMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case timetable.FieldDuration:
+		return m.AddedDuration()
+	}
 	return nil, false
 }
 
@@ -5014,6 +5956,13 @@ func (m *TimetableMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *TimetableMutation) AddField(name string, value ent.Value) error {
 	switch name {
+	case timetable.FieldDuration:
+		v, ok := value.(int8)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddDuration(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Timetable numeric field %s", name)
 }
@@ -5028,8 +5977,8 @@ func (m *TimetableMutation) ClearedFields() []string {
 	if m.FieldCleared(timetable.FieldDatetimeFrom) {
 		fields = append(fields, timetable.FieldDatetimeFrom)
 	}
-	if m.FieldCleared(timetable.FieldDatetimeTo) {
-		fields = append(fields, timetable.FieldDatetimeTo)
+	if m.FieldCleared(timetable.FieldDuration) {
+		fields = append(fields, timetable.FieldDuration)
 	}
 	if m.FieldCleared(timetable.FieldComment) {
 		fields = append(fields, timetable.FieldComment)
@@ -5066,8 +6015,8 @@ func (m *TimetableMutation) ClearField(name string) error {
 	case timetable.FieldDatetimeFrom:
 		m.ClearDatetimeFrom()
 		return nil
-	case timetable.FieldDatetimeTo:
-		m.ClearDatetimeTo()
+	case timetable.FieldDuration:
+		m.ClearDuration()
 		return nil
 	case timetable.FieldComment:
 		m.ClearComment()
@@ -5101,11 +6050,14 @@ func (m *TimetableMutation) ResetField(name string) error {
 	case timetable.FieldDeletedAt:
 		m.ResetDeletedAt()
 		return nil
-	case timetable.FieldType:
-		m.ResetType()
+	case timetable.FieldTimetableType:
+		m.ResetTimetableType()
 		return nil
 	case timetable.FieldDatetimeFrom:
 		m.ResetDatetimeFrom()
+		return nil
+	case timetable.FieldDuration:
+		m.ResetDuration()
 		return nil
 	case timetable.FieldDatetimeTo:
 		m.ResetDatetimeTo()

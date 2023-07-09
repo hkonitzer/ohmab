@@ -6,11 +6,10 @@ package OHMAB
 
 import (
 	"context"
-
 	"github.com/google/uuid"
 	"hynie.de/ohmab/ent"
 	"hynie.de/ohmab/ent/user"
-	"hynie.de/ohmab/internal/pkg/log"
+	"hynie.de/ohmab/internal/pkg/common/log"
 	"hynie.de/ohmab/internal/pkg/privacy"
 )
 

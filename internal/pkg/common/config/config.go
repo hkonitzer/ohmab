@@ -35,6 +35,14 @@ type Sqlite3DatabaseConfigurations struct {
 type GhostConfigurations struct {
 	BaseURL string
 	Key     string
+	Locale  string
+	Content []map[string]GhostContentConfigurations `mapstructure:"content"`
+}
+
+type GhostContentConfigurations struct {
+	PostID    string `mapstructure:"post"`
+	PostTitle string `mapstructure:"posttitle"`
+	PageID    string `mapstructure:"page"`
 }
 
 // DatabaseConfigurations exported

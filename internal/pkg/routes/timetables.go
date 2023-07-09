@@ -46,14 +46,14 @@ func (s *Server) Timetables(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(ttTypes) == 0 {
-		_, err := GetStandardTimetableData(&data, "", s.Client, r.Context())
+		_, err := GetStandardTimetableData(&data, "", nil, s.Client, r.Context())
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 	} else {
 		for _, ttType := range ttTypes {
-			c, err := GetStandardTimetableData(&data, strings.TrimSpace(ttType), s.Client, r.Context())
+			c, err := GetStandardTimetableData(&data, strings.TrimSpace(ttType), nil, s.Client, r.Context())
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
@@ -68,7 +68,7 @@ func (s *Server) Timetables(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func GetStandardTimetableData(data *DataTemplate, timetabletype string, client *ent.Client, ctx context.Context) (int, error) {
+func GetStandardTimetableData(data *DataTemplate, timetabletype string, query *ent.TimetableQuery, client *ent.Client, ctx context.Context) (int, error) {
 	/* @TODO: This is not working, why? --> Order ByTimetables is not working
 	a, err := s.Client.Address.Query().Where(address.HasTimetables()).
 		WithTimetables(
@@ -105,6 +105,9 @@ func GetStandardTimetableData(data *DataTemplate, timetabletype string, client *
 	if timetabletype != "" {
 		timetablesQuery = timetablesQuery.Where(timetable.TimetableTypeEQ(timetable.TimetableType(timetabletype)))
 	}
+	if query != nil {
+		timetablesQuery = query
+	}
 	timetables, err := timetablesQuery.All(ctx)
 	if err != nil {
 		logger.Err(err).Msgf("Error getting timetables")
@@ -136,7 +139,7 @@ func GetStandardTimetableData(data *DataTemplate, timetabletype string, client *
 				content.TypeEQ(content.TypeCSS),
 			),
 
-			content.Locale(data.Locale),
+			content.LocaleContains(data.Locale),
 			content.PublishedAtLTE(time.Now()),
 		).
 		Order(ent.Desc(content.FieldPublishedAt))
@@ -146,7 +149,7 @@ func GetStandardTimetableData(data *DataTemplate, timetabletype string, client *
 	co, err := contentHTMLQuery.All(ctx)
 	if err != nil && !ent.IsNotFound(err) {
 		logger.Err(err).Msgf("Error getting HTML content for timetable type '%s'", timetabletype)
-	} else if co == nil {
+	} else if co == nil || len(co) == 0 {
 		logger.Debug().Msgf("No HTML content found for timetable type '%s' and locale '%s'", timetabletype, data.Locale)
 	} else {
 		for _, c := range co {

@@ -129,10 +129,16 @@ func main() {
 				switch schema {
 				case "BUSINESS":
 				case "ADDRESS":
-					err := addressCreate.Mutation().SetField(schemaField, field)
-					if err != nil {
-						logger.Fatal().Msgf("Error setting address field '%s' to '%s': %v", schemaField, field, err)
+					if schemaField == "primary" { // @TODO: get field types, see line 199+ below
+						b, _ := strconv.ParseBool(field)
+						addressCreate.Mutation().SetPrimary(b)
+					} else {
+						err := addressCreate.Mutation().SetField(schemaField, field)
+						if err != nil {
+							logger.Fatal().Msgf("Error setting address field '%s' to '%s': %v", schemaField, field, err)
+						}
 					}
+
 				default:
 					logger.Fatal().Msgf("Unknown schema '%s'", schema)
 				}

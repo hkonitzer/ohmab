@@ -1,11 +1,9 @@
 {{define "table"}}
 
-{{- range .TimetableTypeData }}
+{{- range .TimetableTypeData -}}
 
 {{ if .CSSTop }}
-<style>
-{{.CSSTop}}
-</style>
+<style>{{.CSSTop}}</style>
 {{ end }}
 
 {{ if .HTMLTop }}
@@ -14,7 +12,7 @@
 
 <table class="{{ .TimetableType }}">
     <tbody>
-                {{- range .Data }}
+                {{- range .Data -}}
                     <tr>
                     <td><h4>{{ .I18nDate "datetime_from" }} &mdash; {{ .I18nDate "datetime_to" }}</h4></td>
                     </tr>

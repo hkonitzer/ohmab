@@ -20,8 +20,9 @@ ghost:
   locale: ""
   content:
     - EMERGENCYSERVICE:
-        post: "ES1"
-        page: "ES2"
+        post: "postid1"
+        posttitle: "Current emergency service until %s" # %s will be replaced with the date from the current duty
+        page: "pageid1"
     - DEFAULT:
-        post-id: "D1"
-        page-id: "D2"
+        post: "postid3"
+        page: "pageid4"

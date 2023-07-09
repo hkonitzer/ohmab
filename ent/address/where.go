@@ -102,6 +102,16 @@ func Country(v string) predicate.Address {
 	return predicate.Address(sql.FieldEQ(FieldCountry, v))
 }
 
+// Locale applies equality check predicate on the "locale" field. It's identical to LocaleEQ.
+func Locale(v string) predicate.Address {
+	return predicate.Address(sql.FieldEQ(FieldLocale, v))
+}
+
+// Primary applies equality check predicate on the "primary" field. It's identical to PrimaryEQ.
+func Primary(v bool) predicate.Address {
+	return predicate.Address(sql.FieldEQ(FieldPrimary, v))
+}
+
 // Telephone applies equality check predicate on the "telephone" field. It's identical to TelephoneEQ.
 func Telephone(v string) predicate.Address {
 	return predicate.Address(sql.FieldEQ(FieldTelephone, v))
@@ -692,6 +702,81 @@ func CountryContainsFold(v string) predicate.Address {
 	return predicate.Address(sql.FieldContainsFold(FieldCountry, v))
 }
 
+// LocaleEQ applies the EQ predicate on the "locale" field.
+func LocaleEQ(v string) predicate.Address {
+	return predicate.Address(sql.FieldEQ(FieldLocale, v))
+}
+
+// LocaleNEQ applies the NEQ predicate on the "locale" field.
+func LocaleNEQ(v string) predicate.Address {
+	return predicate.Address(sql.FieldNEQ(FieldLocale, v))
+}
+
+// LocaleIn applies the In predicate on the "locale" field.
+func LocaleIn(vs ...string) predicate.Address {
+	return predicate.Address(sql.FieldIn(FieldLocale, vs...))
+}
+
+// LocaleNotIn applies the NotIn predicate on the "locale" field.
+func LocaleNotIn(vs ...string) predicate.Address {
+	return predicate.Address(sql.FieldNotIn(FieldLocale, vs...))
+}
+
+// LocaleGT applies the GT predicate on the "locale" field.
+func LocaleGT(v string) predicate.Address {
+	return predicate.Address(sql.FieldGT(FieldLocale, v))
+}
+
+// LocaleGTE applies the GTE predicate on the "locale" field.
+func LocaleGTE(v string) predicate.Address {
+	return predicate.Address(sql.FieldGTE(FieldLocale, v))
+}
+
+// LocaleLT applies the LT predicate on the "locale" field.
+func LocaleLT(v string) predicate.Address {
+	return predicate.Address(sql.FieldLT(FieldLocale, v))
+}
+
+// LocaleLTE applies the LTE predicate on the "locale" field.
+func LocaleLTE(v string) predicate.Address {
+	return predicate.Address(sql.FieldLTE(FieldLocale, v))
+}
+
+// LocaleContains applies the Contains predicate on the "locale" field.
+func LocaleContains(v string) predicate.Address {
+	return predicate.Address(sql.FieldContains(FieldLocale, v))
+}
+
+// LocaleHasPrefix applies the HasPrefix predicate on the "locale" field.
+func LocaleHasPrefix(v string) predicate.Address {
+	return predicate.Address(sql.FieldHasPrefix(FieldLocale, v))
+}
+
+// LocaleHasSuffix applies the HasSuffix predicate on the "locale" field.
+func LocaleHasSuffix(v string) predicate.Address {
+	return predicate.Address(sql.FieldHasSuffix(FieldLocale, v))
+}
+
+// LocaleEqualFold applies the EqualFold predicate on the "locale" field.
+func LocaleEqualFold(v string) predicate.Address {
+	return predicate.Address(sql.FieldEqualFold(FieldLocale, v))
+}
+
+// LocaleContainsFold applies the ContainsFold predicate on the "locale" field.
+func LocaleContainsFold(v string) predicate.Address {
+	return predicate.Address(sql.FieldContainsFold(FieldLocale, v))
+}
+
+// PrimaryEQ applies the EQ predicate on the "primary" field.
+func PrimaryEQ(v bool) predicate.Address {
+	return predicate.Address(sql.FieldEQ(FieldPrimary, v))
+}
+
+// PrimaryNEQ applies the NEQ predicate on the "primary" field.
+func PrimaryNEQ(v bool) predicate.Address {
+	return predicate.Address(sql.FieldNEQ(FieldPrimary, v))
+}
+
 // TelephoneEQ applies the EQ predicate on the "telephone" field.
 func TelephoneEQ(v string) predicate.Address {
 	return predicate.Address(sql.FieldEQ(FieldTelephone, v))
@@ -847,7 +932,7 @@ func HasBusiness() predicate.Address {
 	return predicate.Address(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, BusinessTable, BusinessPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, true, BusinessTable, BusinessColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})

@@ -17,6 +17,7 @@ type CreateBusinessInput struct {
 	DeletedAt  *time.Time
 	Name1      string
 	Name2      *string
+	Alias      string
 	Telephone  *string
 	Email      *string
 	Website    *string
@@ -24,7 +25,7 @@ type CreateBusinessInput struct {
 	Active     *bool
 	AddressIDs []uuid.UUID
 	TagIDs     []uuid.UUID
-	UsersID    *uuid.UUID
+	UserIDs    []uuid.UUID
 }
 
 // Mutate applies the CreateBusinessInput on the BusinessMutation builder.
@@ -42,6 +43,7 @@ func (i *CreateBusinessInput) Mutate(m *BusinessMutation) {
 	if v := i.Name2; v != nil {
 		m.SetName2(*v)
 	}
+	m.SetAlias(i.Alias)
 	if v := i.Telephone; v != nil {
 		m.SetTelephone(*v)
 	}
@@ -63,8 +65,8 @@ func (i *CreateBusinessInput) Mutate(m *BusinessMutation) {
 	if v := i.TagIDs; len(v) > 0 {
 		m.AddTagIDs(v...)
 	}
-	if v := i.UsersID; v != nil {
-		m.SetUsersID(*v)
+	if v := i.UserIDs; len(v) > 0 {
+		m.AddUserIDs(v...)
 	}
 }
 
@@ -79,9 +81,10 @@ type CreateTimetableInput struct {
 	CreatedAt              *time.Time
 	UpdatedAt              *time.Time
 	DeletedAt              *time.Time
-	Type                   *timetable.Type
+	TimetableType          *timetable.TimetableType
 	DatetimeFrom           *time.Time
-	DatetimeTo             *time.Time
+	Duration               *uint8
+	DatetimeTo             time.Time
 	TimeWholeDay           *bool
 	Comment                *string
 	AvailabilityByPhone    *string
@@ -103,15 +106,16 @@ func (i *CreateTimetableInput) Mutate(m *TimetableMutation) {
 	if v := i.DeletedAt; v != nil {
 		m.SetDeletedAt(*v)
 	}
-	if v := i.Type; v != nil {
-		m.SetType(*v)
+	if v := i.TimetableType; v != nil {
+		m.SetTimetableType(*v)
 	}
 	if v := i.DatetimeFrom; v != nil {
 		m.SetDatetimeFrom(*v)
 	}
-	if v := i.DatetimeTo; v != nil {
-		m.SetDatetimeTo(*v)
+	if v := i.Duration; v != nil {
+		m.SetDuration(*v)
 	}
+	m.SetDatetimeTo(i.DatetimeTo)
 	if v := i.TimeWholeDay; v != nil {
 		m.SetTimeWholeDay(*v)
 	}

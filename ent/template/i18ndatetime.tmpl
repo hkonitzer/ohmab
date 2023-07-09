@@ -1,0 +1,40 @@
+{{/* gotype: entgo.io/ent/entc/gen.Graph */}}
+
+{{ define "i18ndatetime" }}
+
+{{/* Add the base header for the generated file */}}
+{{ $pkg := base $.Config.Package }}
+{{ template "header" $ }}
+
+import (
+	"github.com/goodsign/monday"
+	"fmt"
+)
+
+{{/* Loop over all nodes, search Timetable and implement the "i18nDate" interface */}}
+{{ range $n := $.Nodes }}
+    {{ if (eq $n.Name "Timetable") }}
+        {{ $receiver := $n.Receiver }}
+        func ({{ $receiver }} *{{ $n.Name }}) I18nDate(field string) string {
+            l := t.Edges.Address.Locale
+        	if l == "" {
+        		l = "en_US"
+        	}
+            switch field {
+            {{- with $n.Fields }}
+
+                {{- range $i, $f := $n.Fields }}
+                {{ if (eq $f.Type.String "time.Time") }}
+                case "{{ $f.Name}}":
+                    return monday.Format({{ $receiver }}.{{ pascal $f.Name }},"Monday 02.01.2006 15:04", monday.Locale(l))
+                {{ end }}
+
+                {{- end }}
+            {{- end }}
+                default:
+                    return ""
+            }
+        }
+        {{ end }}
+    {{ end }}
+{{ end }}

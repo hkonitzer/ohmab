@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"hynie.de/ohmab/ent/address"
+	"hynie.de/ohmab/ent/business"
 )
 
 // Address is the model entity for the Address schema.
@@ -37,20 +38,25 @@ type Address struct {
 	State string `json:"state,omitempty"`
 	// Country holds the value of the "country" field.
 	Country string `json:"country,omitempty"`
+	// The ICU locale identifier of the address, e.g. en_US, de_DE, ...
+	Locale string `json:"locale,omitempty"`
+	// Is this the primary address?
+	Primary bool `json:"primary,omitempty"`
 	// Telephone number
 	Telephone string `json:"telephone,omitempty"`
 	// A comment for this address
 	Comment string `json:"comment,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the AddressQuery when eager-loading is set.
-	Edges        AddressEdges `json:"edges"`
-	selectValues sql.SelectValues
+	Edges              AddressEdges `json:"edges"`
+	business_addresses *uuid.UUID
+	selectValues       sql.SelectValues
 }
 
 // AddressEdges holds the relations/edges for other nodes in the graph.
 type AddressEdges struct {
 	// Business holds the value of the business edge.
-	Business []*Business `json:"business,omitempty"`
+	Business *Business `json:"business,omitempty"`
 	// Timetables holds the value of the timetables edge.
 	Timetables []*Timetable `json:"timetables,omitempty"`
 	// loadedTypes holds the information for reporting if a
@@ -59,14 +65,17 @@ type AddressEdges struct {
 	// totalCount holds the count of the edges above.
 	totalCount [2]map[string]int
 
-	namedBusiness   map[string][]*Business
 	namedTimetables map[string][]*Timetable
 }
 
 // BusinessOrErr returns the Business value or an error if the edge
-// was not loaded in eager-loading.
-func (e AddressEdges) BusinessOrErr() ([]*Business, error) {
+// was not loaded in eager-loading, or loaded but was not found.
+func (e AddressEdges) BusinessOrErr() (*Business, error) {
 	if e.loadedTypes[0] {
+		if e.Business == nil {
+			// Edge was loaded but was not found.
+			return nil, &NotFoundError{label: business.Label}
+		}
 		return e.Business, nil
 	}
 	return nil, &NotLoadedError{edge: "business"}
@@ -86,12 +95,16 @@ func (*Address) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case address.FieldAddition, address.FieldStreet, address.FieldCity, address.FieldZip, address.FieldState, address.FieldCountry, address.FieldTelephone, address.FieldComment:
+		case address.FieldPrimary:
+			values[i] = new(sql.NullBool)
+		case address.FieldAddition, address.FieldStreet, address.FieldCity, address.FieldZip, address.FieldState, address.FieldCountry, address.FieldLocale, address.FieldTelephone, address.FieldComment:
 			values[i] = new(sql.NullString)
 		case address.FieldCreatedAt, address.FieldUpdatedAt, address.FieldDeletedAt:
 			values[i] = new(sql.NullTime)
 		case address.FieldID:
 			values[i] = new(uuid.UUID)
+		case address.ForeignKeys[0]: // business_addresses
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -167,6 +180,18 @@ func (a *Address) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				a.Country = value.String
 			}
+		case address.FieldLocale:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field locale", values[i])
+			} else if value.Valid {
+				a.Locale = value.String
+			}
+		case address.FieldPrimary:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field primary", values[i])
+			} else if value.Valid {
+				a.Primary = value.Bool
+			}
 		case address.FieldTelephone:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field telephone", values[i])
@@ -178,6 +203,13 @@ func (a *Address) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field comment", values[i])
 			} else if value.Valid {
 				a.Comment = value.String
+			}
+		case address.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field business_addresses", values[i])
+			} else if value.Valid {
+				a.business_addresses = new(uuid.UUID)
+				*a.business_addresses = *value.S.(*uuid.UUID)
 			}
 		default:
 			a.selectValues.Set(columns[i], values[i])
@@ -252,6 +284,12 @@ func (a *Address) String() string {
 	builder.WriteString("country=")
 	builder.WriteString(a.Country)
 	builder.WriteString(", ")
+	builder.WriteString("locale=")
+	builder.WriteString(a.Locale)
+	builder.WriteString(", ")
+	builder.WriteString("primary=")
+	builder.WriteString(fmt.Sprintf("%v", a.Primary))
+	builder.WriteString(", ")
 	builder.WriteString("telephone=")
 	builder.WriteString(a.Telephone)
 	builder.WriteString(", ")
@@ -259,30 +297,6 @@ func (a *Address) String() string {
 	builder.WriteString(a.Comment)
 	builder.WriteByte(')')
 	return builder.String()
-}
-
-// NamedBusiness returns the Business named value or an error if the edge was not
-// loaded in eager-loading with this name.
-func (a *Address) NamedBusiness(name string) ([]*Business, error) {
-	if a.Edges.namedBusiness == nil {
-		return nil, &NotLoadedError{edge: name}
-	}
-	nodes, ok := a.Edges.namedBusiness[name]
-	if !ok {
-		return nil, &NotLoadedError{edge: name}
-	}
-	return nodes, nil
-}
-
-func (a *Address) appendNamedBusiness(name string, edges ...*Business) {
-	if a.Edges.namedBusiness == nil {
-		a.Edges.namedBusiness = make(map[string][]*Business)
-	}
-	if len(edges) == 0 {
-		a.Edges.namedBusiness[name] = []*Business{}
-	} else {
-		a.Edges.namedBusiness[name] = append(a.Edges.namedBusiness[name], edges...)
-	}
 }
 
 // NamedTimetables returns the Timetables named value or an error if the edge was not

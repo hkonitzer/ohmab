@@ -2,9 +2,9 @@ package log
 
 import (
 	"github.com/rs/zerolog"
+	"hynie.de/ohmab/internal/pkg/common/config"
 	"os"
 	"runtime/debug"
-	"strconv"
 	"sync"
 	"time"
 )
@@ -21,9 +21,14 @@ func GetLoggerInstance() *zerolog.Logger {
 }
 
 func createLogger() *zerolog.Logger {
+	// Get the configuration
+	configurations, err := config.GetConfiguration()
+	if err != nil {
+		panic(err)
+	}
 	// read debug environment variable
-	debug_, err := strconv.ParseInt(os.Getenv("DEBUG"), 10, 64)
-	if err == nil && debug_ == 1 {
+	debug_ := configurations.DEBUG
+	if debug_ == 1 {
 		zerolog.SetGlobalLevel(zerolog.DebugLevel)
 	} else if debug_ == 2 {
 		zerolog.SetGlobalLevel(zerolog.TraceLevel)
@@ -32,16 +37,25 @@ func createLogger() *zerolog.Logger {
 	}
 	buildInfo, _ := debug.ReadBuildInfo()
 	hostname, _ := os.Hostname()
-	var logger1 = zerolog.New(zerolog.ConsoleWriter{Out: os.Stderr, TimeFormat: time.RFC3339}).
-		With().
-		Timestamp().
-		Str("host", hostname).
-		Caller().
-		//Int("pid", os.Getpid()).
-		//Str("go_version", buildInfo.GoVersion).
-		Logger()
+	var logger1 zerolog.Logger
+	if configurations.ENVIRONMENT == config.DevelopmentEnvironment {
+		logger1 = zerolog.New(zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: time.RFC3339}).
+			With().
+			Stack().
+			Timestamp().
+			Caller().
+			Logger()
+	} else {
+		logger1 = zerolog.New(os.Stdout).
+			With().
+			Timestamp().
+			Str("host", hostname).
+			Caller().
+			//Int("pid", os.Getpid()).
+			//Str("go_version", buildInfo.GoVersion).
+			Logger()
+	}
 
 	logger1.Debug().Msgf("Logger initialized, GO Version: %s", buildInfo.GoVersion)
-
 	return &logger1
 }

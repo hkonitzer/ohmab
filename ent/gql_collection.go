@@ -12,6 +12,7 @@ import (
 	"hynie.de/ohmab/ent/address"
 	"hynie.de/ohmab/ent/auditlog"
 	"hynie.de/ohmab/ent/business"
+	"hynie.de/ohmab/ent/content"
 	"hynie.de/ohmab/ent/tag"
 	"hynie.de/ohmab/ent/timetable"
 	"hynie.de/ohmab/ent/user"
@@ -47,9 +48,7 @@ func (a *AddressQuery) collectField(ctx context.Context, opCtx *graphql.Operatio
 			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
 				return err
 			}
-			a.WithNamedBusiness(alias, func(wq *BusinessQuery) {
-				*wq = *query
-			})
+			a.withBusiness = query
 		case "timetables":
 			var (
 				alias = field.Alias
@@ -106,6 +105,16 @@ func (a *AddressQuery) collectField(ctx context.Context, opCtx *graphql.Operatio
 			if _, ok := fieldSeen[address.FieldCountry]; !ok {
 				selectedFields = append(selectedFields, address.FieldCountry)
 				fieldSeen[address.FieldCountry] = struct{}{}
+			}
+		case "locale":
+			if _, ok := fieldSeen[address.FieldLocale]; !ok {
+				selectedFields = append(selectedFields, address.FieldLocale)
+				fieldSeen[address.FieldLocale] = struct{}{}
+			}
+		case "primary":
+			if _, ok := fieldSeen[address.FieldPrimary]; !ok {
+				selectedFields = append(selectedFields, address.FieldPrimary)
+				fieldSeen[address.FieldPrimary] = struct{}{}
 			}
 		case "telephone":
 			if _, ok := fieldSeen[address.FieldTelephone]; !ok {
@@ -304,7 +313,9 @@ func (b *BusinessQuery) collectField(ctx context.Context, opCtx *graphql.Operati
 			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
 				return err
 			}
-			b.withUsers = query
+			b.WithNamedUsers(alias, func(wq *UserQuery) {
+				*wq = *query
+			})
 		case "createdAt":
 			if _, ok := fieldSeen[business.FieldCreatedAt]; !ok {
 				selectedFields = append(selectedFields, business.FieldCreatedAt)
@@ -329,6 +340,11 @@ func (b *BusinessQuery) collectField(ctx context.Context, opCtx *graphql.Operati
 			if _, ok := fieldSeen[business.FieldName2]; !ok {
 				selectedFields = append(selectedFields, business.FieldName2)
 				fieldSeen[business.FieldName2] = struct{}{}
+			}
+		case "alias":
+			if _, ok := fieldSeen[business.FieldAlias]; !ok {
+				selectedFields = append(selectedFields, business.FieldAlias)
+				fieldSeen[business.FieldAlias] = struct{}{}
 			}
 		case "telephone":
 			if _, ok := fieldSeen[business.FieldTelephone]; !ok {
@@ -420,6 +436,140 @@ func newBusinessPaginateArgs(rv map[string]any) *businessPaginateArgs {
 	}
 	if v, ok := rv[whereField].(*BusinessWhereInput); ok {
 		args.opts = append(args.opts, WithBusinessFilter(v.Filter))
+	}
+	return args
+}
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (c *ContentQuery) CollectFields(ctx context.Context, satisfies ...string) (*ContentQuery, error) {
+	fc := graphql.GetFieldContext(ctx)
+	if fc == nil {
+		return c, nil
+	}
+	if err := c.collectField(ctx, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
+		return nil, err
+	}
+	return c, nil
+}
+
+func (c *ContentQuery) collectField(ctx context.Context, opCtx *graphql.OperationContext, collected graphql.CollectedField, path []string, satisfies ...string) error {
+	path = append([]string(nil), path...)
+	var (
+		unknownSeen    bool
+		fieldSeen      = make(map[string]struct{}, len(content.Columns))
+		selectedFields = []string{content.FieldID}
+	)
+	for _, field := range graphql.CollectFields(opCtx, collected.Selections, satisfies) {
+		switch field.Name {
+		case "createdAt":
+			if _, ok := fieldSeen[content.FieldCreatedAt]; !ok {
+				selectedFields = append(selectedFields, content.FieldCreatedAt)
+				fieldSeen[content.FieldCreatedAt] = struct{}{}
+			}
+		case "updatedAt":
+			if _, ok := fieldSeen[content.FieldUpdatedAt]; !ok {
+				selectedFields = append(selectedFields, content.FieldUpdatedAt)
+				fieldSeen[content.FieldUpdatedAt] = struct{}{}
+			}
+		case "deletedAt":
+			if _, ok := fieldSeen[content.FieldDeletedAt]; !ok {
+				selectedFields = append(selectedFields, content.FieldDeletedAt)
+				fieldSeen[content.FieldDeletedAt] = struct{}{}
+			}
+		case "timetableType":
+			if _, ok := fieldSeen[content.FieldTimetableType]; !ok {
+				selectedFields = append(selectedFields, content.FieldTimetableType)
+				fieldSeen[content.FieldTimetableType] = struct{}{}
+			}
+		case "type":
+			if _, ok := fieldSeen[content.FieldType]; !ok {
+				selectedFields = append(selectedFields, content.FieldType)
+				fieldSeen[content.FieldType] = struct{}{}
+			}
+		case "locale":
+			if _, ok := fieldSeen[content.FieldLocale]; !ok {
+				selectedFields = append(selectedFields, content.FieldLocale)
+				fieldSeen[content.FieldLocale] = struct{}{}
+			}
+		case "location":
+			if _, ok := fieldSeen[content.FieldLocation]; !ok {
+				selectedFields = append(selectedFields, content.FieldLocation)
+				fieldSeen[content.FieldLocation] = struct{}{}
+			}
+		case "content":
+			if _, ok := fieldSeen[content.FieldContent]; !ok {
+				selectedFields = append(selectedFields, content.FieldContent)
+				fieldSeen[content.FieldContent] = struct{}{}
+			}
+		case "status":
+			if _, ok := fieldSeen[content.FieldStatus]; !ok {
+				selectedFields = append(selectedFields, content.FieldStatus)
+				fieldSeen[content.FieldStatus] = struct{}{}
+			}
+		case "publishedAt":
+			if _, ok := fieldSeen[content.FieldPublishedAt]; !ok {
+				selectedFields = append(selectedFields, content.FieldPublishedAt)
+				fieldSeen[content.FieldPublishedAt] = struct{}{}
+			}
+		case "id":
+		case "__typename":
+		default:
+			unknownSeen = true
+		}
+	}
+	if !unknownSeen {
+		c.Select(selectedFields...)
+	}
+	return nil
+}
+
+type contentPaginateArgs struct {
+	first, last   *int
+	after, before *Cursor
+	opts          []ContentPaginateOption
+}
+
+func newContentPaginateArgs(rv map[string]any) *contentPaginateArgs {
+	args := &contentPaginateArgs{}
+	if rv == nil {
+		return args
+	}
+	if v := rv[firstField]; v != nil {
+		args.first = v.(*int)
+	}
+	if v := rv[lastField]; v != nil {
+		args.last = v.(*int)
+	}
+	if v := rv[afterField]; v != nil {
+		args.after = v.(*Cursor)
+	}
+	if v := rv[beforeField]; v != nil {
+		args.before = v.(*Cursor)
+	}
+	if v, ok := rv[orderByField]; ok {
+		switch v := v.(type) {
+		case map[string]any:
+			var (
+				err1, err2 error
+				order      = &ContentOrder{Field: &ContentOrderField{}, Direction: entgql.OrderDirectionAsc}
+			)
+			if d, ok := v[directionField]; ok {
+				err1 = order.Direction.UnmarshalGQL(d)
+			}
+			if f, ok := v[fieldField]; ok {
+				err2 = order.Field.UnmarshalGQL(f)
+			}
+			if err1 == nil && err2 == nil {
+				args.opts = append(args.opts, WithContentOrder(order))
+			}
+		case *ContentOrder:
+			if v != nil {
+				args.opts = append(args.opts, WithContentOrder(v))
+			}
+		}
+	}
+	if v, ok := rv[whereField].(*ContentWhereInput); ok {
+		args.opts = append(args.opts, WithContentFilter(v.Filter))
 	}
 	return args
 }
@@ -615,15 +765,20 @@ func (t *TimetableQuery) collectField(ctx context.Context, opCtx *graphql.Operat
 				selectedFields = append(selectedFields, timetable.FieldDeletedAt)
 				fieldSeen[timetable.FieldDeletedAt] = struct{}{}
 			}
-		case "type":
-			if _, ok := fieldSeen[timetable.FieldType]; !ok {
-				selectedFields = append(selectedFields, timetable.FieldType)
-				fieldSeen[timetable.FieldType] = struct{}{}
+		case "timetableType":
+			if _, ok := fieldSeen[timetable.FieldTimetableType]; !ok {
+				selectedFields = append(selectedFields, timetable.FieldTimetableType)
+				fieldSeen[timetable.FieldTimetableType] = struct{}{}
 			}
 		case "datetimeFrom":
 			if _, ok := fieldSeen[timetable.FieldDatetimeFrom]; !ok {
 				selectedFields = append(selectedFields, timetable.FieldDatetimeFrom)
 				fieldSeen[timetable.FieldDatetimeFrom] = struct{}{}
+			}
+		case "duration":
+			if _, ok := fieldSeen[timetable.FieldDuration]; !ok {
+				selectedFields = append(selectedFields, timetable.FieldDuration)
+				fieldSeen[timetable.FieldDuration] = struct{}{}
 			}
 		case "datetimeTo":
 			if _, ok := fieldSeen[timetable.FieldDatetimeTo]; !ok {
@@ -694,6 +849,34 @@ func newTimetablePaginateArgs(rv map[string]any) *timetablePaginateArgs {
 	}
 	if v := rv[beforeField]; v != nil {
 		args.before = v.(*Cursor)
+	}
+	if v, ok := rv[orderByField]; ok {
+		switch v := v.(type) {
+		case []*TimetableOrder:
+			args.opts = append(args.opts, WithTimetableOrder(v))
+		case []any:
+			var orders []*TimetableOrder
+			for i := range v {
+				mv, ok := v[i].(map[string]any)
+				if !ok {
+					continue
+				}
+				var (
+					err1, err2 error
+					order      = &TimetableOrder{Field: &TimetableOrderField{}, Direction: entgql.OrderDirectionAsc}
+				)
+				if d, ok := mv[directionField]; ok {
+					err1 = order.Direction.UnmarshalGQL(d)
+				}
+				if f, ok := mv[fieldField]; ok {
+					err2 = order.Field.UnmarshalGQL(f)
+				}
+				if err1 == nil && err2 == nil {
+					orders = append(orders, order)
+				}
+			}
+			args.opts = append(args.opts, WithTimetableOrder(orders))
+		}
 	}
 	if v, ok := rv[whereField].(*TimetableWhereInput); ok {
 		args.opts = append(args.opts, WithTimetableFilter(v.Filter))
@@ -802,11 +985,6 @@ func (u *UserQuery) collectField(ctx context.Context, opCtx *graphql.OperationCo
 			if _, ok := fieldSeen[user.FieldActive]; !ok {
 				selectedFields = append(selectedFields, user.FieldActive)
 				fieldSeen[user.FieldActive] = struct{}{}
-			}
-		case "role":
-			if _, ok := fieldSeen[user.FieldRole]; !ok {
-				selectedFields = append(selectedFields, user.FieldRole)
-				fieldSeen[user.FieldRole] = struct{}{}
 			}
 		case "id":
 		case "__typename":

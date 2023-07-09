@@ -46,7 +46,7 @@ func GetAddressFields(headersFromSchemas []string, withSchemaNameAsPrefix bool, 
 			field = strings.ToUpper(field)
 		}
 		if withSchemaNameAsPrefix {
-			headersFromSchemas = append(headersFromSchemas, "BUSINESS$"+field)
+			headersFromSchemas = append(headersFromSchemas, "ADDRESS$"+field)
 		} else {
 			headersFromSchemas = append(headersFromSchemas, field)
 		}

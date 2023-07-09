@@ -87,6 +87,12 @@ func (bc *BusinessCreate) SetNillableName2(s *string) *BusinessCreate {
 	return bc
 }
 
+// SetAlias sets the "alias" field.
+func (bc *BusinessCreate) SetAlias(s string) *BusinessCreate {
+	bc.mutation.SetAlias(s)
+	return bc
+}
+
 // SetTelephone sets the "telephone" field.
 func (bc *BusinessCreate) SetTelephone(s string) *BusinessCreate {
 	bc.mutation.SetTelephone(s)
@@ -201,23 +207,19 @@ func (bc *BusinessCreate) AddTags(t ...*Tag) *BusinessCreate {
 	return bc.AddTagIDs(ids...)
 }
 
-// SetUsersID sets the "users" edge to the User entity by ID.
-func (bc *BusinessCreate) SetUsersID(id uuid.UUID) *BusinessCreate {
-	bc.mutation.SetUsersID(id)
+// AddUserIDs adds the "users" edge to the User entity by IDs.
+func (bc *BusinessCreate) AddUserIDs(ids ...uuid.UUID) *BusinessCreate {
+	bc.mutation.AddUserIDs(ids...)
 	return bc
 }
 
-// SetNillableUsersID sets the "users" edge to the User entity by ID if the given value is not nil.
-func (bc *BusinessCreate) SetNillableUsersID(id *uuid.UUID) *BusinessCreate {
-	if id != nil {
-		bc = bc.SetUsersID(*id)
+// AddUsers adds the "users" edges to the User entity.
+func (bc *BusinessCreate) AddUsers(u ...*User) *BusinessCreate {
+	ids := make([]uuid.UUID, len(u))
+	for i := range u {
+		ids[i] = u[i].ID
 	}
-	return bc
-}
-
-// SetUsers sets the "users" edge to the User entity.
-func (bc *BusinessCreate) SetUsers(u *User) *BusinessCreate {
-	return bc.SetUsersID(u.ID)
+	return bc.AddUserIDs(ids...)
 }
 
 // Mutation returns the BusinessMutation object of the builder.
@@ -301,6 +303,14 @@ func (bc *BusinessCreate) check() error {
 			return &ValidationError{Name: "name1", err: fmt.Errorf(`ent: validator failed for field "Business.name1": %w`, err)}
 		}
 	}
+	if _, ok := bc.mutation.Alias(); !ok {
+		return &ValidationError{Name: "alias", err: errors.New(`ent: missing required field "Business.alias"`)}
+	}
+	if v, ok := bc.mutation.Alias(); ok {
+		if err := business.AliasValidator(v); err != nil {
+			return &ValidationError{Name: "alias", err: fmt.Errorf(`ent: validator failed for field "Business.alias": %w`, err)}
+		}
+	}
 	if _, ok := bc.mutation.Active(); !ok {
 		return &ValidationError{Name: "active", err: errors.New(`ent: missing required field "Business.active"`)}
 	}
@@ -359,6 +369,10 @@ func (bc *BusinessCreate) createSpec() (*Business, *sqlgraph.CreateSpec) {
 		_spec.SetField(business.FieldName2, field.TypeString, value)
 		_node.Name2 = value
 	}
+	if value, ok := bc.mutation.Alias(); ok {
+		_spec.SetField(business.FieldAlias, field.TypeString, value)
+		_node.Alias = value
+	}
 	if value, ok := bc.mutation.Telephone(); ok {
 		_spec.SetField(business.FieldTelephone, field.TypeString, value)
 		_node.Telephone = value
@@ -381,10 +395,10 @@ func (bc *BusinessCreate) createSpec() (*Business, *sqlgraph.CreateSpec) {
 	}
 	if nodes := bc.mutation.AddressesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   business.AddressesTable,
-			Columns: business.AddressesPrimaryKey,
+			Columns: []string{business.AddressesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(address.FieldID, field.TypeUUID),
@@ -413,10 +427,10 @@ func (bc *BusinessCreate) createSpec() (*Business, *sqlgraph.CreateSpec) {
 	}
 	if nodes := bc.mutation.UsersIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
 			Table:   business.UsersTable,
-			Columns: []string{business.UsersColumn},
+			Columns: business.UsersPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
@@ -425,7 +439,6 @@ func (bc *BusinessCreate) createSpec() (*Business, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.user_businesses = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

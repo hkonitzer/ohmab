@@ -21,14 +21,25 @@ var (
 		{Name: "zip", Type: field.TypeString, Nullable: true, Size: 2147483647},
 		{Name: "state", Type: field.TypeString, Nullable: true, Size: 2147483647},
 		{Name: "country", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "locale", Type: field.TypeString, Size: 5, Default: "en_US"},
+		{Name: "primary", Type: field.TypeBool, Default: false},
 		{Name: "telephone", Type: field.TypeString, Unique: true, Nullable: true, Size: 2147483647},
 		{Name: "comment", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "business_addresses", Type: field.TypeUUID, Nullable: true},
 	}
 	// AddressesTable holds the schema information for the "addresses" table.
 	AddressesTable = &schema.Table{
 		Name:       "addresses",
 		Columns:    AddressesColumns,
 		PrimaryKey: []*schema.Column{AddressesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "addresses_businesses_addresses",
+				Columns:    []*schema.Column{AddressesColumns[14]},
+				RefColumns: []*schema.Column{BusinessesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
 	}
 	// AuditLogsColumns holds the columns for the "audit_logs" table.
 	AuditLogsColumns = []*schema.Column{
@@ -61,26 +72,18 @@ var (
 		{Name: "deleted_at", Type: field.TypeTime, Nullable: true},
 		{Name: "name1", Type: field.TypeString, Size: 2147483647},
 		{Name: "name2", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "alias", Type: field.TypeString, Unique: true, Size: 20},
 		{Name: "telephone", Type: field.TypeString, Unique: true, Nullable: true, Size: 2147483647},
 		{Name: "email", Type: field.TypeString, Unique: true, Nullable: true, Size: 2147483647},
 		{Name: "website", Type: field.TypeString, Nullable: true, Size: 2147483647},
 		{Name: "comment", Type: field.TypeString, Nullable: true, Size: 2147483647},
 		{Name: "active", Type: field.TypeBool, Default: true},
-		{Name: "user_businesses", Type: field.TypeUUID, Nullable: true},
 	}
 	// BusinessesTable holds the schema information for the "businesses" table.
 	BusinessesTable = &schema.Table{
 		Name:       "businesses",
 		Columns:    BusinessesColumns,
 		PrimaryKey: []*schema.Column{BusinessesColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "businesses_users_businesses",
-				Columns:    []*schema.Column{BusinessesColumns[11]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-		},
 		Indexes: []*schema.Index{
 			{
 				Name:    "business_name1_name2",
@@ -90,7 +93,34 @@ var (
 			{
 				Name:    "business_email",
 				Unique:  false,
-				Columns: []*schema.Column{BusinessesColumns[7]},
+				Columns: []*schema.Column{BusinessesColumns[8]},
+			},
+		},
+	}
+	// ContentsColumns holds the columns for the "contents" table.
+	ContentsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "deleted_at", Type: field.TypeTime, Nullable: true},
+		{Name: "timetable_type", Type: field.TypeEnum, Enums: []string{"DEFAULT", "REGULAR", "CLOSED", "EMERGENCYSERVICE", "HOLIDAY", "SPECIAL"}, Default: "DEFAULT"},
+		{Name: "type", Type: field.TypeEnum, Enums: []string{"TEXT", "HTML", "CSS", "OTHER"}, Default: "TEXT"},
+		{Name: "locale", Type: field.TypeString, Size: 5, Default: "en_US"},
+		{Name: "location", Type: field.TypeEnum, Enums: []string{"TOP", "BOTTOM"}, Default: "TOP"},
+		{Name: "content", Type: field.TypeString, Size: 2147483647},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"DRAFT", "PUBLISHED"}, Default: "DRAFT"},
+		{Name: "published_at", Type: field.TypeTime, Nullable: true},
+	}
+	// ContentsTable holds the schema information for the "contents" table.
+	ContentsTable = &schema.Table{
+		Name:       "contents",
+		Columns:    ContentsColumns,
+		PrimaryKey: []*schema.Column{ContentsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "content_status_type_location_locale",
+				Unique:  true,
+				Columns: []*schema.Column{ContentsColumns[9], ContentsColumns[5], ContentsColumns[7], ContentsColumns[6]},
 			},
 		},
 	}
@@ -115,9 +145,10 @@ var (
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "deleted_at", Type: field.TypeTime, Nullable: true},
-		{Name: "type", Type: field.TypeEnum, Enums: []string{"DEFAULT", "REGULAR", "CLOSED", "EMERGENCYSERVICE", "HOLIDAY", "SPECIAL"}, Default: "DEFAULT"},
+		{Name: "timetable_type", Type: field.TypeEnum, Enums: []string{"DEFAULT", "REGULAR", "CLOSED", "EMERGENCYSERVICE", "HOLIDAY", "SPECIAL"}, Default: "DEFAULT"},
 		{Name: "datetime_from", Type: field.TypeTime, Nullable: true},
-		{Name: "datetime_to", Type: field.TypeTime, Nullable: true},
+		{Name: "duration", Type: field.TypeUint8, Nullable: true, SchemaType: map[string]string{"mysql": "TINYINT", "postgres": "SMALLINT", "sqlite3": "INTEGER"}},
+		{Name: "datetime_to", Type: field.TypeTime},
 		{Name: "time_whole_day", Type: field.TypeBool, Default: false},
 		{Name: "comment", Type: field.TypeString, Nullable: true, Size: 2147483647},
 		{Name: "availability_by_phone", Type: field.TypeString, Nullable: true, Size: 2147483647},
@@ -134,7 +165,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "timetables_addresses_timetables",
-				Columns:    []*schema.Column{TimetablesColumns[13]},
+				Columns:    []*schema.Column{TimetablesColumns[14]},
 				RefColumns: []*schema.Column{AddressesColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -153,6 +184,8 @@ var (
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "deleted_at", Type: field.TypeTime, Nullable: true},
+		{Name: "use_publicapi", Type: field.TypeString, Size: 2147483647, Default: ""},
+		{Name: "login", Type: field.TypeString, Size: 2147483647},
 		{Name: "surname", Type: field.TypeString, Size: 2147483647},
 		{Name: "firstname", Type: field.TypeString, Size: 2147483647},
 		{Name: "title", Type: field.TypeString, Nullable: true, Size: 2147483647},
@@ -160,7 +193,7 @@ var (
 		{Name: "passwordhash", Type: field.TypeString, Nullable: true, Size: 2147483647},
 		{Name: "comment", Type: field.TypeString, Nullable: true, Size: 2147483647},
 		{Name: "active", Type: field.TypeBool, Default: true},
-		{Name: "role", Type: field.TypeInt, Default: 0},
+		{Name: "role", Type: field.TypeString, Default: "8"},
 	}
 	// UsersTable holds the schema information for the "users" table.
 	UsersTable = &schema.Table{
@@ -169,34 +202,14 @@ var (
 		PrimaryKey: []*schema.Column{UsersColumns[0]},
 		Indexes: []*schema.Index{
 			{
+				Name:    "user_use_publicapi",
+				Unique:  false,
+				Columns: []*schema.Column{UsersColumns[4]},
+			},
+			{
 				Name:    "user_email",
 				Unique:  false,
-				Columns: []*schema.Column{UsersColumns[7]},
-			},
-		},
-	}
-	// BusinessAddressesColumns holds the columns for the "business_addresses" table.
-	BusinessAddressesColumns = []*schema.Column{
-		{Name: "business_id", Type: field.TypeUUID},
-		{Name: "address_id", Type: field.TypeUUID},
-	}
-	// BusinessAddressesTable holds the schema information for the "business_addresses" table.
-	BusinessAddressesTable = &schema.Table{
-		Name:       "business_addresses",
-		Columns:    BusinessAddressesColumns,
-		PrimaryKey: []*schema.Column{BusinessAddressesColumns[0], BusinessAddressesColumns[1]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "business_addresses_business_id",
-				Columns:    []*schema.Column{BusinessAddressesColumns[0]},
-				RefColumns: []*schema.Column{BusinessesColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-			{
-				Symbol:     "business_addresses_address_id",
-				Columns:    []*schema.Column{BusinessAddressesColumns[1]},
-				RefColumns: []*schema.Column{AddressesColumns[0]},
-				OnDelete:   schema.Cascade,
+				Columns: []*schema.Column{UsersColumns[9]},
 			},
 		},
 	}
@@ -221,6 +234,31 @@ var (
 				Symbol:     "business_tags_tag_id",
 				Columns:    []*schema.Column{BusinessTagsColumns[1]},
 				RefColumns: []*schema.Column{TagsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
+	// BusinessUsersColumns holds the columns for the "business_users" table.
+	BusinessUsersColumns = []*schema.Column{
+		{Name: "business_id", Type: field.TypeUUID},
+		{Name: "user_id", Type: field.TypeUUID},
+	}
+	// BusinessUsersTable holds the schema information for the "business_users" table.
+	BusinessUsersTable = &schema.Table{
+		Name:       "business_users",
+		Columns:    BusinessUsersColumns,
+		PrimaryKey: []*schema.Column{BusinessUsersColumns[0], BusinessUsersColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "business_users_business_id",
+				Columns:    []*schema.Column{BusinessUsersColumns[0]},
+				RefColumns: []*schema.Column{BusinessesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "business_users_user_id",
+				Columns:    []*schema.Column{BusinessUsersColumns[1]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 		},
@@ -280,23 +318,24 @@ var (
 		AddressesTable,
 		AuditLogsTable,
 		BusinessesTable,
+		ContentsTable,
 		TagsTable,
 		TimetablesTable,
 		UsersTable,
-		BusinessAddressesTable,
 		BusinessTagsTable,
+		BusinessUsersTable,
 		TimetableUsersOnDutyTable,
 		UserTagsTable,
 	}
 )
 
 func init() {
-	BusinessesTable.ForeignKeys[0].RefTable = UsersTable
+	AddressesTable.ForeignKeys[0].RefTable = BusinessesTable
 	TimetablesTable.ForeignKeys[0].RefTable = AddressesTable
-	BusinessAddressesTable.ForeignKeys[0].RefTable = BusinessesTable
-	BusinessAddressesTable.ForeignKeys[1].RefTable = AddressesTable
 	BusinessTagsTable.ForeignKeys[0].RefTable = BusinessesTable
 	BusinessTagsTable.ForeignKeys[1].RefTable = TagsTable
+	BusinessUsersTable.ForeignKeys[0].RefTable = BusinessesTable
+	BusinessUsersTable.ForeignKeys[1].RefTable = UsersTable
 	TimetableUsersOnDutyTable.ForeignKeys[0].RefTable = TimetablesTable
 	TimetableUsersOnDutyTable.ForeignKeys[1].RefTable = UsersTable
 	UserTagsTable.ForeignKeys[0].RefTable = UsersTable

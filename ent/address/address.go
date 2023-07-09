@@ -6,6 +6,7 @@ package address
 import (
 	"time"
 
+	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
@@ -34,6 +35,10 @@ const (
 	FieldState = "state"
 	// FieldCountry holds the string denoting the country field in the database.
 	FieldCountry = "country"
+	// FieldLocale holds the string denoting the locale field in the database.
+	FieldLocale = "locale"
+	// FieldPrimary holds the string denoting the primary field in the database.
+	FieldPrimary = "primary"
 	// FieldTelephone holds the string denoting the telephone field in the database.
 	FieldTelephone = "telephone"
 	// FieldComment holds the string denoting the comment field in the database.
@@ -44,11 +49,13 @@ const (
 	EdgeTimetables = "timetables"
 	// Table holds the table name of the address in the database.
 	Table = "addresses"
-	// BusinessTable is the table that holds the business relation/edge. The primary key declared below.
-	BusinessTable = "business_addresses"
+	// BusinessTable is the table that holds the business relation/edge.
+	BusinessTable = "addresses"
 	// BusinessInverseTable is the table name for the Business entity.
 	// It exists in this package in order to avoid circular dependency with the "business" package.
 	BusinessInverseTable = "businesses"
+	// BusinessColumn is the table column denoting the business relation/edge.
+	BusinessColumn = "business_addresses"
 	// TimetablesTable is the table that holds the timetables relation/edge.
 	TimetablesTable = "timetables"
 	// TimetablesInverseTable is the table name for the Timetable entity.
@@ -70,15 +77,17 @@ var Columns = []string{
 	FieldZip,
 	FieldState,
 	FieldCountry,
+	FieldLocale,
+	FieldPrimary,
 	FieldTelephone,
 	FieldComment,
 }
 
-var (
-	// BusinessPrimaryKey and BusinessColumn2 are the table columns denoting the
-	// primary key for the business relation (M2M).
-	BusinessPrimaryKey = []string{"business_id", "address_id"}
-)
+// ForeignKeys holds the SQL foreign-keys that are owned by the "addresses"
+// table and are not defined as standalone fields in the schema.
+var ForeignKeys = []string{
+	"business_addresses",
+}
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -87,16 +96,33 @@ func ValidColumn(column string) bool {
 			return true
 		}
 	}
+	for i := range ForeignKeys {
+		if column == ForeignKeys[i] {
+			return true
+		}
+	}
 	return false
 }
 
+// Note that the variables below are initialized by the runtime
+// package on the initialization of the application. Therefore,
+// it should be imported in the main as follows:
+//
+//	import _ "hynie.de/ohmab/ent/runtime"
 var (
+	Hooks [2]ent.Hook
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
 	DefaultUpdatedAt func() time.Time
 	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
 	UpdateDefaultUpdatedAt func() time.Time
+	// DefaultLocale holds the default value on creation for the "locale" field.
+	DefaultLocale string
+	// LocaleValidator is a validator for the "locale" field. It is called by the builders before save.
+	LocaleValidator func(string) error
+	// DefaultPrimary holds the default value on creation for the "primary" field.
+	DefaultPrimary bool
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -154,6 +180,16 @@ func ByCountry(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCountry, opts...).ToFunc()
 }
 
+// ByLocale orders the results by the locale field.
+func ByLocale(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldLocale, opts...).ToFunc()
+}
+
+// ByPrimary orders the results by the primary field.
+func ByPrimary(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPrimary, opts...).ToFunc()
+}
+
 // ByTelephone orders the results by the telephone field.
 func ByTelephone(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTelephone, opts...).ToFunc()
@@ -164,17 +200,10 @@ func ByComment(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldComment, opts...).ToFunc()
 }
 
-// ByBusinessCount orders the results by business count.
-func ByBusinessCount(opts ...sql.OrderTermOption) OrderOption {
+// ByBusinessField orders the results by business field.
+func ByBusinessField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newBusinessStep(), opts...)
-	}
-}
-
-// ByBusiness orders the results by business terms.
-func ByBusiness(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newBusinessStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newBusinessStep(), sql.OrderByField(field, opts...))
 	}
 }
 
@@ -195,7 +224,7 @@ func newBusinessStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(BusinessInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2M, true, BusinessTable, BusinessPrimaryKey...),
+		sqlgraph.Edge(sqlgraph.M2O, true, BusinessTable, BusinessColumn),
 	)
 }
 func newTimetablesStep() *sqlgraph.Step {

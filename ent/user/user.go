@@ -23,6 +23,10 @@ const (
 	FieldUpdatedAt = "updated_at"
 	// FieldDeletedAt holds the string denoting the deleted_at field in the database.
 	FieldDeletedAt = "deleted_at"
+	// FieldUsePublicapi holds the string denoting the use_publicapi field in the database.
+	FieldUsePublicapi = "use_publicapi"
+	// FieldLogin holds the string denoting the login field in the database.
+	FieldLogin = "login"
 	// FieldSurname holds the string denoting the surname field in the database.
 	FieldSurname = "surname"
 	// FieldFirstname holds the string denoting the firstname field in the database.
@@ -47,13 +51,11 @@ const (
 	EdgeTimetable = "timetable"
 	// Table holds the table name of the user in the database.
 	Table = "users"
-	// BusinessesTable is the table that holds the businesses relation/edge.
-	BusinessesTable = "businesses"
+	// BusinessesTable is the table that holds the businesses relation/edge. The primary key declared below.
+	BusinessesTable = "business_users"
 	// BusinessesInverseTable is the table name for the Business entity.
 	// It exists in this package in order to avoid circular dependency with the "business" package.
 	BusinessesInverseTable = "businesses"
-	// BusinessesColumn is the table column denoting the businesses relation/edge.
-	BusinessesColumn = "user_businesses"
 	// TagsTable is the table that holds the tags relation/edge. The primary key declared below.
 	TagsTable = "user_tags"
 	// TagsInverseTable is the table name for the Tag entity.
@@ -72,6 +74,8 @@ var Columns = []string{
 	FieldCreatedAt,
 	FieldUpdatedAt,
 	FieldDeletedAt,
+	FieldUsePublicapi,
+	FieldLogin,
 	FieldSurname,
 	FieldFirstname,
 	FieldTitle,
@@ -83,6 +87,9 @@ var Columns = []string{
 }
 
 var (
+	// BusinessesPrimaryKey and BusinessesColumn2 are the table columns denoting the
+	// primary key for the businesses relation (M2M).
+	BusinessesPrimaryKey = []string{"business_id", "user_id"}
 	// TagsPrimaryKey and TagsColumn2 are the table columns denoting the
 	// primary key for the tags relation (M2M).
 	TagsPrimaryKey = []string{"user_id", "tag_id"}
@@ -114,12 +121,16 @@ var (
 	DefaultUpdatedAt func() time.Time
 	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
 	UpdateDefaultUpdatedAt func() time.Time
+	// DefaultUsePublicapi holds the default value on creation for the "use_publicapi" field.
+	DefaultUsePublicapi string
+	// LoginValidator is a validator for the "login" field. It is called by the builders before save.
+	LoginValidator func(string) error
 	// SurnameValidator is a validator for the "surname" field. It is called by the builders before save.
 	SurnameValidator func(string) error
 	// DefaultActive holds the default value on creation for the "active" field.
 	DefaultActive bool
 	// DefaultRole holds the default value on creation for the "role" field.
-	DefaultRole int
+	DefaultRole string
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -145,6 +156,16 @@ func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 // ByDeletedAt orders the results by the deleted_at field.
 func ByDeletedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDeletedAt, opts...).ToFunc()
+}
+
+// ByUsePublicapi orders the results by the use_publicapi field.
+func ByUsePublicapi(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUsePublicapi, opts...).ToFunc()
+}
+
+// ByLogin orders the results by the login field.
+func ByLogin(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldLogin, opts...).ToFunc()
 }
 
 // BySurname orders the results by the surname field.
@@ -232,7 +253,7 @@ func newBusinessesStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(BusinessesInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, BusinessesTable, BusinessesColumn),
+		sqlgraph.Edge(sqlgraph.M2M, true, BusinessesTable, BusinessesPrimaryKey...),
 	)
 }
 func newTagsStep() *sqlgraph.Step {

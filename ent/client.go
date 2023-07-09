@@ -19,6 +19,7 @@ import (
 	"hynie.de/ohmab/ent/address"
 	"hynie.de/ohmab/ent/auditlog"
 	"hynie.de/ohmab/ent/business"
+	"hynie.de/ohmab/ent/content"
 	"hynie.de/ohmab/ent/tag"
 	"hynie.de/ohmab/ent/timetable"
 	"hynie.de/ohmab/ent/user"
@@ -35,6 +36,8 @@ type Client struct {
 	AuditLog *AuditLogClient
 	// Business is the client for interacting with the Business builders.
 	Business *BusinessClient
+	// Content is the client for interacting with the Content builders.
+	Content *ContentClient
 	// Tag is the client for interacting with the Tag builders.
 	Tag *TagClient
 	// Timetable is the client for interacting with the Timetable builders.
@@ -57,6 +60,7 @@ func (c *Client) init() {
 	c.Address = NewAddressClient(c.config)
 	c.AuditLog = NewAuditLogClient(c.config)
 	c.Business = NewBusinessClient(c.config)
+	c.Content = NewContentClient(c.config)
 	c.Tag = NewTagClient(c.config)
 	c.Timetable = NewTimetableClient(c.config)
 	c.User = NewUserClient(c.config)
@@ -145,6 +149,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Address:   NewAddressClient(cfg),
 		AuditLog:  NewAuditLogClient(cfg),
 		Business:  NewBusinessClient(cfg),
+		Content:   NewContentClient(cfg),
 		Tag:       NewTagClient(cfg),
 		Timetable: NewTimetableClient(cfg),
 		User:      NewUserClient(cfg),
@@ -170,6 +175,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Address:   NewAddressClient(cfg),
 		AuditLog:  NewAuditLogClient(cfg),
 		Business:  NewBusinessClient(cfg),
+		Content:   NewContentClient(cfg),
 		Tag:       NewTagClient(cfg),
 		Timetable: NewTimetableClient(cfg),
 		User:      NewUserClient(cfg),
@@ -202,7 +208,7 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Address, c.AuditLog, c.Business, c.Tag, c.Timetable, c.User,
+		c.Address, c.AuditLog, c.Business, c.Content, c.Tag, c.Timetable, c.User,
 	} {
 		n.Use(hooks...)
 	}
@@ -212,7 +218,7 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Address, c.AuditLog, c.Business, c.Tag, c.Timetable, c.User,
+		c.Address, c.AuditLog, c.Business, c.Content, c.Tag, c.Timetable, c.User,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -227,6 +233,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.AuditLog.mutate(ctx, m)
 	case *BusinessMutation:
 		return c.Business.mutate(ctx, m)
+	case *ContentMutation:
+		return c.Content.mutate(ctx, m)
 	case *TagMutation:
 		return c.Tag.mutate(ctx, m)
 	case *TimetableMutation:
@@ -339,7 +347,7 @@ func (c *AddressClient) QueryBusiness(a *Address) *BusinessQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(address.Table, address.FieldID, id),
 			sqlgraph.To(business.Table, business.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, address.BusinessTable, address.BusinessPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, true, address.BusinessTable, address.BusinessColumn),
 		)
 		fromV = sqlgraph.Neighbors(a.driver.Dialect(), step)
 		return fromV, nil
@@ -365,7 +373,8 @@ func (c *AddressClient) QueryTimetables(a *Address) *TimetableQuery {
 
 // Hooks returns the client hooks.
 func (c *AddressClient) Hooks() []Hook {
-	return c.hooks.Address
+	hooks := c.hooks.Address
+	return append(hooks[:len(hooks):len(hooks)], address.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -607,7 +616,7 @@ func (c *BusinessClient) QueryAddresses(b *Business) *AddressQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(business.Table, business.FieldID, id),
 			sqlgraph.To(address.Table, address.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, business.AddressesTable, business.AddressesPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, false, business.AddressesTable, business.AddressesColumn),
 		)
 		fromV = sqlgraph.Neighbors(b.driver.Dialect(), step)
 		return fromV, nil
@@ -639,7 +648,7 @@ func (c *BusinessClient) QueryUsers(b *Business) *UserQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(business.Table, business.FieldID, id),
 			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, business.UsersTable, business.UsersColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, business.UsersTable, business.UsersPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(b.driver.Dialect(), step)
 		return fromV, nil
@@ -670,6 +679,125 @@ func (c *BusinessClient) mutate(ctx context.Context, m *BusinessMutation) (Value
 		return (&BusinessDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Business mutation op: %q", m.Op())
+	}
+}
+
+// ContentClient is a client for the Content schema.
+type ContentClient struct {
+	config
+}
+
+// NewContentClient returns a client for the Content from the given config.
+func NewContentClient(c config) *ContentClient {
+	return &ContentClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `content.Hooks(f(g(h())))`.
+func (c *ContentClient) Use(hooks ...Hook) {
+	c.hooks.Content = append(c.hooks.Content, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `content.Intercept(f(g(h())))`.
+func (c *ContentClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Content = append(c.inters.Content, interceptors...)
+}
+
+// Create returns a builder for creating a Content entity.
+func (c *ContentClient) Create() *ContentCreate {
+	mutation := newContentMutation(c.config, OpCreate)
+	return &ContentCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Content entities.
+func (c *ContentClient) CreateBulk(builders ...*ContentCreate) *ContentCreateBulk {
+	return &ContentCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Content.
+func (c *ContentClient) Update() *ContentUpdate {
+	mutation := newContentMutation(c.config, OpUpdate)
+	return &ContentUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ContentClient) UpdateOne(co *Content) *ContentUpdateOne {
+	mutation := newContentMutation(c.config, OpUpdateOne, withContent(co))
+	return &ContentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ContentClient) UpdateOneID(id uuid.UUID) *ContentUpdateOne {
+	mutation := newContentMutation(c.config, OpUpdateOne, withContentID(id))
+	return &ContentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Content.
+func (c *ContentClient) Delete() *ContentDelete {
+	mutation := newContentMutation(c.config, OpDelete)
+	return &ContentDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *ContentClient) DeleteOne(co *Content) *ContentDeleteOne {
+	return c.DeleteOneID(co.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *ContentClient) DeleteOneID(id uuid.UUID) *ContentDeleteOne {
+	builder := c.Delete().Where(content.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ContentDeleteOne{builder}
+}
+
+// Query returns a query builder for Content.
+func (c *ContentClient) Query() *ContentQuery {
+	return &ContentQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeContent},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Content entity by its id.
+func (c *ContentClient) Get(ctx context.Context, id uuid.UUID) (*Content, error) {
+	return c.Query().Where(content.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ContentClient) GetX(ctx context.Context, id uuid.UUID) *Content {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *ContentClient) Hooks() []Hook {
+	hooks := c.hooks.Content
+	return append(hooks[:len(hooks):len(hooks)], content.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *ContentClient) Interceptors() []Interceptor {
+	return c.inters.Content
+}
+
+func (c *ContentClient) mutate(ctx context.Context, m *ContentMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&ContentCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&ContentUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&ContentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&ContentDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Content mutation op: %q", m.Op())
 	}
 }
 
@@ -1075,7 +1203,7 @@ func (c *UserClient) QueryBusinesses(u *User) *BusinessQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(user.Table, user.FieldID, id),
 			sqlgraph.To(business.Table, business.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, user.BusinessesTable, user.BusinessesColumn),
+			sqlgraph.Edge(sqlgraph.M2M, true, user.BusinessesTable, user.BusinessesPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
 		return fromV, nil
@@ -1144,9 +1272,9 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Address, AuditLog, Business, Tag, Timetable, User []ent.Hook
+		Address, AuditLog, Business, Content, Tag, Timetable, User []ent.Hook
 	}
 	inters struct {
-		Address, AuditLog, Business, Tag, Timetable, User []ent.Interceptor
+		Address, AuditLog, Business, Content, Tag, Timetable, User []ent.Interceptor
 	}
 )

@@ -14,6 +14,7 @@ import (
 	"hynie.de/ohmab/ent/address"
 	"hynie.de/ohmab/ent/auditlog"
 	"hynie.de/ohmab/ent/business"
+	"hynie.de/ohmab/ent/content"
 	"hynie.de/ohmab/ent/tag"
 	"hynie.de/ohmab/ent/timetable"
 	"hynie.de/ohmab/ent/user"
@@ -33,6 +34,9 @@ func (n *AuditLog) IsNode() {}
 
 // IsNode implements the Node interface check for GQLGen.
 func (n *Business) IsNode() {}
+
+// IsNode implements the Node interface check for GQLGen.
+func (n *Content) IsNode() {}
 
 // IsNode implements the Node interface check for GQLGen.
 func (n *Tag) IsNode() {}
@@ -129,6 +133,18 @@ func (c *Client) noder(ctx context.Context, table string, id uuid.UUID) (Noder, 
 		query := c.Business.Query().
 			Where(business.ID(id))
 		query, err := query.CollectFields(ctx, "Business")
+		if err != nil {
+			return nil, err
+		}
+		n, err := query.Only(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return n, nil
+	case content.Table:
+		query := c.Content.Query().
+			Where(content.ID(id))
+		query, err := query.CollectFields(ctx, "Content")
 		if err != nil {
 			return nil, err
 		}
@@ -282,6 +298,22 @@ func (c *Client) noders(ctx context.Context, table string, ids []uuid.UUID) ([]N
 		query := c.Business.Query().
 			Where(business.IDIn(ids...))
 		query, err := query.CollectFields(ctx, "Business")
+		if err != nil {
+			return nil, err
+		}
+		nodes, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, node := range nodes {
+			for _, noder := range idmap[node.ID] {
+				*noder = node
+			}
+		}
+	case content.Table:
+		query := c.Content.Query().
+			Where(content.IDIn(ids...))
+		query, err := query.CollectFields(ctx, "Content")
 		if err != nil {
 			return nil, err
 		}

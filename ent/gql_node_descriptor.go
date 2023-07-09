@@ -42,7 +42,7 @@ func (a *Address) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     a.ID,
 		Type:   "Address",
-		Fields: make([]*Field, 11),
+		Fields: make([]*Field, 13),
 		Edges:  make([]*Edge, 2),
 	}
 	var buf []byte
@@ -118,10 +118,26 @@ func (a *Address) Node(ctx context.Context) (node *Node, err error) {
 		Name:  "country",
 		Value: string(buf),
 	}
-	if buf, err = json.Marshal(a.Telephone); err != nil {
+	if buf, err = json.Marshal(a.Locale); err != nil {
 		return nil, err
 	}
 	node.Fields[9] = &Field{
+		Type:  "string",
+		Name:  "locale",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(a.Primary); err != nil {
+		return nil, err
+	}
+	node.Fields[10] = &Field{
+		Type:  "bool",
+		Name:  "primary",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(a.Telephone); err != nil {
+		return nil, err
+	}
+	node.Fields[11] = &Field{
 		Type:  "string",
 		Name:  "telephone",
 		Value: string(buf),
@@ -129,7 +145,7 @@ func (a *Address) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(a.Comment); err != nil {
 		return nil, err
 	}
-	node.Fields[10] = &Field{
+	node.Fields[12] = &Field{
 		Type:  "string",
 		Name:  "comment",
 		Value: string(buf),
@@ -222,7 +238,7 @@ func (b *Business) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     b.ID,
 		Type:   "Business",
-		Fields: make([]*Field, 10),
+		Fields: make([]*Field, 11),
 		Edges:  make([]*Edge, 3),
 	}
 	var buf []byte
@@ -266,10 +282,18 @@ func (b *Business) Node(ctx context.Context) (node *Node, err error) {
 		Name:  "name2",
 		Value: string(buf),
 	}
-	if buf, err = json.Marshal(b.Telephone); err != nil {
+	if buf, err = json.Marshal(b.Alias); err != nil {
 		return nil, err
 	}
 	node.Fields[5] = &Field{
+		Type:  "string",
+		Name:  "alias",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(b.Telephone); err != nil {
+		return nil, err
+	}
+	node.Fields[6] = &Field{
 		Type:  "string",
 		Name:  "telephone",
 		Value: string(buf),
@@ -277,7 +301,7 @@ func (b *Business) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(b.Email); err != nil {
 		return nil, err
 	}
-	node.Fields[6] = &Field{
+	node.Fields[7] = &Field{
 		Type:  "string",
 		Name:  "email",
 		Value: string(buf),
@@ -285,7 +309,7 @@ func (b *Business) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(b.Website); err != nil {
 		return nil, err
 	}
-	node.Fields[7] = &Field{
+	node.Fields[8] = &Field{
 		Type:  "string",
 		Name:  "website",
 		Value: string(buf),
@@ -293,7 +317,7 @@ func (b *Business) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(b.Comment); err != nil {
 		return nil, err
 	}
-	node.Fields[8] = &Field{
+	node.Fields[9] = &Field{
 		Type:  "string",
 		Name:  "comment",
 		Value: string(buf),
@@ -301,7 +325,7 @@ func (b *Business) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(b.Active); err != nil {
 		return nil, err
 	}
-	node.Fields[9] = &Field{
+	node.Fields[10] = &Field{
 		Type:  "bool",
 		Name:  "active",
 		Value: string(buf),
@@ -335,6 +359,98 @@ func (b *Business) Node(ctx context.Context) (node *Node, err error) {
 		Scan(ctx, &node.Edges[2].IDs)
 	if err != nil {
 		return nil, err
+	}
+	return node, nil
+}
+
+// Node implements Noder interface
+func (c *Content) Node(ctx context.Context) (node *Node, err error) {
+	node = &Node{
+		ID:     c.ID,
+		Type:   "Content",
+		Fields: make([]*Field, 10),
+		Edges:  make([]*Edge, 0),
+	}
+	var buf []byte
+	if buf, err = json.Marshal(c.CreatedAt); err != nil {
+		return nil, err
+	}
+	node.Fields[0] = &Field{
+		Type:  "time.Time",
+		Name:  "created_at",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(c.UpdatedAt); err != nil {
+		return nil, err
+	}
+	node.Fields[1] = &Field{
+		Type:  "time.Time",
+		Name:  "updated_at",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(c.DeletedAt); err != nil {
+		return nil, err
+	}
+	node.Fields[2] = &Field{
+		Type:  "time.Time",
+		Name:  "deleted_at",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(c.TimetableType); err != nil {
+		return nil, err
+	}
+	node.Fields[3] = &Field{
+		Type:  "content.TimetableType",
+		Name:  "timetable_type",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(c.Type); err != nil {
+		return nil, err
+	}
+	node.Fields[4] = &Field{
+		Type:  "content.Type",
+		Name:  "type",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(c.Locale); err != nil {
+		return nil, err
+	}
+	node.Fields[5] = &Field{
+		Type:  "string",
+		Name:  "locale",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(c.Location); err != nil {
+		return nil, err
+	}
+	node.Fields[6] = &Field{
+		Type:  "content.Location",
+		Name:  "location",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(c.Content); err != nil {
+		return nil, err
+	}
+	node.Fields[7] = &Field{
+		Type:  "string",
+		Name:  "content",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(c.Status); err != nil {
+		return nil, err
+	}
+	node.Fields[8] = &Field{
+		Type:  "content.Status",
+		Name:  "status",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(c.PublishedAt); err != nil {
+		return nil, err
+	}
+	node.Fields[9] = &Field{
+		Type:  "time.Time",
+		Name:  "published_at",
+		Value: string(buf),
 	}
 	return node, nil
 }
@@ -416,7 +532,7 @@ func (t *Timetable) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     t.ID,
 		Type:   "Timetable",
-		Fields: make([]*Field, 12),
+		Fields: make([]*Field, 13),
 		Edges:  make([]*Edge, 2),
 	}
 	var buf []byte
@@ -444,12 +560,12 @@ func (t *Timetable) Node(ctx context.Context) (node *Node, err error) {
 		Name:  "deleted_at",
 		Value: string(buf),
 	}
-	if buf, err = json.Marshal(t.Type); err != nil {
+	if buf, err = json.Marshal(t.TimetableType); err != nil {
 		return nil, err
 	}
 	node.Fields[3] = &Field{
-		Type:  "timetable.Type",
-		Name:  "type",
+		Type:  "timetable.TimetableType",
+		Name:  "timetable_type",
 		Value: string(buf),
 	}
 	if buf, err = json.Marshal(t.DatetimeFrom); err != nil {
@@ -460,10 +576,18 @@ func (t *Timetable) Node(ctx context.Context) (node *Node, err error) {
 		Name:  "datetime_from",
 		Value: string(buf),
 	}
-	if buf, err = json.Marshal(t.DatetimeTo); err != nil {
+	if buf, err = json.Marshal(t.Duration); err != nil {
 		return nil, err
 	}
 	node.Fields[5] = &Field{
+		Type:  "uint8",
+		Name:  "duration",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(t.DatetimeTo); err != nil {
+		return nil, err
+	}
+	node.Fields[6] = &Field{
 		Type:  "time.Time",
 		Name:  "datetime_to",
 		Value: string(buf),
@@ -471,7 +595,7 @@ func (t *Timetable) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(t.TimeWholeDay); err != nil {
 		return nil, err
 	}
-	node.Fields[6] = &Field{
+	node.Fields[7] = &Field{
 		Type:  "bool",
 		Name:  "time_whole_day",
 		Value: string(buf),
@@ -479,7 +603,7 @@ func (t *Timetable) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(t.Comment); err != nil {
 		return nil, err
 	}
-	node.Fields[7] = &Field{
+	node.Fields[8] = &Field{
 		Type:  "string",
 		Name:  "comment",
 		Value: string(buf),
@@ -487,7 +611,7 @@ func (t *Timetable) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(t.AvailabilityByPhone); err != nil {
 		return nil, err
 	}
-	node.Fields[8] = &Field{
+	node.Fields[9] = &Field{
 		Type:  "string",
 		Name:  "availability_by_phone",
 		Value: string(buf),
@@ -495,7 +619,7 @@ func (t *Timetable) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(t.AvailabilityByEmail); err != nil {
 		return nil, err
 	}
-	node.Fields[9] = &Field{
+	node.Fields[10] = &Field{
 		Type:  "string",
 		Name:  "availability_by_email",
 		Value: string(buf),
@@ -503,7 +627,7 @@ func (t *Timetable) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(t.AvailabilityBySms); err != nil {
 		return nil, err
 	}
-	node.Fields[10] = &Field{
+	node.Fields[11] = &Field{
 		Type:  "string",
 		Name:  "availability_by_sms",
 		Value: string(buf),
@@ -511,7 +635,7 @@ func (t *Timetable) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(t.AvailabilityByWhatsapp); err != nil {
 		return nil, err
 	}
-	node.Fields[11] = &Field{
+	node.Fields[12] = &Field{
 		Type:  "string",
 		Name:  "availability_by_whatsapp",
 		Value: string(buf),
@@ -544,7 +668,7 @@ func (u *User) Node(ctx context.Context) (node *Node, err error) {
 	node = &Node{
 		ID:     u.ID,
 		Type:   "User",
-		Fields: make([]*Field, 11),
+		Fields: make([]*Field, 13),
 		Edges:  make([]*Edge, 3),
 	}
 	var buf []byte
@@ -572,10 +696,26 @@ func (u *User) Node(ctx context.Context) (node *Node, err error) {
 		Name:  "deleted_at",
 		Value: string(buf),
 	}
-	if buf, err = json.Marshal(u.Surname); err != nil {
+	if buf, err = json.Marshal(u.UsePublicapi); err != nil {
 		return nil, err
 	}
 	node.Fields[3] = &Field{
+		Type:  "string",
+		Name:  "use_publicapi",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(u.Login); err != nil {
+		return nil, err
+	}
+	node.Fields[4] = &Field{
+		Type:  "string",
+		Name:  "login",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(u.Surname); err != nil {
+		return nil, err
+	}
+	node.Fields[5] = &Field{
 		Type:  "string",
 		Name:  "surname",
 		Value: string(buf),
@@ -583,7 +723,7 @@ func (u *User) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(u.Firstname); err != nil {
 		return nil, err
 	}
-	node.Fields[4] = &Field{
+	node.Fields[6] = &Field{
 		Type:  "string",
 		Name:  "firstname",
 		Value: string(buf),
@@ -591,7 +731,7 @@ func (u *User) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(u.Title); err != nil {
 		return nil, err
 	}
-	node.Fields[5] = &Field{
+	node.Fields[7] = &Field{
 		Type:  "string",
 		Name:  "title",
 		Value: string(buf),
@@ -599,7 +739,7 @@ func (u *User) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(u.Email); err != nil {
 		return nil, err
 	}
-	node.Fields[6] = &Field{
+	node.Fields[8] = &Field{
 		Type:  "string",
 		Name:  "email",
 		Value: string(buf),
@@ -607,7 +747,7 @@ func (u *User) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(u.Passwordhash); err != nil {
 		return nil, err
 	}
-	node.Fields[7] = &Field{
+	node.Fields[9] = &Field{
 		Type:  "string",
 		Name:  "passwordhash",
 		Value: string(buf),
@@ -615,7 +755,7 @@ func (u *User) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(u.Comment); err != nil {
 		return nil, err
 	}
-	node.Fields[8] = &Field{
+	node.Fields[10] = &Field{
 		Type:  "string",
 		Name:  "comment",
 		Value: string(buf),
@@ -623,7 +763,7 @@ func (u *User) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(u.Active); err != nil {
 		return nil, err
 	}
-	node.Fields[9] = &Field{
+	node.Fields[11] = &Field{
 		Type:  "bool",
 		Name:  "active",
 		Value: string(buf),
@@ -631,8 +771,8 @@ func (u *User) Node(ctx context.Context) (node *Node, err error) {
 	if buf, err = json.Marshal(u.Role); err != nil {
 		return nil, err
 	}
-	node.Fields[10] = &Field{
-		Type:  "int",
+	node.Fields[12] = &Field{
+		Type:  "string",
 		Name:  "role",
 		Value: string(buf),
 	}

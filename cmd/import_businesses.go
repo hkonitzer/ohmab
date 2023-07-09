@@ -6,13 +6,17 @@ import (
 	"flag"
 	"fmt"
 	"hynie.de/ohmab/ent"
+	"hynie.de/ohmab/ent/address"
 	"hynie.de/ohmab/ent/business"
 	_ "hynie.de/ohmab/ent/runtime"
-	"hynie.de/ohmab/internal/pkg/config"
+	schemas "hynie.de/ohmab/ent/schema"
+	"hynie.de/ohmab/internal/pkg/common/config"
+	"hynie.de/ohmab/internal/pkg/common/log"
 	"hynie.de/ohmab/internal/pkg/db"
-	"hynie.de/ohmab/internal/pkg/log"
+	"hynie.de/ohmab/internal/pkg/privacy"
 	"hynie.de/ohmab/internal/pkg/utils"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -39,6 +43,10 @@ func main() {
 	}
 	// Create client
 	ctx := context.TODO()
+	// Authorize me
+	uv := privacy.UserViewer{Role: privacy.Admin}
+	uv.SetUserID("import")
+	ctx = privacy.NewContext(ctx, &uv)
 	client, clientError := db.CreateClient(ctx, configurations)
 	if clientError != nil {
 		logger.Fatal().Msgf("Error creating client: %v", clientError)
@@ -57,6 +65,10 @@ func main() {
 	startTime := time.Now()
 	var headersFromSchemas []string = nil
 	var rowCounter = 0
+
+	addressSchema := schemas.Address{}
+	aFields := addressSchema.Fields()
+
 	for {
 		record, readErr := reader.Read()
 		if record == nil {
@@ -117,10 +129,16 @@ func main() {
 				switch schema {
 				case "BUSINESS":
 				case "ADDRESS":
-					err := addressCreate.Mutation().SetField(schemaField, field)
-					if err != nil {
-						logger.Fatal().Msgf("Error setting address field '%s' to '%s': %v", schemaField, field, err)
+					if schemaField == "primary" { // @TODO: get field types, see line 199+ below
+						b, _ := strconv.ParseBool(field)
+						addressCreate.Mutation().SetPrimary(b)
+					} else {
+						err := addressCreate.Mutation().SetField(schemaField, field)
+						if err != nil {
+							logger.Fatal().Msgf("Error setting address field '%s' to '%s': %v", schemaField, field, err)
+						}
 					}
+
 				default:
 					logger.Fatal().Msgf("Unknown schema '%s'", schema)
 				}
@@ -135,7 +153,7 @@ func main() {
 					ae_ := (addr.Street == s) && (addr.Zip == z) && (addr.City == c)
 					ae = ae_
 					if ae_ {
-						logger.Debug().Msgf("Address '%s, %s %s' already exists in business '%s'", addr.Street, addr.Zip, addr.City, b1.Name1)
+						logger.Debug().Msgf("Address '%s, %s %s' already exists in business '%s'", s, z, c, b1.Name1)
 						break
 					}
 				}
@@ -165,19 +183,44 @@ func main() {
 			businessCreate := client.Business.Create()
 			addressCreate := client.Address.Create()
 			for i, field := range record {
+				if field == "" {
+					continue
+				}
 				schemaHeader := headersFromSchemas[i]
 				schema := strings.Split(schemaHeader, "$")[0]
 				schemaField := strings.Split(schemaHeader, "$")[1]
 				switch schema {
 				case "BUSINESS":
+					// no need for checking fieldType, only alias here for now
 					err := businessCreate.Mutation().SetField(schemaField, field)
 					if err != nil {
 						logger.Fatal().Msgf("Error setting business field '%s' to '%s': %v", schemaField, field, err)
 					}
 				case "ADDRESS":
-					err := addressCreate.Mutation().SetField(schemaField, field)
-					if err != nil {
-						logger.Fatal().Msgf("Error setting address field '%s' to '%s' from row=%d: %v", schemaField, field, rowCounter, err)
+					var fieldType string
+					for _, bField := range aFields {
+						fieldDesc := bField.Descriptor()
+						if fieldDesc.Name == schemaField {
+							fieldType_ := fieldDesc.Info.Type.String()
+							fieldType = fieldType_
+							break
+						}
+					}
+					switch fieldType {
+					case "bool":
+						b, err := strconv.ParseBool(field)
+						if err != nil {
+							logger.Fatal().Msgf("Error converting '%s' to bool from row=%d: %v", field, rowCounter, err)
+						}
+						err = addressCreate.Mutation().SetField(schemaField, b)
+						if err != nil {
+							logger.Fatal().Msgf("Error setting address field '%s' to '%s' from row=%d: %v", schemaField, field, rowCounter, err)
+						}
+					default: // string
+						err := addressCreate.Mutation().SetField(schemaField, field)
+						if err != nil {
+							logger.Fatal().Msgf("Error setting address field '%s' to '%s' from row=%d: %v", schemaField, field, rowCounter, err)
+						}
 					}
 				default:
 					logger.Fatal().Msgf("Unknown schema '%s'", schema)
@@ -188,9 +231,16 @@ func main() {
 				t, _ := addressCreate.Mutation().Telephone()
 				str, _ := addressCreate.Mutation().Street()
 				cty, _ := addressCreate.Mutation().City()
-				logger.Fatal().Msgf("Error saving address 'City=%v;Street=%v;Tel=%v' from row=%d: %v", cty, str, t, rowCounter, addrerr)
+				zip, _ := addressCreate.Mutation().Zip()
+				ad := client.Address.Query().Where(address.CityEQ(cty), address.StreetEQ(str), address.TelephoneEQ(t), address.ZipEQ(zip)).OnlyX(ctx)
+				logger.Info().Msgf("Error saving address 'City=%v;Street=%v;Tel=%v' from row=%d: %v", cty, str, t, rowCounter, addrerr)
+				if ad == nil {
+					logger.Fatal().Msgf("Error saving address 'City=%v;Street=%v;Tel=%v' from row=%d: %v", cty, str, t, rowCounter, addrerr)
+				}
+				businessCreate.AddAddresses(ad)
+			} else {
+				businessCreate.AddAddresses(addr)
 			}
-			businessCreate.AddAddresses(addr)
 			_, err := businessCreate.Save(ctx)
 			if err != nil {
 				logger.Fatal().Msgf("Error saving business '%s' from row=%d: %v", record[0], rowCounter, err)

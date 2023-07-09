@@ -3,11 +3,14 @@ package main
 import (
 	"context"
 	"encoding/csv"
-	"hynie.de/ohmab/internal/pkg/config"
+	_ "hynie.de/ohmab/ent/runtime"
+	"hynie.de/ohmab/internal/pkg/common/config"
+	"hynie.de/ohmab/internal/pkg/common/log"
 	"hynie.de/ohmab/internal/pkg/db"
-	"hynie.de/ohmab/internal/pkg/log"
+	"hynie.de/ohmab/internal/pkg/privacy"
 	"hynie.de/ohmab/internal/pkg/utils"
 	"os"
+	"strconv"
 )
 
 func main() {
@@ -27,6 +30,7 @@ func main() {
 	}
 	// Create client
 	ctx := context.TODO()
+	ctx = privacy.NewContext(ctx, &privacy.UserViewer{Role: privacy.Admin})
 	client, clientError := db.CreateClient(ctx, configurations)
 	if clientError != nil {
 		logger.Fatal().Msgf("Error creating client: %v", clientError)
@@ -56,6 +60,7 @@ func main() {
 		var bRow []string
 		bRow = append(bRow, business.Name1)
 		bRow = append(bRow, business.Name2)
+		bRow = append(bRow, business.Alias)
 		bRow = append(bRow, business.Telephone)
 		bRow = append(bRow, business.Email)
 		bRow = append(bRow, business.Website)
@@ -68,6 +73,8 @@ func main() {
 			aRow = append(aRow, addr.Zip)
 			aRow = append(aRow, addr.State)
 			aRow = append(aRow, addr.Country)
+			aRow = append(aRow, addr.Locale)
+			aRow = append(aRow, strconv.FormatBool(addr.Primary))
 			aRow = append(aRow, addr.Telephone)
 			aRow = append(aRow, addr.Comment)
 			err := writer.Write(aRow)

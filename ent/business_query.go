@@ -6,6 +6,7 @@ package ent
 import (
 	"context"
 	"database/sql/driver"
+	"errors"
 	"fmt"
 	"math"
 
@@ -30,11 +31,11 @@ type BusinessQuery struct {
 	withAddresses      *AddressQuery
 	withTags           *TagQuery
 	withUsers          *UserQuery
-	withFKs            bool
 	modifiers          []func(*sql.Selector)
 	loadTotal          []func(context.Context, []*Business) error
 	withNamedAddresses map[string]*AddressQuery
 	withNamedTags      map[string]*TagQuery
+	withNamedUsers     map[string]*UserQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -85,7 +86,7 @@ func (bq *BusinessQuery) QueryAddresses() *AddressQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(business.Table, business.FieldID, selector),
 			sqlgraph.To(address.Table, address.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, business.AddressesTable, business.AddressesPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, false, business.AddressesTable, business.AddressesColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(bq.driver.Dialect(), step)
 		return fromU, nil
@@ -129,7 +130,7 @@ func (bq *BusinessQuery) QueryUsers() *UserQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(business.Table, business.FieldID, selector),
 			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, business.UsersTable, business.UsersColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, business.UsersTable, business.UsersPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(bq.driver.Dialect(), step)
 		return fromU, nil
@@ -442,13 +443,18 @@ func (bq *BusinessQuery) prepareQuery(ctx context.Context) error {
 		}
 		bq.sql = prev
 	}
+	if business.Policy == nil {
+		return errors.New("ent: uninitialized business.Policy (forgotten import ent/runtime?)")
+	}
+	if err := business.Policy.EvalQuery(ctx, bq); err != nil {
+		return err
+	}
 	return nil
 }
 
 func (bq *BusinessQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Business, error) {
 	var (
 		nodes       = []*Business{}
-		withFKs     = bq.withFKs
 		_spec       = bq.querySpec()
 		loadedTypes = [3]bool{
 			bq.withAddresses != nil,
@@ -456,12 +462,6 @@ func (bq *BusinessQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Bus
 			bq.withUsers != nil,
 		}
 	)
-	if bq.withUsers != nil {
-		withFKs = true
-	}
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, business.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Business).scanValues(nil, columns)
 	}
@@ -498,8 +498,9 @@ func (bq *BusinessQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Bus
 		}
 	}
 	if query := bq.withUsers; query != nil {
-		if err := bq.loadUsers(ctx, query, nodes, nil,
-			func(n *Business, e *User) { n.Edges.Users = e }); err != nil {
+		if err := bq.loadUsers(ctx, query, nodes,
+			func(n *Business) { n.Edges.Users = []*User{} },
+			func(n *Business, e *User) { n.Edges.Users = append(n.Edges.Users, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -517,6 +518,13 @@ func (bq *BusinessQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Bus
 			return nil, err
 		}
 	}
+	for name, query := range bq.withNamedUsers {
+		if err := bq.loadUsers(ctx, query, nodes,
+			func(n *Business) { n.appendNamedUsers(name) },
+			func(n *Business, e *User) { n.appendNamedUsers(name, e) }); err != nil {
+			return nil, err
+		}
+	}
 	for i := range bq.loadTotal {
 		if err := bq.loadTotal[i](ctx, nodes); err != nil {
 			return nil, err
@@ -526,63 +534,33 @@ func (bq *BusinessQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Bus
 }
 
 func (bq *BusinessQuery) loadAddresses(ctx context.Context, query *AddressQuery, nodes []*Business, init func(*Business), assign func(*Business, *Address)) error {
-	edgeIDs := make([]driver.Value, len(nodes))
-	byID := make(map[uuid.UUID]*Business)
-	nids := make(map[uuid.UUID]map[*Business]struct{})
-	for i, node := range nodes {
-		edgeIDs[i] = node.ID
-		byID[node.ID] = node
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Business)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
 		if init != nil {
-			init(node)
+			init(nodes[i])
 		}
 	}
-	query.Where(func(s *sql.Selector) {
-		joinT := sql.Table(business.AddressesTable)
-		s.Join(joinT).On(s.C(address.FieldID), joinT.C(business.AddressesPrimaryKey[1]))
-		s.Where(sql.InValues(joinT.C(business.AddressesPrimaryKey[0]), edgeIDs...))
-		columns := s.SelectedColumns()
-		s.Select(joinT.C(business.AddressesPrimaryKey[0]))
-		s.AppendSelect(columns...)
-		s.SetDistinct(false)
-	})
-	if err := query.prepareQuery(ctx); err != nil {
-		return err
-	}
-	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
-		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
-			assign := spec.Assign
-			values := spec.ScanValues
-			spec.ScanValues = func(columns []string) ([]any, error) {
-				values, err := values(columns[1:])
-				if err != nil {
-					return nil, err
-				}
-				return append([]any{new(uuid.UUID)}, values...), nil
-			}
-			spec.Assign = func(columns []string, values []any) error {
-				outValue := *values[0].(*uuid.UUID)
-				inValue := *values[1].(*uuid.UUID)
-				if nids[inValue] == nil {
-					nids[inValue] = map[*Business]struct{}{byID[outValue]: {}}
-					return assign(columns[1:], values[1:])
-				}
-				nids[inValue][byID[outValue]] = struct{}{}
-				return nil
-			}
-		})
-	})
-	neighbors, err := withInterceptors[[]*Address](ctx, query, qr, query.inters)
+	query.withFKs = true
+	query.Where(predicate.Address(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(business.AddressesColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		nodes, ok := nids[n.ID]
+		fk := n.business_addresses
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "business_addresses" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
 		if !ok {
-			return fmt.Errorf(`unexpected "addresses" node returned %v`, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "business_addresses" returned %v for node %v`, *fk, n.ID)
 		}
-		for kn := range nodes {
-			assign(kn, n)
-		}
+		assign(node, n)
 	}
 	return nil
 }
@@ -648,33 +626,62 @@ func (bq *BusinessQuery) loadTags(ctx context.Context, query *TagQuery, nodes []
 	return nil
 }
 func (bq *BusinessQuery) loadUsers(ctx context.Context, query *UserQuery, nodes []*Business, init func(*Business), assign func(*Business, *User)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*Business)
-	for i := range nodes {
-		if nodes[i].user_businesses == nil {
-			continue
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[uuid.UUID]*Business)
+	nids := make(map[uuid.UUID]map[*Business]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
 		}
-		fk := *nodes[i].user_businesses
-		if _, ok := nodeids[fk]; !ok {
-			ids = append(ids, fk)
-		}
-		nodeids[fk] = append(nodeids[fk], nodes[i])
 	}
-	if len(ids) == 0 {
-		return nil
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(business.UsersTable)
+		s.Join(joinT).On(s.C(user.FieldID), joinT.C(business.UsersPrimaryKey[1]))
+		s.Where(sql.InValues(joinT.C(business.UsersPrimaryKey[0]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(business.UsersPrimaryKey[0]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
 	}
-	query.Where(user.IDIn(ids...))
-	neighbors, err := query.All(ctx)
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(uuid.UUID)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := *values[0].(*uuid.UUID)
+				inValue := *values[1].(*uuid.UUID)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Business]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*User](ctx, query, qr, query.inters)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		nodes, ok := nodeids[n.ID]
+		nodes, ok := nids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "user_businesses" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected "users" node returned %v`, n.ID)
 		}
-		for i := range nodes {
-			assign(nodes[i], n)
+		for kn := range nodes {
+			assign(kn, n)
 		}
 	}
 	return nil
@@ -789,6 +796,20 @@ func (bq *BusinessQuery) WithNamedTags(name string, opts ...func(*TagQuery)) *Bu
 		bq.withNamedTags = make(map[string]*TagQuery)
 	}
 	bq.withNamedTags[name] = query
+	return bq
+}
+
+// WithNamedUsers tells the query-builder to eager-load the nodes that are connected to the "users"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (bq *BusinessQuery) WithNamedUsers(name string, opts ...func(*UserQuery)) *BusinessQuery {
+	query := (&UserClient{config: bq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	if bq.withNamedUsers == nil {
+		bq.withNamedUsers = make(map[string]*UserQuery)
+	}
+	bq.withNamedUsers[name] = query
 	return bq
 }
 

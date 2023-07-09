@@ -5,17 +5,23 @@ import (
 	"entgo.io/ent/dialect"
 	"fmt"
 	"hynie.de/ohmab/ent"
-	"hynie.de/ohmab/internal/pkg/config"
-	"hynie.de/ohmab/internal/pkg/db/postgresql"
-	"hynie.de/ohmab/internal/pkg/db/sqlite"
+	"hynie.de/ohmab/internal/pkg/common/config"
+	"hynie.de/ohmab/internal/pkg/common/log"
 )
+
+// Get logger
+var logger = log.GetLoggerInstance()
+
+func ClientDebuglog(v ...any) {
+	logger.Printf("%v", v...)
+}
 
 func CreateClient(ctx context.Context, configurations *config.Configurations) (*ent.Client, error) {
 	if configurations.Database.DSN == "" {
 		return nil, fmt.Errorf("DSN for database (dialect=%v) not set", configurations.Database.Dialect)
 	}
 	debug := false
-	if configurations.DEBUG > 0 {
+	if configurations.DEBUG > 1 {
 		debug = true
 	}
 	var client *ent.Client
@@ -23,11 +29,14 @@ func CreateClient(ctx context.Context, configurations *config.Configurations) (*
 	case dialect.MySQL:
 		return nil, fmt.Errorf("MySQL not implemented yet")
 	case dialect.Postgres:
-		client = postgresql.CreatePGClient(configurations.Database.DSN, ctx, debug)
+		client = CreatePGClient(configurations.Database.DSN, ctx, debug)
 	case dialect.SQLite:
-		client = sqlite.CreateSQLiteClient(configurations.Database.DSN, ctx, debug)
+		client = CreateSQLiteClient(configurations.Database.DSN, ctx, debug)
 	default:
 		return nil, fmt.Errorf("unknown dialect: %v", configurations.Database.Dialect)
+	}
+	if debug {
+		client = client.Debug()
 	}
 	return client, nil
 }

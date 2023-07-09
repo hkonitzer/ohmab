@@ -4,16 +4,21 @@
 package runtime
 
 import (
+	"context"
 	"time"
 
 	"github.com/google/uuid"
 	"hynie.de/ohmab/ent/address"
 	"hynie.de/ohmab/ent/auditlog"
 	"hynie.de/ohmab/ent/business"
+	"hynie.de/ohmab/ent/content"
 	"hynie.de/ohmab/ent/schema"
 	"hynie.de/ohmab/ent/tag"
 	"hynie.de/ohmab/ent/timetable"
 	"hynie.de/ohmab/ent/user"
+
+	"entgo.io/ent"
+	"entgo.io/ent/privacy"
 )
 
 // The init function reads all schema descriptors with runtime code
@@ -21,6 +26,9 @@ import (
 // to their package variables.
 func init() {
 	addressMixin := schema.Address{}.Mixin()
+	addressHooks := schema.Address{}.Hooks()
+	address.Hooks[0] = addressHooks[0]
+	address.Hooks[1] = addressHooks[1]
 	addressMixinFields0 := addressMixin[0].Fields()
 	_ = addressMixinFields0
 	addressFields := schema.Address{}.Fields()
@@ -35,6 +43,31 @@ func init() {
 	address.DefaultUpdatedAt = addressDescUpdatedAt.Default.(func() time.Time)
 	// address.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	address.UpdateDefaultUpdatedAt = addressDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// addressDescLocale is the schema descriptor for locale field.
+	addressDescLocale := addressFields[7].Descriptor()
+	// address.DefaultLocale holds the default value on creation for the locale field.
+	address.DefaultLocale = addressDescLocale.Default.(string)
+	// address.LocaleValidator is a validator for the "locale" field. It is called by the builders before save.
+	address.LocaleValidator = func() func(string) error {
+		validators := addressDescLocale.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+			validators[2].(func(string) error),
+		}
+		return func(locale string) error {
+			for _, fn := range fns {
+				if err := fn(locale); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// addressDescPrimary is the schema descriptor for primary field.
+	addressDescPrimary := addressFields[8].Descriptor()
+	// address.DefaultPrimary holds the default value on creation for the primary field.
+	address.DefaultPrimary = addressDescPrimary.Default.(bool)
 	// addressDescID is the schema descriptor for id field.
 	addressDescID := addressFields[0].Descriptor()
 	// address.DefaultID holds the default value on creation for the id field.
@@ -62,8 +95,20 @@ func init() {
 	// auditlog.DefaultID holds the default value on creation for the id field.
 	auditlog.DefaultID = auditlogDescID.Default.(func() uuid.UUID)
 	businessMixin := schema.Business{}.Mixin()
+	business.Policy = privacy.NewPolicies(schema.Business{})
+	business.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := business.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
 	businessHooks := schema.Business{}.Hooks()
-	business.Hooks[0] = businessHooks[0]
+
+	business.Hooks[1] = businessHooks[0]
+
+	business.Hooks[2] = businessHooks[1]
 	businessMixinFields0 := businessMixin[0].Fields()
 	_ = businessMixinFields0
 	businessFields := schema.Business{}.Fields()
@@ -82,14 +127,62 @@ func init() {
 	businessDescName1 := businessFields[1].Descriptor()
 	// business.Name1Validator is a validator for the "name1" field. It is called by the builders before save.
 	business.Name1Validator = businessDescName1.Validators[0].(func(string) error)
+	// businessDescAlias is the schema descriptor for alias field.
+	businessDescAlias := businessFields[3].Descriptor()
+	// business.AliasValidator is a validator for the "alias" field. It is called by the builders before save.
+	business.AliasValidator = businessDescAlias.Validators[0].(func(string) error)
 	// businessDescActive is the schema descriptor for active field.
-	businessDescActive := businessFields[7].Descriptor()
+	businessDescActive := businessFields[8].Descriptor()
 	// business.DefaultActive holds the default value on creation for the active field.
 	business.DefaultActive = businessDescActive.Default.(bool)
 	// businessDescID is the schema descriptor for id field.
 	businessDescID := businessFields[0].Descriptor()
 	// business.DefaultID holds the default value on creation for the id field.
 	business.DefaultID = businessDescID.Default.(func() uuid.UUID)
+	contentMixin := schema.Content{}.Mixin()
+	contentHooks := schema.Content{}.Hooks()
+	content.Hooks[0] = contentHooks[0]
+	contentMixinFields0 := contentMixin[0].Fields()
+	_ = contentMixinFields0
+	contentMixinFields1 := contentMixin[1].Fields()
+	_ = contentMixinFields1
+	contentFields := schema.Content{}.Fields()
+	_ = contentFields
+	// contentDescCreatedAt is the schema descriptor for created_at field.
+	contentDescCreatedAt := contentMixinFields0[0].Descriptor()
+	// content.DefaultCreatedAt holds the default value on creation for the created_at field.
+	content.DefaultCreatedAt = contentDescCreatedAt.Default.(func() time.Time)
+	// contentDescUpdatedAt is the schema descriptor for updated_at field.
+	contentDescUpdatedAt := contentMixinFields0[1].Descriptor()
+	// content.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	content.DefaultUpdatedAt = contentDescUpdatedAt.Default.(func() time.Time)
+	// content.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	content.UpdateDefaultUpdatedAt = contentDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// contentDescLocale is the schema descriptor for locale field.
+	contentDescLocale := contentFields[2].Descriptor()
+	// content.DefaultLocale holds the default value on creation for the locale field.
+	content.DefaultLocale = contentDescLocale.Default.(string)
+	// content.LocaleValidator is a validator for the "locale" field. It is called by the builders before save.
+	content.LocaleValidator = func() func(string) error {
+		validators := contentDescLocale.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+			validators[2].(func(string) error),
+		}
+		return func(locale string) error {
+			for _, fn := range fns {
+				if err := fn(locale); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// contentDescID is the schema descriptor for id field.
+	contentDescID := contentFields[0].Descriptor()
+	// content.DefaultID holds the default value on creation for the id field.
+	content.DefaultID = contentDescID.Default.(func() uuid.UUID)
 	tagMixin := schema.Tag{}.Mixin()
 	tagMixinFields0 := tagMixin[0].Fields()
 	_ = tagMixinFields0
@@ -116,8 +209,11 @@ func init() {
 	timetableMixin := schema.Timetable{}.Mixin()
 	timetableHooks := schema.Timetable{}.Hooks()
 	timetable.Hooks[0] = timetableHooks[0]
+	timetable.Hooks[1] = timetableHooks[1]
 	timetableMixinFields0 := timetableMixin[0].Fields()
 	_ = timetableMixinFields0
+	timetableMixinFields1 := timetableMixin[1].Fields()
+	_ = timetableMixinFields1
 	timetableFields := schema.Timetable{}.Fields()
 	_ = timetableFields
 	// timetableDescCreatedAt is the schema descriptor for created_at field.
@@ -130,6 +226,24 @@ func init() {
 	timetable.DefaultUpdatedAt = timetableDescUpdatedAt.Default.(func() time.Time)
 	// timetable.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	timetable.UpdateDefaultUpdatedAt = timetableDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// timetableDescDuration is the schema descriptor for duration field.
+	timetableDescDuration := timetableFields[2].Descriptor()
+	// timetable.DurationValidator is a validator for the "duration" field. It is called by the builders before save.
+	timetable.DurationValidator = func() func(uint8) error {
+		validators := timetableDescDuration.Validators
+		fns := [...]func(uint8) error{
+			validators[0].(func(uint8) error),
+			validators[1].(func(uint8) error),
+		}
+		return func(duration uint8) error {
+			for _, fn := range fns {
+				if err := fn(duration); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
 	// timetableDescTimeWholeDay is the schema descriptor for time_whole_day field.
 	timetableDescTimeWholeDay := timetableFields[4].Descriptor()
 	// timetable.DefaultTimeWholeDay holds the default value on creation for the time_whole_day field.
@@ -143,6 +257,8 @@ func init() {
 	user.Hooks[0] = userHooks[0]
 	userMixinFields0 := userMixin[0].Fields()
 	_ = userMixinFields0
+	userMixinFields1 := userMixin[1].Fields()
+	_ = userMixinFields1
 	userFields := schema.User{}.Fields()
 	_ = userFields
 	// userDescCreatedAt is the schema descriptor for created_at field.
@@ -155,18 +271,26 @@ func init() {
 	user.DefaultUpdatedAt = userDescUpdatedAt.Default.(func() time.Time)
 	// user.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	user.UpdateDefaultUpdatedAt = userDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// userDescUsePublicapi is the schema descriptor for use_publicapi field.
+	userDescUsePublicapi := userMixinFields1[0].Descriptor()
+	// user.DefaultUsePublicapi holds the default value on creation for the use_publicapi field.
+	user.DefaultUsePublicapi = userDescUsePublicapi.Default.(string)
+	// userDescLogin is the schema descriptor for login field.
+	userDescLogin := userFields[1].Descriptor()
+	// user.LoginValidator is a validator for the "login" field. It is called by the builders before save.
+	user.LoginValidator = userDescLogin.Validators[0].(func(string) error)
 	// userDescSurname is the schema descriptor for surname field.
-	userDescSurname := userFields[1].Descriptor()
+	userDescSurname := userFields[2].Descriptor()
 	// user.SurnameValidator is a validator for the "surname" field. It is called by the builders before save.
 	user.SurnameValidator = userDescSurname.Validators[0].(func(string) error)
 	// userDescActive is the schema descriptor for active field.
-	userDescActive := userFields[7].Descriptor()
+	userDescActive := userFields[8].Descriptor()
 	// user.DefaultActive holds the default value on creation for the active field.
 	user.DefaultActive = userDescActive.Default.(bool)
 	// userDescRole is the schema descriptor for role field.
-	userDescRole := userFields[8].Descriptor()
+	userDescRole := userFields[9].Descriptor()
 	// user.DefaultRole holds the default value on creation for the role field.
-	user.DefaultRole = userDescRole.Default.(int)
+	user.DefaultRole = userDescRole.Default.(string)
 	// userDescID is the schema descriptor for id field.
 	userDescID := userFields[0].Descriptor()
 	// user.DefaultID holds the default value on creation for the id field.

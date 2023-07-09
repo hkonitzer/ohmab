@@ -27,6 +27,8 @@ const (
 	FieldName1 = "name1"
 	// FieldName2 holds the string denoting the name2 field in the database.
 	FieldName2 = "name2"
+	// FieldAlias holds the string denoting the alias field in the database.
+	FieldAlias = "alias"
 	// FieldTelephone holds the string denoting the telephone field in the database.
 	FieldTelephone = "telephone"
 	// FieldEmail holds the string denoting the email field in the database.
@@ -45,23 +47,23 @@ const (
 	EdgeUsers = "users"
 	// Table holds the table name of the business in the database.
 	Table = "businesses"
-	// AddressesTable is the table that holds the addresses relation/edge. The primary key declared below.
-	AddressesTable = "business_addresses"
+	// AddressesTable is the table that holds the addresses relation/edge.
+	AddressesTable = "addresses"
 	// AddressesInverseTable is the table name for the Address entity.
 	// It exists in this package in order to avoid circular dependency with the "address" package.
 	AddressesInverseTable = "addresses"
+	// AddressesColumn is the table column denoting the addresses relation/edge.
+	AddressesColumn = "business_addresses"
 	// TagsTable is the table that holds the tags relation/edge. The primary key declared below.
 	TagsTable = "business_tags"
 	// TagsInverseTable is the table name for the Tag entity.
 	// It exists in this package in order to avoid circular dependency with the "tag" package.
 	TagsInverseTable = "tags"
-	// UsersTable is the table that holds the users relation/edge.
-	UsersTable = "businesses"
+	// UsersTable is the table that holds the users relation/edge. The primary key declared below.
+	UsersTable = "business_users"
 	// UsersInverseTable is the table name for the User entity.
 	// It exists in this package in order to avoid circular dependency with the "user" package.
 	UsersInverseTable = "users"
-	// UsersColumn is the table column denoting the users relation/edge.
-	UsersColumn = "user_businesses"
 )
 
 // Columns holds all SQL columns for business fields.
@@ -72,6 +74,7 @@ var Columns = []string{
 	FieldDeletedAt,
 	FieldName1,
 	FieldName2,
+	FieldAlias,
 	FieldTelephone,
 	FieldEmail,
 	FieldWebsite,
@@ -79,30 +82,19 @@ var Columns = []string{
 	FieldActive,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the "businesses"
-// table and are not defined as standalone fields in the schema.
-var ForeignKeys = []string{
-	"user_businesses",
-}
-
 var (
-	// AddressesPrimaryKey and AddressesColumn2 are the table columns denoting the
-	// primary key for the addresses relation (M2M).
-	AddressesPrimaryKey = []string{"business_id", "address_id"}
 	// TagsPrimaryKey and TagsColumn2 are the table columns denoting the
 	// primary key for the tags relation (M2M).
 	TagsPrimaryKey = []string{"business_id", "tag_id"}
+	// UsersPrimaryKey and UsersColumn2 are the table columns denoting the
+	// primary key for the users relation (M2M).
+	UsersPrimaryKey = []string{"business_id", "user_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -115,7 +107,8 @@ func ValidColumn(column string) bool {
 //
 //	import _ "hynie.de/ohmab/ent/runtime"
 var (
-	Hooks [1]ent.Hook
+	Hooks  [3]ent.Hook
+	Policy ent.Policy
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
@@ -124,6 +117,8 @@ var (
 	UpdateDefaultUpdatedAt func() time.Time
 	// Name1Validator is a validator for the "name1" field. It is called by the builders before save.
 	Name1Validator func(string) error
+	// AliasValidator is a validator for the "alias" field. It is called by the builders before save.
+	AliasValidator func(string) error
 	// DefaultActive holds the default value on creation for the "active" field.
 	DefaultActive bool
 	// DefaultID holds the default value on creation for the "id" field.
@@ -161,6 +156,11 @@ func ByName1(opts ...sql.OrderTermOption) OrderOption {
 // ByName2 orders the results by the name2 field.
 func ByName2(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldName2, opts...).ToFunc()
+}
+
+// ByAlias orders the results by the alias field.
+func ByAlias(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAlias, opts...).ToFunc()
 }
 
 // ByTelephone orders the results by the telephone field.
@@ -216,17 +216,24 @@ func ByTags(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
-// ByUsersField orders the results by users field.
-func ByUsersField(field string, opts ...sql.OrderTermOption) OrderOption {
+// ByUsersCount orders the results by users count.
+func ByUsersCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newUsersStep(), sql.OrderByField(field, opts...))
+		sqlgraph.OrderByNeighborsCount(s, newUsersStep(), opts...)
+	}
+}
+
+// ByUsers orders the results by users terms.
+func ByUsers(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newUsersStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 func newAddressesStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(AddressesInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2M, false, AddressesTable, AddressesPrimaryKey...),
+		sqlgraph.Edge(sqlgraph.O2M, false, AddressesTable, AddressesColumn),
 	)
 }
 func newTagsStep() *sqlgraph.Step {
@@ -240,6 +247,6 @@ func newUsersStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(UsersInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, true, UsersTable, UsersColumn),
+		sqlgraph.Edge(sqlgraph.M2M, false, UsersTable, UsersPrimaryKey...),
 	)
 }

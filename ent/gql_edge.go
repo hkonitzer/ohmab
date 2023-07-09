@@ -9,16 +9,12 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 )
 
-func (a *Address) Business(ctx context.Context) (result []*Business, err error) {
-	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
-		result, err = a.NamedBusiness(graphql.GetFieldContext(ctx).Field.Alias)
-	} else {
-		result, err = a.Edges.BusinessOrErr()
-	}
+func (a *Address) Business(ctx context.Context) (*Business, error) {
+	result, err := a.Edges.BusinessOrErr()
 	if IsNotLoaded(err) {
-		result, err = a.QueryBusiness().All(ctx)
+		result, err = a.QueryBusiness().Only(ctx)
 	}
-	return result, err
+	return result, MaskNotFound(err)
 }
 
 func (a *Address) Timetables(ctx context.Context) (result []*Timetable, err error) {
@@ -57,12 +53,16 @@ func (b *Business) Tags(ctx context.Context) (result []*Tag, err error) {
 	return result, err
 }
 
-func (b *Business) Users(ctx context.Context) (*User, error) {
-	result, err := b.Edges.UsersOrErr()
-	if IsNotLoaded(err) {
-		result, err = b.QueryUsers().Only(ctx)
+func (b *Business) Users(ctx context.Context) (result []*User, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = b.NamedUsers(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = b.Edges.UsersOrErr()
 	}
-	return result, MaskNotFound(err)
+	if IsNotLoaded(err) {
+		result, err = b.QueryUsers().All(ctx)
+	}
+	return result, err
 }
 
 func (t *Tag) Business(ctx context.Context) (result []*Business, err error) {

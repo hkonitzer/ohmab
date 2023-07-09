@@ -9,13 +9,16 @@ import (
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
 	"github.com/google/uuid"
+	"hynie.de/ohmab/ent/privacy"
 	"hynie.de/ohmab/ent/schema/constants"
 	"hynie.de/ohmab/ent/schema/hooks"
+	"hynie.de/ohmab/internal/pkg/privacy/rule"
 )
 
 // Business holds the schema definition for the Business entity.
 type Business struct {
 	ent.Schema
+	hooks.AuditLog
 }
 
 // Fields of the Business.
@@ -27,6 +30,13 @@ func (Business) Fields() []ent.Field {
 			NotEmpty().Annotations(entgql.OrderField("NAME1")).Comment("The main name of the business"),
 		field.Text("name2").
 			Optional().Comment("The optional second name of the business"),
+		field.Text("alias").
+			Unique().
+			MaxLen(20).
+			Annotations(entsql.Annotation{ // If using a SQL-database: change the underlying data type to varchar(20).
+				Size: 20,
+			}).
+			Comment("The unqiue alias of the business (short name)"),
 		field.Text("telephone").
 			Optional().Unique().Comment("Telephone number"),
 		field.Text("email").
@@ -52,7 +62,7 @@ func (Business) Edges() []ent.Edge {
 		edge.To("addresses", Address.Type).
 			Annotations(entsql.OnDelete(entsql.Cascade)),
 		edge.To("tags", Tag.Type),
-		edge.From("users", User.Type).Ref("businesses").Unique(),
+		edge.To("users", User.Type),
 	}
 }
 
@@ -72,8 +82,23 @@ func (Business) Indexes() []ent.Index {
 	}
 }
 
-func (Business) Hooks() []ent.Hook {
+func (b Business) Hooks() []ent.Hook {
 	return []ent.Hook{
-		hooks.AuditLogForBusiness(),
+		hooks.UpperCaseForBussinessFields(),
+		b.AuditLogForBusiness(),
+	}
+}
+
+// Policy defines the privacy policy of the User.
+func (Business) Policy() ent.Policy {
+	return privacy.Policy{
+		Mutation: privacy.MutationPolicy{
+			rule.DenyIfNoViewer(),
+			rule.AllowIfAdmin(),
+			privacy.AlwaysDenyRule(),
+		},
+		Query: privacy.QueryPolicy{
+			privacy.AlwaysAllowRule(),
+		},
 	}
 }

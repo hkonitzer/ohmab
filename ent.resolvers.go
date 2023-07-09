@@ -28,14 +28,69 @@ func (r *queryResolver) Nodes(ctx context.Context, ids []uuid.UUID) ([]ent.Noder
 	return r.client.Noders(ctx, ids)
 }
 
+// Addresses is the resolver for the addresses field.
+func (r *queryResolver) Addresses(ctx context.Context, after *entgql.Cursor[uuid.UUID], first *int, before *entgql.Cursor[uuid.UUID], last *int, where *ent.AddressWhereInput) (*ent.AddressConnection, error) {
+	panic(fmt.Errorf("not implemented: Addresses - addresses"))
+}
+
 // Businesses is the resolver for the businesses field.
 func (r *queryResolver) Businesses(ctx context.Context, after *entgql.Cursor[uuid.UUID], first *int, before *entgql.Cursor[uuid.UUID], last *int, orderBy []*ent.BusinessOrder, where *ent.BusinessWhereInput) (*ent.BusinessConnection, error) {
-	return r.client.Business.Query().Paginate(ctx, after, first, before, last, ent.WithBusinessOrder(orderBy))
+	return r.client.Business.Query().Paginate(ctx, after, first, before, last, ent.WithBusinessOrder(orderBy), ent.WithBusinessFilter(where.Filter))
 }
 
 // Timetables is the resolver for the timetables field.
-func (r *queryResolver) Timetables(ctx context.Context, after *entgql.Cursor[uuid.UUID], first *int, before *entgql.Cursor[uuid.UUID], last *int, where *ent.TimetableWhereInput) (*ent.TimetableConnection, error) {
-	panic(fmt.Errorf("not implemented: Timetables - timetables"))
+func (r *queryResolver) Timetables(ctx context.Context, after *entgql.Cursor[uuid.UUID], first *int, before *entgql.Cursor[uuid.UUID], last *int, orderBy []*ent.TimetableOrder, where *ent.TimetableWhereInput) (*ent.TimetableConnection, error) {
+	return r.client.Timetable.Query().WithAddress().Paginate(ctx, after, first, before, last, ent.WithTimetableOrder(orderBy), ent.WithTimetableFilter(where.Filter))
+}
+
+// Duration is the resolver for the duration field.
+func (r *timetableResolver) Duration(ctx context.Context, obj *ent.Timetable) (*int, error) {
+	panic(fmt.Errorf("not implemented: Duration - duration"))
+}
+
+// Duration is the resolver for the duration field.
+func (r *createTimetableInputResolver) Duration(ctx context.Context, obj *ent.CreateTimetableInput, data *int) error {
+	panic(fmt.Errorf("not implemented: Duration - duration"))
+}
+
+// Duration is the resolver for the duration field.
+func (r *timetableWhereInputResolver) Duration(ctx context.Context, obj *ent.TimetableWhereInput, data *int) error {
+	panic(fmt.Errorf("not implemented: Duration - duration"))
+}
+
+// DurationNeq is the resolver for the durationNEQ field.
+func (r *timetableWhereInputResolver) DurationNeq(ctx context.Context, obj *ent.TimetableWhereInput, data *int) error {
+	panic(fmt.Errorf("not implemented: DurationNeq - durationNEQ"))
+}
+
+// DurationIn is the resolver for the durationIn field.
+func (r *timetableWhereInputResolver) DurationIn(ctx context.Context, obj *ent.TimetableWhereInput, data []int) error {
+	panic(fmt.Errorf("not implemented: DurationIn - durationIn"))
+}
+
+// DurationNotIn is the resolver for the durationNotIn field.
+func (r *timetableWhereInputResolver) DurationNotIn(ctx context.Context, obj *ent.TimetableWhereInput, data []int) error {
+	panic(fmt.Errorf("not implemented: DurationNotIn - durationNotIn"))
+}
+
+// DurationGt is the resolver for the durationGT field.
+func (r *timetableWhereInputResolver) DurationGt(ctx context.Context, obj *ent.TimetableWhereInput, data *int) error {
+	panic(fmt.Errorf("not implemented: DurationGt - durationGT"))
+}
+
+// DurationGte is the resolver for the durationGTE field.
+func (r *timetableWhereInputResolver) DurationGte(ctx context.Context, obj *ent.TimetableWhereInput, data *int) error {
+	panic(fmt.Errorf("not implemented: DurationGte - durationGTE"))
+}
+
+// DurationLt is the resolver for the durationLT field.
+func (r *timetableWhereInputResolver) DurationLt(ctx context.Context, obj *ent.TimetableWhereInput, data *int) error {
+	panic(fmt.Errorf("not implemented: DurationLt - durationLT"))
+}
+
+// DurationLte is the resolver for the durationLTE field.
+func (r *timetableWhereInputResolver) DurationLte(ctx context.Context, obj *ent.TimetableWhereInput, data *int) error {
+	panic(fmt.Errorf("not implemented: DurationLte - durationLTE"))
 }
 
 // AuditLog returns AuditLogResolver implementation.
@@ -44,5 +99,21 @@ func (r *Resolver) AuditLog() AuditLogResolver { return &auditLogResolver{r} }
 // Query returns QueryResolver implementation.
 func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 
+// Timetable returns TimetableResolver implementation.
+func (r *Resolver) Timetable() TimetableResolver { return &timetableResolver{r} }
+
+// CreateTimetableInput returns CreateTimetableInputResolver implementation.
+func (r *Resolver) CreateTimetableInput() CreateTimetableInputResolver {
+	return &createTimetableInputResolver{r}
+}
+
+// TimetableWhereInput returns TimetableWhereInputResolver implementation.
+func (r *Resolver) TimetableWhereInput() TimetableWhereInputResolver {
+	return &timetableWhereInputResolver{r}
+}
+
 type auditLogResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
+type timetableResolver struct{ *Resolver }
+type createTimetableInputResolver struct{ *Resolver }
+type timetableWhereInputResolver struct{ *Resolver }

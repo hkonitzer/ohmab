@@ -12,9 +12,10 @@ import (
 	schemas "hynie.de/ohmab/ent/schema"
 	"hynie.de/ohmab/ent/schema/constants"
 	"hynie.de/ohmab/ent/timetable"
-	"hynie.de/ohmab/internal/pkg/config"
+	"hynie.de/ohmab/internal/pkg/common/config"
+	"hynie.de/ohmab/internal/pkg/common/log"
 	"hynie.de/ohmab/internal/pkg/db"
-	"hynie.de/ohmab/internal/pkg/log"
+	"hynie.de/ohmab/internal/pkg/privacy"
 	"os"
 	"strconv"
 	"strings"
@@ -37,6 +38,7 @@ func main() {
 	// Parse cmd line
 	logger.Debug().Msgf("Starting Timetables Import")
 	filename := flag.String("filename", "import.csv", "Filename of the CSV file to import")
+	drop := flag.Bool("drop", false, "Drop all existing timetables before import")
 	allTimeentries := flag.Bool("alltimeentries", false, "Import also time entries in the past")
 	flag.Parse()
 	file, err := os.OpenFile(*filename, os.O_RDONLY, 0644)
@@ -49,11 +51,26 @@ func main() {
 	}
 	// CreateClient client
 	ctx := context.TODO()
+	// Authorize me
+	uv := privacy.UserViewer{Role: privacy.Admin}
+	uv.SetUserID("import")
+	ctx = privacy.NewContext(ctx, &uv)
 	client, clientError := db.CreateClient(ctx, configurations)
 	if clientError != nil {
 		logger.Fatal().Msgf("Error creating client: %v", clientError)
 	}
 	defer client.Close()
+
+	// Drop?
+	if *drop {
+		logger.Info().Msgf("Dropping all existing timetables")
+		co, err := client.Timetable.Delete().Exec(ctx)
+		if err != nil {
+			logger.Fatal().Msgf("Error dropping timetables: %v", err)
+		} else {
+			logger.Debug().Msgf("Dropped %d timetables", co)
+		}
+	}
 
 	logger.Info().Msgf("Start importing file '%s' with size %d bytes", stats.Name(), stats.Size())
 	reader := csv.NewReader(file)
@@ -97,8 +114,8 @@ func main() {
 			switch schema {
 			case "BUSINESS":
 				switch strings.ToLower(schemaField) {
-				case "name1":
-					busQuery.Where(business.Name1(field))
+				case "alias":
+					busQuery.Where(business.Alias(strings.ToUpper(field)))
 				}
 			case "ADDRESS":
 				switch strings.ToLower(schemaField) {
@@ -117,25 +134,28 @@ func main() {
 
 		}
 		// get the business for this csv column first
-		business_ := busQuery.Where(
-			business.HasAddressesWith(address.Zip(zip), address.City(city), address.Street(street))).
-			WithAddresses().Unique(true).FirstX(ctx)
+		// if no city, street and zip is given, get the primary address
+		if city == "" && street == "" && zip == "" {
+			busQuery.Where().
+				WithAddresses(
+					func(q *ent.AddressQuery) {
+						q.Where(address.PrimaryEQ(true)).FirstX(ctx)
+					},
+				).Unique(true)
+		} else {
+			busQuery.Where(
+				business.HasAddressesWith(address.Zip(zip), address.City(city), address.Street(street))).
+				WithAddresses().Unique(true)
+		}
+		business_ := busQuery.FirstX(ctx)
 		if business_ == nil { // businessAddresses_ cannot be nil
 			skippedImports++
 			logger.Info().Msgf("Business with address not found, Name/Zip/City/Street: %s/%s/%s/%s", record[0], zip, city, street)
 			continue
 		}
 
-		// get the correct address
-		businessAddresses_ := business_.Edges.Addresses
-		var businessAddress *ent.Address
-		for _, businessAddress_ := range businessAddresses_ {
-			if businessAddress_.Zip == zip &&
-				businessAddress_.City == city &&
-				businessAddress_.Street == street {
-				businessAddress = businessAddress_
-			}
-		}
+		// get the correct address, only one give because of FirstX
+		businessAddress := business_.Edges.Addresses[0]
 		logger.Debug().Msgf("Processing address %v", businessAddress.ID)
 		// get field types for Timetable
 		tt := schemas.Timetable{}
@@ -154,21 +174,20 @@ func main() {
 			case "ADDRESS":
 				continue
 			case "TIMETABLE":
-				if schemaField == "type" {
+				if schemaField == "timetable_type" {
 					switch strings.ToUpper(field) {
-					case timetable.TypeEMERGENCYSERVICE.String():
-						timetableCreate.Mutation().SetType(timetable.TypeEMERGENCYSERVICE)
-					case timetable.TypeCLOSED.String():
-						timetableCreate.Mutation().SetType(timetable.TypeCLOSED)
-					case timetable.TypeHOLIDAY.String():
-						timetableCreate.Mutation().SetType(timetable.TypeHOLIDAY)
-					case timetable.TypeSPECIAL.String():
-						timetableCreate.Mutation().SetType(timetable.TypeSPECIAL)
-					case timetable.TypeREGULAR.String():
-						timetableCreate.Mutation().SetType(timetable.TypeREGULAR)
+					case timetable.TimetableTypeEMERGENCYSERVICE.String():
+						timetableCreate.Mutation().SetTimetableType(timetable.TimetableTypeEMERGENCYSERVICE)
+					case timetable.TimetableTypeCLOSED.String():
+						timetableCreate.Mutation().SetTimetableType(timetable.TimetableTypeCLOSED)
+					case timetable.TimetableTypeHOLIDAY.String():
+						timetableCreate.Mutation().SetTimetableType(timetable.TimetableTypeHOLIDAY)
+					case timetable.TimetableTypeSPECIAL.String():
+						timetableCreate.Mutation().SetTimetableType(timetable.TimetableTypeSPECIAL)
+					case timetable.TimetableTypeREGULAR.String():
+						timetableCreate.Mutation().SetTimetableType(timetable.TimetableTypeREGULAR)
 					default:
-						timetableCreate.Mutation().SetType(timetable.TypeDEFAULT)
-
+						timetableCreate.Mutation().SetTimetableType(timetable.TimetableTypeDEFAULT)
 					}
 				} else {
 					var fieldType string
@@ -211,18 +230,19 @@ func main() {
 							}
 							dateOrTime = date_
 						}
-						errSetter := timetableCreate.Mutation().SetField(schemaField, dateOrTime)
-						err_ = errSetter
+						err_ = timetableCreate.Mutation().SetField(schemaField, dateOrTime)
 					case "bool":
 						boolField, _ := strconv.ParseBool(field)
-						errSetter := timetableCreate.Mutation().SetField(schemaField, boolField)
-						err_ = errSetter
+						err_ = timetableCreate.Mutation().SetField(schemaField, boolField)
+					case "uint8":
+						uint64Value, _ := strconv.ParseUint(field, 10, 8)
+						uint8Value := uint8(uint64Value)
+						err_ = timetableCreate.Mutation().SetField(schemaField, uint8Value)
 					default: // string
-						errSetter := timetableCreate.Mutation().SetField(schemaField, field)
-						err_ = errSetter
+						err_ = timetableCreate.Mutation().SetField(schemaField, field)
 					}
 					if err_ != nil {
-						logger.Fatal().Msgf("Error setting timetable field '%s' to '%s': %v", schemaField, field, err)
+						logger.Fatal().Msgf("Error setting timetable field '%s' to '%s': %v", schemaField, field, err_)
 					}
 				}
 			default:
@@ -230,10 +250,12 @@ func main() {
 			}
 
 		}
+		// validate duration against dateTo
+
 		var dateFrom, dateTo time.Time
 		dateFrom, _ = timetableCreate.Mutation().DatetimeFrom()
 		dateTo, _ = timetableCreate.Mutation().DatetimeTo()
-		ttType, _ := timetableCreate.Mutation().GetType()
+		ttType, _ := timetableCreate.Mutation().TimetableType()
 		// check if entry is in the past
 		if !*allTimeentries && dateFrom.Before(time.Now()) {
 			logger.Debug().Msgf("Timetable with type '%v' dateFrom %v is in the past, skipping", ttType, dateFrom)
@@ -243,7 +265,7 @@ func main() {
 		exists := businessAddress.QueryTimetables().
 			Where(timetable.DatetimeFrom(dateFrom)).
 			Where(timetable.DatetimeTo(dateTo)).
-			Where(timetable.TypeEQ(ttType)).
+			Where(timetable.TimetableTypeEQ(ttType)).
 			CountX(ctx)
 		if exists == 0 {
 			timetableCreate.SetAddress(businessAddress).SaveX(ctx)
@@ -261,7 +283,7 @@ func main() {
 func createTimetableFieldsandCheckAgainstTableHeader(header []string) ([]string, error) {
 	// unique id for a business and his address for a timetable entry - must be the first three columns in the csvSü
 	headersFromSchemas := []string{
-		"BUSINESS$NAME1",
+		"BUSINESS$ALIAS",
 		"ADDRESS$ZIP",
 		"ADDRESS$CITY",
 		"ADDRESS$STREET",
@@ -282,24 +304,6 @@ func createTimetableFieldsandCheckAgainstTableHeader(header []string) ([]string,
 		return nil, fmt.Errorf("csv header length '%d' does not match needed fields in schema length '%d', (perhaps wrong field limiter, should be ;), loaded header: %v", len(header), len(headersFromSchemas), header)
 	}
 	for i, headerField := range header {
-		/*
-			if i == 0 { // First column has to be NAME (for Business)
-				if strings.ToUpper(headerField) != "NAME" {
-					return nil, fmt.Errorf("first header field has to be NAME")
-				}
-				continue
-			} else if i == 1 { // Second column has to be ZIP (for Business address)
-				if strings.ToUpper(headerField) != "ZIP" {
-					return nil, fmt.Errorf("second header field has to be ZIP")
-				}
-				continue
-			} else if i == 2 { // Third column has to be CITY (for Business address)
-				if strings.ToUpper(headerField) != "CITY" {
-					return nil, fmt.Errorf("third header field has to be CITY")
-				}
-				continue
-			}
-		*/
 		helper := strings.Split(headersFromSchemas[i], "$") // cut SchemaName
 		if strings.ToUpper(headerField) != strings.ToUpper(helper[1]) {
 			return nil, fmt.Errorf("header field '%s' does not match schema field '%s' (schema=%s)", headerField, helper[1], helper[0])

@@ -16,6 +16,9 @@ type AuditLog func(*sql.Selector)
 // Business is the predicate function for business builders.
 type Business func(*sql.Selector)
 
+// Content is the predicate function for content builders.
+type Content func(*sql.Selector)
+
 // Tag is the predicate function for tag builders.
 type Tag func(*sql.Selector)
 

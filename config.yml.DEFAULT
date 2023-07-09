@@ -14,3 +14,15 @@ database:
   sqlite3:
     cache: "shared" # see https://www.sqlite.org/uri.html#recognized_query_parameters"
     mode: "memory"
+ghost:
+  baseurl: "http://localhost:2368"
+  key: "ghost-admin-api-key"
+  locale: ""
+  content:
+    - EMERGENCYSERVICE:
+        post: "postid1"
+        posttitle: "Current emergency service until %s" # %s will be replaced with the date from the current duty
+        page: "pageid1"
+    - DEFAULT:
+        post: "postid3"
+        page: "pageid4"

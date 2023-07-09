@@ -85,6 +85,12 @@ func (bu *BusinessUpdate) ClearName2() *BusinessUpdate {
 	return bu
 }
 
+// SetAlias sets the "alias" field.
+func (bu *BusinessUpdate) SetAlias(s string) *BusinessUpdate {
+	bu.mutation.SetAlias(s)
+	return bu
+}
+
 // SetTelephone sets the "telephone" field.
 func (bu *BusinessUpdate) SetTelephone(s string) *BusinessUpdate {
 	bu.mutation.SetTelephone(s)
@@ -209,23 +215,19 @@ func (bu *BusinessUpdate) AddTags(t ...*Tag) *BusinessUpdate {
 	return bu.AddTagIDs(ids...)
 }
 
-// SetUsersID sets the "users" edge to the User entity by ID.
-func (bu *BusinessUpdate) SetUsersID(id uuid.UUID) *BusinessUpdate {
-	bu.mutation.SetUsersID(id)
+// AddUserIDs adds the "users" edge to the User entity by IDs.
+func (bu *BusinessUpdate) AddUserIDs(ids ...uuid.UUID) *BusinessUpdate {
+	bu.mutation.AddUserIDs(ids...)
 	return bu
 }
 
-// SetNillableUsersID sets the "users" edge to the User entity by ID if the given value is not nil.
-func (bu *BusinessUpdate) SetNillableUsersID(id *uuid.UUID) *BusinessUpdate {
-	if id != nil {
-		bu = bu.SetUsersID(*id)
+// AddUsers adds the "users" edges to the User entity.
+func (bu *BusinessUpdate) AddUsers(u ...*User) *BusinessUpdate {
+	ids := make([]uuid.UUID, len(u))
+	for i := range u {
+		ids[i] = u[i].ID
 	}
-	return bu
-}
-
-// SetUsers sets the "users" edge to the User entity.
-func (bu *BusinessUpdate) SetUsers(u *User) *BusinessUpdate {
-	return bu.SetUsersID(u.ID)
+	return bu.AddUserIDs(ids...)
 }
 
 // Mutation returns the BusinessMutation object of the builder.
@@ -275,10 +277,25 @@ func (bu *BusinessUpdate) RemoveTags(t ...*Tag) *BusinessUpdate {
 	return bu.RemoveTagIDs(ids...)
 }
 
-// ClearUsers clears the "users" edge to the User entity.
+// ClearUsers clears all "users" edges to the User entity.
 func (bu *BusinessUpdate) ClearUsers() *BusinessUpdate {
 	bu.mutation.ClearUsers()
 	return bu
+}
+
+// RemoveUserIDs removes the "users" edge to User entities by IDs.
+func (bu *BusinessUpdate) RemoveUserIDs(ids ...uuid.UUID) *BusinessUpdate {
+	bu.mutation.RemoveUserIDs(ids...)
+	return bu
+}
+
+// RemoveUsers removes "users" edges to User entities.
+func (bu *BusinessUpdate) RemoveUsers(u ...*User) *BusinessUpdate {
+	ids := make([]uuid.UUID, len(u))
+	for i := range u {
+		ids[i] = u[i].ID
+	}
+	return bu.RemoveUserIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -330,6 +347,11 @@ func (bu *BusinessUpdate) check() error {
 			return &ValidationError{Name: "name1", err: fmt.Errorf(`ent: validator failed for field "Business.name1": %w`, err)}
 		}
 	}
+	if v, ok := bu.mutation.Alias(); ok {
+		if err := business.AliasValidator(v); err != nil {
+			return &ValidationError{Name: "alias", err: fmt.Errorf(`ent: validator failed for field "Business.alias": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -363,6 +385,9 @@ func (bu *BusinessUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if bu.mutation.Name2Cleared() {
 		_spec.ClearField(business.FieldName2, field.TypeString)
 	}
+	if value, ok := bu.mutation.Alias(); ok {
+		_spec.SetField(business.FieldAlias, field.TypeString, value)
+	}
 	if value, ok := bu.mutation.Telephone(); ok {
 		_spec.SetField(business.FieldTelephone, field.TypeString, value)
 	}
@@ -392,10 +417,10 @@ func (bu *BusinessUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if bu.mutation.AddressesCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   business.AddressesTable,
-			Columns: business.AddressesPrimaryKey,
+			Columns: []string{business.AddressesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(address.FieldID, field.TypeUUID),
@@ -405,10 +430,10 @@ func (bu *BusinessUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := bu.mutation.RemovedAddressesIDs(); len(nodes) > 0 && !bu.mutation.AddressesCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   business.AddressesTable,
-			Columns: business.AddressesPrimaryKey,
+			Columns: []string{business.AddressesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(address.FieldID, field.TypeUUID),
@@ -421,10 +446,10 @@ func (bu *BusinessUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := bu.mutation.AddressesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   business.AddressesTable,
-			Columns: business.AddressesPrimaryKey,
+			Columns: []string{business.AddressesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(address.FieldID, field.TypeUUID),
@@ -482,10 +507,10 @@ func (bu *BusinessUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if bu.mutation.UsersCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
 			Table:   business.UsersTable,
-			Columns: []string{business.UsersColumn},
+			Columns: business.UsersPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
@@ -493,12 +518,28 @@ func (bu *BusinessUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
+	if nodes := bu.mutation.RemovedUsersIDs(); len(nodes) > 0 && !bu.mutation.UsersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   business.UsersTable,
+			Columns: business.UsersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
 	if nodes := bu.mutation.UsersIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
 			Table:   business.UsersTable,
-			Columns: []string{business.UsersColumn},
+			Columns: business.UsersPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
@@ -578,6 +619,12 @@ func (buo *BusinessUpdateOne) SetNillableName2(s *string) *BusinessUpdateOne {
 // ClearName2 clears the value of the "name2" field.
 func (buo *BusinessUpdateOne) ClearName2() *BusinessUpdateOne {
 	buo.mutation.ClearName2()
+	return buo
+}
+
+// SetAlias sets the "alias" field.
+func (buo *BusinessUpdateOne) SetAlias(s string) *BusinessUpdateOne {
+	buo.mutation.SetAlias(s)
 	return buo
 }
 
@@ -705,23 +752,19 @@ func (buo *BusinessUpdateOne) AddTags(t ...*Tag) *BusinessUpdateOne {
 	return buo.AddTagIDs(ids...)
 }
 
-// SetUsersID sets the "users" edge to the User entity by ID.
-func (buo *BusinessUpdateOne) SetUsersID(id uuid.UUID) *BusinessUpdateOne {
-	buo.mutation.SetUsersID(id)
+// AddUserIDs adds the "users" edge to the User entity by IDs.
+func (buo *BusinessUpdateOne) AddUserIDs(ids ...uuid.UUID) *BusinessUpdateOne {
+	buo.mutation.AddUserIDs(ids...)
 	return buo
 }
 
-// SetNillableUsersID sets the "users" edge to the User entity by ID if the given value is not nil.
-func (buo *BusinessUpdateOne) SetNillableUsersID(id *uuid.UUID) *BusinessUpdateOne {
-	if id != nil {
-		buo = buo.SetUsersID(*id)
+// AddUsers adds the "users" edges to the User entity.
+func (buo *BusinessUpdateOne) AddUsers(u ...*User) *BusinessUpdateOne {
+	ids := make([]uuid.UUID, len(u))
+	for i := range u {
+		ids[i] = u[i].ID
 	}
-	return buo
-}
-
-// SetUsers sets the "users" edge to the User entity.
-func (buo *BusinessUpdateOne) SetUsers(u *User) *BusinessUpdateOne {
-	return buo.SetUsersID(u.ID)
+	return buo.AddUserIDs(ids...)
 }
 
 // Mutation returns the BusinessMutation object of the builder.
@@ -771,10 +814,25 @@ func (buo *BusinessUpdateOne) RemoveTags(t ...*Tag) *BusinessUpdateOne {
 	return buo.RemoveTagIDs(ids...)
 }
 
-// ClearUsers clears the "users" edge to the User entity.
+// ClearUsers clears all "users" edges to the User entity.
 func (buo *BusinessUpdateOne) ClearUsers() *BusinessUpdateOne {
 	buo.mutation.ClearUsers()
 	return buo
+}
+
+// RemoveUserIDs removes the "users" edge to User entities by IDs.
+func (buo *BusinessUpdateOne) RemoveUserIDs(ids ...uuid.UUID) *BusinessUpdateOne {
+	buo.mutation.RemoveUserIDs(ids...)
+	return buo
+}
+
+// RemoveUsers removes "users" edges to User entities.
+func (buo *BusinessUpdateOne) RemoveUsers(u ...*User) *BusinessUpdateOne {
+	ids := make([]uuid.UUID, len(u))
+	for i := range u {
+		ids[i] = u[i].ID
+	}
+	return buo.RemoveUserIDs(ids...)
 }
 
 // Where appends a list predicates to the BusinessUpdate builder.
@@ -839,6 +897,11 @@ func (buo *BusinessUpdateOne) check() error {
 			return &ValidationError{Name: "name1", err: fmt.Errorf(`ent: validator failed for field "Business.name1": %w`, err)}
 		}
 	}
+	if v, ok := buo.mutation.Alias(); ok {
+		if err := business.AliasValidator(v); err != nil {
+			return &ValidationError{Name: "alias", err: fmt.Errorf(`ent: validator failed for field "Business.alias": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -889,6 +952,9 @@ func (buo *BusinessUpdateOne) sqlSave(ctx context.Context) (_node *Business, err
 	if buo.mutation.Name2Cleared() {
 		_spec.ClearField(business.FieldName2, field.TypeString)
 	}
+	if value, ok := buo.mutation.Alias(); ok {
+		_spec.SetField(business.FieldAlias, field.TypeString, value)
+	}
 	if value, ok := buo.mutation.Telephone(); ok {
 		_spec.SetField(business.FieldTelephone, field.TypeString, value)
 	}
@@ -918,10 +984,10 @@ func (buo *BusinessUpdateOne) sqlSave(ctx context.Context) (_node *Business, err
 	}
 	if buo.mutation.AddressesCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   business.AddressesTable,
-			Columns: business.AddressesPrimaryKey,
+			Columns: []string{business.AddressesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(address.FieldID, field.TypeUUID),
@@ -931,10 +997,10 @@ func (buo *BusinessUpdateOne) sqlSave(ctx context.Context) (_node *Business, err
 	}
 	if nodes := buo.mutation.RemovedAddressesIDs(); len(nodes) > 0 && !buo.mutation.AddressesCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   business.AddressesTable,
-			Columns: business.AddressesPrimaryKey,
+			Columns: []string{business.AddressesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(address.FieldID, field.TypeUUID),
@@ -947,10 +1013,10 @@ func (buo *BusinessUpdateOne) sqlSave(ctx context.Context) (_node *Business, err
 	}
 	if nodes := buo.mutation.AddressesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   business.AddressesTable,
-			Columns: business.AddressesPrimaryKey,
+			Columns: []string{business.AddressesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(address.FieldID, field.TypeUUID),
@@ -1008,10 +1074,10 @@ func (buo *BusinessUpdateOne) sqlSave(ctx context.Context) (_node *Business, err
 	}
 	if buo.mutation.UsersCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
 			Table:   business.UsersTable,
-			Columns: []string{business.UsersColumn},
+			Columns: business.UsersPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
@@ -1019,12 +1085,28 @@ func (buo *BusinessUpdateOne) sqlSave(ctx context.Context) (_node *Business, err
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
+	if nodes := buo.mutation.RemovedUsersIDs(); len(nodes) > 0 && !buo.mutation.UsersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   business.UsersTable,
+			Columns: business.UsersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
 	if nodes := buo.mutation.UsersIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
 			Table:   business.UsersTable,
-			Columns: []string{business.UsersColumn},
+			Columns: business.UsersPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),

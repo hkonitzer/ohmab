@@ -12,7 +12,6 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"hynie.de/ohmab/ent/business"
-	"hynie.de/ohmab/ent/user"
 )
 
 // Business is the model entity for the Business schema.
@@ -30,6 +29,8 @@ type Business struct {
 	Name1 string `json:"name1,omitempty"`
 	// The optional second name of the business
 	Name2 string `json:"name2,omitempty"`
+	// The unqiue alias of the business (short name)
+	Alias string `json:"alias,omitempty"`
 	// Telephone number
 	Telephone string `json:"telephone,omitempty"`
 	// Email address (has to be unique)
@@ -42,9 +43,8 @@ type Business struct {
 	Active bool `json:"active,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the BusinessQuery when eager-loading is set.
-	Edges           BusinessEdges `json:"edges"`
-	user_businesses *uuid.UUID
-	selectValues    sql.SelectValues
+	Edges        BusinessEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // BusinessEdges holds the relations/edges for other nodes in the graph.
@@ -54,7 +54,7 @@ type BusinessEdges struct {
 	// Tags holds the value of the tags edge.
 	Tags []*Tag `json:"tags,omitempty"`
 	// Users holds the value of the users edge.
-	Users *User `json:"users,omitempty"`
+	Users []*User `json:"users,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [3]bool
@@ -63,6 +63,7 @@ type BusinessEdges struct {
 
 	namedAddresses map[string][]*Address
 	namedTags      map[string][]*Tag
+	namedUsers     map[string][]*User
 }
 
 // AddressesOrErr returns the Addresses value or an error if the edge
@@ -84,13 +85,9 @@ func (e BusinessEdges) TagsOrErr() ([]*Tag, error) {
 }
 
 // UsersOrErr returns the Users value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e BusinessEdges) UsersOrErr() (*User, error) {
+// was not loaded in eager-loading.
+func (e BusinessEdges) UsersOrErr() ([]*User, error) {
 	if e.loadedTypes[2] {
-		if e.Users == nil {
-			// Edge was loaded but was not found.
-			return nil, &NotFoundError{label: user.Label}
-		}
 		return e.Users, nil
 	}
 	return nil, &NotLoadedError{edge: "users"}
@@ -103,14 +100,12 @@ func (*Business) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case business.FieldActive:
 			values[i] = new(sql.NullBool)
-		case business.FieldName1, business.FieldName2, business.FieldTelephone, business.FieldEmail, business.FieldWebsite, business.FieldComment:
+		case business.FieldName1, business.FieldName2, business.FieldAlias, business.FieldTelephone, business.FieldEmail, business.FieldWebsite, business.FieldComment:
 			values[i] = new(sql.NullString)
 		case business.FieldCreatedAt, business.FieldUpdatedAt, business.FieldDeletedAt:
 			values[i] = new(sql.NullTime)
 		case business.FieldID:
 			values[i] = new(uuid.UUID)
-		case business.ForeignKeys[0]: // user_businesses
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -162,6 +157,12 @@ func (b *Business) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				b.Name2 = value.String
 			}
+		case business.FieldAlias:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field alias", values[i])
+			} else if value.Valid {
+				b.Alias = value.String
+			}
 		case business.FieldTelephone:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field telephone", values[i])
@@ -191,13 +192,6 @@ func (b *Business) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field active", values[i])
 			} else if value.Valid {
 				b.Active = value.Bool
-			}
-		case business.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field user_businesses", values[i])
-			} else if value.Valid {
-				b.user_businesses = new(uuid.UUID)
-				*b.user_businesses = *value.S.(*uuid.UUID)
 			}
 		default:
 			b.selectValues.Set(columns[i], values[i])
@@ -265,6 +259,9 @@ func (b *Business) String() string {
 	builder.WriteString("name2=")
 	builder.WriteString(b.Name2)
 	builder.WriteString(", ")
+	builder.WriteString("alias=")
+	builder.WriteString(b.Alias)
+	builder.WriteString(", ")
 	builder.WriteString("telephone=")
 	builder.WriteString(b.Telephone)
 	builder.WriteString(", ")
@@ -328,6 +325,30 @@ func (b *Business) appendNamedTags(name string, edges ...*Tag) {
 		b.Edges.namedTags[name] = []*Tag{}
 	} else {
 		b.Edges.namedTags[name] = append(b.Edges.namedTags[name], edges...)
+	}
+}
+
+// NamedUsers returns the Users named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (b *Business) NamedUsers(name string) ([]*User, error) {
+	if b.Edges.namedUsers == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := b.Edges.namedUsers[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (b *Business) appendNamedUsers(name string, edges ...*User) {
+	if b.Edges.namedUsers == nil {
+		b.Edges.namedUsers = make(map[string][]*User)
+	}
+	if len(edges) == 0 {
+		b.Edges.namedUsers[name] = []*User{}
+	} else {
+		b.Edges.namedUsers[name] = append(b.Edges.namedUsers[name], edges...)
 	}
 }
 

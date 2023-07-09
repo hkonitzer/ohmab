@@ -1,6 +1,7 @@
 package log
 
 import (
+	"fmt"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/rs/zerolog"
 	"net/http"
@@ -24,9 +25,14 @@ func RequestLogger(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		t1 := time.Now()
 		time.Since(t1)
+		rqid := r.Context().Value(middleware.RequestIDKey)
+		if rqid == nil || rqid == "" {
+			rqid = "unknown"
+		}
 		ww := middleware.NewWrapResponseWriter(w, r.ProtoMajor)
 		defer func() {
 			logger.Debug().
+				Str(middleware.RequestIDHeader, fmt.Sprint(rqid)).
 				Str("method", r.Method).
 				Int("status", ww.Status()).
 				Str("url", r.URL.String()).
@@ -36,7 +42,7 @@ func RequestLogger(next http.Handler) http.Handler {
 				TimeDiff("duration", time.Now(), t1).
 				Msg("request")
 		}()
-
+		w.Header().Add(middleware.RequestIDHeader, fmt.Sprint(rqid))
 		next.ServeHTTP(ww, r)
 	}
 

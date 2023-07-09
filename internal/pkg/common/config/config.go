@@ -1,6 +1,7 @@
 package config
 
 import (
+	"flag"
 	"fmt"
 	"github.com/spf13/viper"
 	"sync"
@@ -84,7 +85,13 @@ func ReadConfiguration() (*Configurations, error) {
 	viper.SetConfigName("config")
 
 	// Set the path to look for the configurations' file
-	viper.AddConfigPath(".")
+	configFile := flag.String("config", "", "path to the config file")
+	flag.Parse()
+	if *configFile != "" {
+		viper.AddConfigPath(*configFile)
+	} else {
+		viper.AddConfigPath(".")
+	}
 
 	// Enable VIPER to read Environment Variables
 	viper.AutomaticEnv()

@@ -21,7 +21,7 @@ func CreateClient(ctx context.Context, configurations *config.Configurations) (*
 		return nil, fmt.Errorf("DSN for database (dialect=%v) not set", configurations.Database.Dialect)
 	}
 	debug := false
-	if configurations.DEBUG > 0 {
+	if configurations.DEBUG > 1 {
 		debug = true
 	}
 	var client *ent.Client

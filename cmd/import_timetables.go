@@ -38,6 +38,7 @@ func main() {
 	// Parse cmd line
 	logger.Debug().Msgf("Starting Timetables Import")
 	filename := flag.String("filename", "import.csv", "Filename of the CSV file to import")
+	drop := flag.Bool("drop", false, "Drop all existing timetables before import")
 	allTimeentries := flag.Bool("alltimeentries", false, "Import also time entries in the past")
 	flag.Parse()
 	file, err := os.OpenFile(*filename, os.O_RDONLY, 0644)
@@ -59,6 +60,17 @@ func main() {
 		logger.Fatal().Msgf("Error creating client: %v", clientError)
 	}
 	defer client.Close()
+
+	// Drop?
+	if *drop {
+		logger.Info().Msgf("Dropping all existing timetables")
+		co, err := client.Timetable.Delete().Exec(ctx)
+		if err != nil {
+			logger.Fatal().Msgf("Error dropping timetables: %v", err)
+		} else {
+			logger.Debug().Msgf("Dropped %d timetables", co)
+		}
+	}
 
 	logger.Info().Msgf("Start importing file '%s' with size %d bytes", stats.Name(), stats.Size())
 	reader := csv.NewReader(file)

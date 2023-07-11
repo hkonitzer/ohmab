@@ -11,7 +11,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/oauth"
-	ESDRA "hynie.de/ohmab"
+	"hynie.de/ohmab"
 	"hynie.de/ohmab/ent"
 	"hynie.de/ohmab/ent/intercept"
 	_ "hynie.de/ohmab/ent/runtime"
@@ -113,12 +113,12 @@ func newRouter(srv *routes.Server) chi.Router {
 				playground.Handler("OHMAB", "/query"),
 			)
 		}
-		entServer := handler.NewDefaultServer(ESDRA.NewSchema(srv.Client))
+		entServer := handler.NewDefaultServer(OHMAB.NewSchema(srv.Client))
 		r.Handle("/query", entServer)
 	})
 
 	// anonymous routes (GET only)
-	gqlsrv := handler.New(ESDRA.NewSchema(srv.Client))
+	gqlsrv := handler.New(OHMAB.NewSchema(srv.Client))
 	gqlsrv.AddTransport(transport.Options{})
 	gqlsrv.AddTransport(transport.GET{})
 	gqlsrv.SetQueryCache(lru.New(1000))

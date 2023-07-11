@@ -14,7 +14,7 @@ import (
 type Role int
 
 // List of roles.
-const (
+const ( // see also verifyuserrole.go
 	_ Role = 1 << iota
 	Admin
 	Owner
@@ -47,6 +47,10 @@ func OwnerRoleAsString() string {
 
 func ViewerRoleAsString() string {
 	return fmt.Sprint(View)
+}
+
+func ViewerRole() int {
+	return int(View)
 }
 
 func (v *UserViewer) Admin() bool {

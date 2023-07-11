@@ -67,5 +67,6 @@ func (User) Indexes() []ent.Index {
 func (u User) Hooks() []ent.Hook {
 	return []ent.Hook{
 		u.AuditLogForUser(),
+		hooks.VerifyUserRole(),
 	}
 }

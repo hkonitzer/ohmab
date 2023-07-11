@@ -35,7 +35,7 @@ func main() {
 	logger := log.GetLoggerInstance()
 
 	// Get the configuration
-	configurations, err := config.GetConfiguration()
+	configurations, err := config.Get()
 	if err != nil {
 		logger.Fatal().Msgf("Error reading configurations: %v", err)
 	}
@@ -49,7 +49,7 @@ func main() {
 	}
 
 	ctx := context.TODO()
-	client, clientError := db.CreateClient(ctx, configurations)
+	client, clientError := db.CreateClient(ctx)
 	if clientError != nil {
 		logger.Fatal().Msgf("Error creating client: %v", clientError)
 	}
@@ -93,7 +93,7 @@ func newRouter(srv *routes.Server) chi.Router {
 	r := chi.NewRouter()
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
-	configs, _ := config.GetConfiguration()
+	configs, _ := config.Get()
 	if configs.DEBUG > 0 {
 		r.Use(log.RequestLogger)
 	}
@@ -145,7 +145,7 @@ func ESDRACtx(next http.Handler) http.Handler {
 func SetHeadersHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Set CORS headers for the preflight request
-		configurations, _ := config.GetConfiguration()
+		configurations, _ := config.Get()
 		for key, val := range configurations.Server.Headers {
 			w.Header().Set(key, val)
 		}

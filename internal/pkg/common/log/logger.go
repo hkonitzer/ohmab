@@ -2,6 +2,7 @@ package log
 
 import (
 	"github.com/rs/zerolog"
+	"github.com/spf13/viper"
 	"hynie.de/ohmab/internal/pkg/common/config"
 	"os"
 	"runtime/debug"
@@ -22,12 +23,9 @@ func GetLoggerInstance() *zerolog.Logger {
 
 func createLogger() *zerolog.Logger {
 	// Get the configuration
-	configurations, err := config.GetConfiguration()
-	if err != nil {
-		panic(err)
-	}
+	config.Init()
 	// read debug environment variable
-	debug_ := configurations.DEBUG
+	debug_ := viper.GetInt("DEBUG")
 	if debug_ == 1 {
 		zerolog.SetGlobalLevel(zerolog.DebugLevel)
 	} else if debug_ == 2 {
@@ -38,7 +36,7 @@ func createLogger() *zerolog.Logger {
 	buildInfo, _ := debug.ReadBuildInfo()
 	hostname, _ := os.Hostname()
 	var logger1 zerolog.Logger
-	if configurations.ENVIRONMENT == config.DevelopmentEnvironment {
+	if viper.GetString("ENVIRONMENT") == config.DevelopmentEnvironment {
 		logger1 = zerolog.New(zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: time.RFC3339}).
 			With().
 			Stack().

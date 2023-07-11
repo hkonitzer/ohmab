@@ -18,7 +18,7 @@ import (
 )
 
 var logger = log.GetLoggerInstance()
-var configurations = config.GetConfigurationX()
+var configurations = config.GetX()
 
 func RegisterOAuthAPI(r *chi.Mux, srv *Server) *chi.Mux {
 	verifier := &UserVerifier{
@@ -31,7 +31,7 @@ func RegisterOAuthAPI(r *chi.Mux, srv *Server) *chi.Mux {
 		exp *= 300
 	}
 	s := oauth.NewBearerServer(
-		configurations.OAUTHSECRETKEY, // @TODO move to config
+		configurations.OAUTHSECRETKEY,
 		exp,
 		verifier,
 		nil)

@@ -17,7 +17,7 @@ import (
 )
 
 var logger = log.GetLoggerInstance()
-var configurations = config.GetConfigurationX()
+var configurations = config.GetX()
 
 type GhostSite struct {
 	Site struct {

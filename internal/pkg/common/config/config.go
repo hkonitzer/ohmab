@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/spf13/viper"
+	"os"
 	"sync"
 )
 
@@ -60,44 +61,66 @@ type DatabaseConfigurations struct {
 }
 
 var configurations *Configurations
-var once sync.Once
+var initOnce, readOnce sync.Once
 
-func GetConfiguration() (*Configurations, error) {
+func Get() (*Configurations, error) {
 	var err error = nil
-	once.Do(func() {
-		configurations, err = ReadConfiguration()
+	readOnce.Do(func() {
+		Init()
+		// Unmarshal the configuration file into the Config variable.
+		err = viper.Unmarshal(&configurations)
 	})
 	return configurations, err
 }
-func GetConfigurationX() *Configurations {
+func GetX() *Configurations {
 	if configurations == nil {
-		once.Do(func() {
-			var err error
-			configurations, err = ReadConfiguration()
+		readOnce.Do(func() {
+			Init()
+			// Unmarshal the configuration file into the Config variable.
+			err := viper.Unmarshal(&configurations)
 			if err != nil {
-				panic(err)
+				panic(fmt.Sprintf("Unable to decode config into struct, %v", err))
 			}
 		})
 	}
 	return configurations
 }
-func ReadConfiguration() (*Configurations, error) {
-	viper.SetConfigName("config")
 
+func Init() {
+	initOnce.Do(read)
+}
+
+func configFileExists(path string) bool {
+	info, err := os.Stat(path + "/config.yml")
+	if os.IsNotExist(err) {
+		return false
+	}
+	return !info.IsDir()
+}
+
+func read() {
+	// Set the file name of the config file
+	viper.SetConfigName("config")
 	// Set the path to look for the configurations' file
 	configFile := flag.String("config", "", "path to the config file")
 	flag.Parse()
+	// use config provided by flag
 	if *configFile != "" {
 		viper.AddConfigPath(*configFile)
-	} else {
+	} else if configFileExists(".") { // search config in current directory
 		viper.AddConfigPath(".")
+	} else { // use home directory
+		home, err := os.UserHomeDir()
+		if err != nil {
+			panic(fmt.Sprintf("Error getting user home directory, %s", err))
+		}
+		viper.AddConfigPath(home)
 	}
 
 	// Enable VIPER to read Environment Variables
 	viper.AutomaticEnv()
 
 	viper.SetConfigType("yml")
-	var configurations Configurations
 
 	// Set undefined variables (defaults)
 	viper.SetDefault("server.port", 8081)
@@ -109,8 +132,7 @@ func ReadConfiguration() (*Configurations, error) {
 	viper.SetDefault("OAUTHSECRETKEY", "OHMAB-Secret-Key")
 
 	if err := viper.ReadInConfig(); err != nil {
-		fmt.Printf("Error reading config file, %s", err)
-		return nil, err
+		panic(fmt.Sprintf("Error reading config file, %s", err))
 	}
 
 	if !viper.IsSet("database.dsn") {
@@ -135,12 +157,4 @@ func ReadConfiguration() (*Configurations, error) {
 				))
 		}
 	}
-
-	// Unmarshal the configuration file into the Config variable.
-	err := viper.Unmarshal(&configurations)
-	if err != nil {
-		fmt.Printf("Unable to decode config into struct, %v", err)
-	}
-
-	return &configurations, nil
 }

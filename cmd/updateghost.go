@@ -21,13 +21,13 @@ import (
 const AcceptMinGhostVersion = "v5.0"
 
 var logger = log.GetLoggerInstance()
-var configurations = config.GetConfigurationX()
+var configurations = config.GetX()
 
 func main() {
 
 	// get the timetable data
 	ctx := context.TODO()
-	client, clientError := db.CreateClient(ctx, configurations)
+	client, clientError := db.CreateClient(ctx)
 	if clientError != nil {
 		logger.Fatal().Msgf("Error creating client: %v", clientError)
 	}

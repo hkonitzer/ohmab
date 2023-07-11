@@ -25,10 +25,7 @@ func main() {
 	// Get logger
 	logger := log.GetLoggerInstance()
 	// Get the configuration
-	configurations, err := config.GetConfiguration()
-	if err != nil {
-		logger.Fatal().Msgf("Error reading configurations: %v", err)
-	}
+	config.Init()
 	// Parse cmd line
 	logger.Debug().Msgf("Starting Businesses Import")
 	filename := flag.String("filename", "import.csv", "Filename of the CSV file to import")
@@ -47,7 +44,7 @@ func main() {
 	uv := privacy.UserViewer{Role: privacy.Admin}
 	uv.SetUserID("import")
 	ctx = privacy.NewContext(ctx, &uv)
-	client, clientError := db.CreateClient(ctx, configurations)
+	client, clientError := db.CreateClient(ctx)
 	if clientError != nil {
 		logger.Fatal().Msgf("Error creating client: %v", clientError)
 	}
@@ -90,7 +87,7 @@ func main() {
 			}
 			continue
 		}
-		// Look into database first
+		// Look into the database first
 		busQuery := client.Business.Query()
 		for i, field := range record {
 			if field == "" {

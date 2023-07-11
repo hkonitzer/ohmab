@@ -4,8 +4,8 @@ import (
 	"context"
 	"entgo.io/ent/dialect"
 	"fmt"
+	"github.com/spf13/viper"
 	"hynie.de/ohmab/ent"
-	"hynie.de/ohmab/internal/pkg/common/config"
 	"hynie.de/ohmab/internal/pkg/common/log"
 )
 
@@ -16,24 +16,23 @@ func ClientDebuglog(v ...any) {
 	logger.Printf("%v", v...)
 }
 
-func CreateClient(ctx context.Context, configurations *config.Configurations) (*ent.Client, error) {
-	if configurations.Database.DSN == "" {
-		return nil, fmt.Errorf("DSN for database (dialect=%v) not set", configurations.Database.Dialect)
+func CreateClient(ctx context.Context) (*ent.Client, error) {
+	d := viper.GetString("database.dialect")
+	if !viper.IsSet("database.dsn") {
+		return nil, fmt.Errorf("DSN for database (dialect=%v) not set", d)
 	}
-	debug := false
-	if configurations.DEBUG > 1 {
-		debug = true
-	}
+	debug := viper.GetInt("DEBUG") > 1
 	var client *ent.Client
-	switch configurations.Database.Dialect {
+
+	switch d {
 	case dialect.MySQL:
 		return nil, fmt.Errorf("MySQL not implemented yet")
 	case dialect.Postgres:
-		client = CreatePGClient(configurations.Database.DSN, ctx, debug)
+		client = CreatePGClient(viper.GetString("database.dsn"), ctx, debug)
 	case dialect.SQLite:
-		client = CreateSQLiteClient(configurations.Database.DSN, ctx, debug)
+		client = CreateSQLiteClient(viper.GetString("database.dsn"), ctx, debug)
 	default:
-		return nil, fmt.Errorf("unknown dialect: %v", configurations.Database.Dialect)
+		return nil, fmt.Errorf("unknown dialect: %v", d)
 	}
 	if debug {
 		client = client.Debug()

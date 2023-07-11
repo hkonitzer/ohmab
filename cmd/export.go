@@ -17,10 +17,7 @@ func main() {
 	// Get logger
 	logger := log.GetLoggerInstance()
 	// Get the configuration
-	configurations, err := config.GetConfiguration()
-	if err != nil {
-		logger.Fatal().Msgf("Error reading configurations: %v", err)
-	}
+	config.Init()
 	logger.Debug().Msgf("Starting Businesses Export")
 	// create output file
 	//file, err := os.OpenFile("./businesses.csv", os.O_CREATE, 0664)
@@ -31,7 +28,7 @@ func main() {
 	// Create client
 	ctx := context.TODO()
 	ctx = privacy.NewContext(ctx, &privacy.UserViewer{Role: privacy.Admin})
-	client, clientError := db.CreateClient(ctx, configurations)
+	client, clientError := db.CreateClient(ctx)
 	if clientError != nil {
 		logger.Fatal().Msgf("Error creating client: %v", clientError)
 	}

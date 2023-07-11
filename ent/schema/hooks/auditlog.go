@@ -76,11 +76,6 @@ func (al *AuditLog) AuditLogForTimetable() ent.Hook {
 func (al *AuditLog) AuditLogForBusiness() ent.Hook {
 	hk := func(next ent.Mutator) ent.Mutator {
 		return hook.BusinessFunc(func(ctx context.Context, m *ent.BusinessMutation) (ent.Value, error) {
-			// validate name1 field is set
-			_, exists := m.Name1()
-			if !exists {
-				return nil, errors.New("name1 field is missing")
-			}
 			// get authorize from context, request will be denied if the viewer has not the admin role
 			err := al.getAuth(ctx)
 			if err != nil || !al.viewer.Admin() {

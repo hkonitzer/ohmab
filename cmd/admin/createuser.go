@@ -9,6 +9,7 @@ import (
 	_ "hynie.de/ohmab/ent/runtime"
 	"hynie.de/ohmab/internal/pkg/db"
 	"hynie.de/ohmab/internal/pkg/privacy"
+	"hynie.de/ohmab/internal/pkg/utils"
 	"os"
 )
 
@@ -26,13 +27,17 @@ var CmdCreateUser = &cobra.Command{
 			panic(fmt.Sprintf("Error creating client: %v", clientError))
 		}
 		defer client.Close()
-
+		pwh, err := utils.HashPassword(NewUser.Password)
+		if err != nil {
+			fmt.Println(fmt.Errorf("failed hashing password: %v", err))
+			os.Exit(1)
+		}
 		u, err := client.User.Create().
 			SetLogin(NewUser.Login).
 			SetEmail(NewUser.EMail).
 			SetFirstname(NewUser.Firstname).
 			SetSurname(NewUser.Surname).
-			SetPasswordhash(NewUser.Password).SetRole(fmt.Sprint(NewUser.Role)).
+			SetPasswordhash(pwh).SetRole(fmt.Sprint(NewUser.Role)).
 			Save(ctx)
 		if err != nil {
 			fmt.Println(fmt.Errorf("failed creating user: %v", err))

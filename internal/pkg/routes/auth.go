@@ -38,7 +38,6 @@ func RegisterOAuthAPI(r *chi.Mux, srv *Server) *chi.Mux {
 	srv.OAuthServer = s
 
 	r.Post("/token", srv.OAuthServer.UserCredentials)
-	r.Get("/test", srv.Timetables)
 	// r.Post("/auth", srv.OAuthServer.ClientCredentials)
 	return r
 }

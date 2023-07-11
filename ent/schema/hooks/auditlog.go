@@ -19,16 +19,19 @@ type AuditLog struct {
 func (al *AuditLog) AuditLogForUser() ent.Hook {
 	hk := func(next ent.Mutator) ent.Mutator {
 		return hook.UserFunc(func(ctx context.Context, m *ent.UserMutation) (ent.Value, error) {
-			//@TODO: use Viewer from context
-			fieldsAndValues := extractFieldsandherValues(m)
+			// get authorize from context
+			err := al.getAuth(ctx)
+			if err != nil {
+				return nil, err
+			}
+			if !al.viewer.Admin() {
+				return nil, errors.New("not authorized (role)")
+			}
 			userID, _ := m.ID()
-			m.Client().AuditLog.Create().
-				SetUser("admin").
-				SetAction(m.Op().String()).
-				SetEntitySchema(m.Type()).
-				SetEntityUUID(userID.String()).
-				SetEntityValues(fieldsAndValues).
-				SaveX(ctx)
+			err = al.createLogEntry(m.Client(), ctx, m, userID.String())
+			if err != nil {
+				return nil, errors.New("could not create audit log (user)")
+			}
 			return next.Mutate(ctx, m)
 		})
 	}

@@ -92,7 +92,7 @@ var CmdAddTimetableEntry = &cobra.Command{
 		if err != nil {
 			fmt.Println(fmt.Errorf("failed to create timetable entry: %v", err))
 		}
-		fmt.Println(tc)
+		fmt.Println("Timetable entry created: ")
 
 	},
 }

@@ -78,31 +78,33 @@ type UserVerifier struct {
 
 // ValidateUser validates username and password returning an error if the user credentials are wrong
 func (t *UserVerifier) ValidateUser(username, password, scope string, r *http.Request) error {
-	if scope == "" {
-		return errors.New("scope is empty")
-	}
 	u, err := t.Client.User.Query().Where(user.LoginEQ(username)).WithBusinesses().Only(r.Context())
 	if err != nil {
 		logger.Debug().Msgf("Error getting user '%s': %v", username, err)
 		return errors.New("wrong username")
 	}
-	// init UserViewer (for scope testing only)
-	uv := privacy.UserViewer{}
-	// get scope
-	scopes := strings.Split(scope, ",")
-	// set scopes
-	for _, s := range scopes {
-		for _, b := range u.Edges.Businesses {
-			if s == b.ID.String() {
-				uv.Scopes = append(uv.Scopes, b.ID.String())
-				break
+	if u.Role != privacy.AdminRoleAsString() { // test given scopes against allowed scopes because user has no admin role
+		if scope == "" {
+			return errors.New("scope is empty")
+		}
+		// init UserViewer (for scope testing only)
+		uv := privacy.UserViewer{}
+		// get scope
+		scopes := strings.Split(scope, ",")
+		// set scopes
+		for _, s := range scopes {
+			for _, b := range u.Edges.Businesses {
+				if s == b.ID.String() {
+					uv.Scopes = append(uv.Scopes, b.ID.String())
+					break
+				}
 			}
 		}
-	}
-	// check all given scopes against the allowed ones
-	if (len(scopes) != len(uv.Scopes)) || (len(uv.Scopes) == 0) {
-		logger.Debug().Msgf("requested scope(s) '%v' not allowed for user '%s'", scope, username)
-		return errors.New("scope not allowed")
+		// check all given scopes against the allowed ones
+		if (len(scopes) != len(uv.Scopes)) || (len(uv.Scopes) == 0) {
+			logger.Debug().Msgf("requested scope(s) '%v' not allowed for user '%s'", scope, username)
+			return errors.New("scope not allowed")
+		}
 	}
 	if utils.DoPasswordsMatch(u.Passwordhash, password) {
 		return nil

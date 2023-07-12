@@ -13,5 +13,6 @@ var CmdBusiness = &cobra.Command{
 func init() {
 	RootCmd.AddCommand(CmdBusiness)
 	CmdBusiness.AddCommand(CmdListBusiness)
+	CmdBusiness.AddCommand(CmdAddTimetableEntry)
 
 }

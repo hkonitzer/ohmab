@@ -11,8 +11,8 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"hynie.de/ohmab/ent/address"
-	"hynie.de/ohmab/ent/business"
+	"github.com/hkonitzer/ohmab/ent/address"
+	"github.com/hkonitzer/ohmab/ent/business"
 )
 
 // Address is the model entity for the Address schema.

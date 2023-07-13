@@ -10,7 +10,7 @@ import (
 
 	"entgo.io/contrib/entgql"
 	"github.com/google/uuid"
-	"hynie.de/ohmab/ent"
+	"github.com/hkonitzer/ohmab/ent"
 )
 
 // EntityValues is the resolver for the entityValues field.

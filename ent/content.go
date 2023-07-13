@@ -11,7 +11,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"hynie.de/ohmab/ent/content"
+	"github.com/hkonitzer/ohmab/ent/content"
 )
 
 // Content is the model entity for the Content schema.

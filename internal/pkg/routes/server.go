@@ -2,7 +2,7 @@ package routes
 
 import (
 	"github.com/go-chi/oauth"
-	"hynie.de/ohmab/ent"
+	"github.com/hkonitzer/ohmab/ent"
 	"strings"
 )
 

@@ -2,7 +2,7 @@ package OHMAB
 
 import (
 	"github.com/99designs/gqlgen/graphql"
-	"hynie.de/ohmab/ent"
+	"github.com/hkonitzer/ohmab/ent"
 )
 
 // This file will not be regenerated automatically.

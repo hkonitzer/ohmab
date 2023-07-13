@@ -3,8 +3,8 @@ package hooks
 import (
 	"context"
 	"errors"
-	"hynie.de/ohmab/ent"
-	"hynie.de/ohmab/ent/hook"
+	"github.com/hkonitzer/ohmab/ent"
+	"github.com/hkonitzer/ohmab/ent/hook"
 	"regexp"
 	"strings"
 )

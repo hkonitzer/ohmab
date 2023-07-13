@@ -9,13 +9,13 @@ import (
 	"entgo.io/contrib/entgql"
 	"entgo.io/ent/dialect/sql"
 	"github.com/99designs/gqlgen/graphql"
-	"hynie.de/ohmab/ent/address"
-	"hynie.de/ohmab/ent/auditlog"
-	"hynie.de/ohmab/ent/business"
-	"hynie.de/ohmab/ent/content"
-	"hynie.de/ohmab/ent/tag"
-	"hynie.de/ohmab/ent/timetable"
-	"hynie.de/ohmab/ent/user"
+	"github.com/hkonitzer/ohmab/ent/address"
+	"github.com/hkonitzer/ohmab/ent/auditlog"
+	"github.com/hkonitzer/ohmab/ent/business"
+	"github.com/hkonitzer/ohmab/ent/content"
+	"github.com/hkonitzer/ohmab/ent/tag"
+	"github.com/hkonitzer/ohmab/ent/timetable"
+	"github.com/hkonitzer/ohmab/ent/user"
 )
 
 // CollectFields tells the query-builder to eagerly load connected nodes by resolver context.

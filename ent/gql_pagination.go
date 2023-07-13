@@ -16,14 +16,14 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/errcode"
 	"github.com/google/uuid"
+	"github.com/hkonitzer/ohmab/ent/address"
+	"github.com/hkonitzer/ohmab/ent/auditlog"
+	"github.com/hkonitzer/ohmab/ent/business"
+	"github.com/hkonitzer/ohmab/ent/content"
+	"github.com/hkonitzer/ohmab/ent/tag"
+	"github.com/hkonitzer/ohmab/ent/timetable"
+	"github.com/hkonitzer/ohmab/ent/user"
 	"github.com/vektah/gqlparser/v2/gqlerror"
-	"hynie.de/ohmab/ent/address"
-	"hynie.de/ohmab/ent/auditlog"
-	"hynie.de/ohmab/ent/business"
-	"hynie.de/ohmab/ent/content"
-	"hynie.de/ohmab/ent/tag"
-	"hynie.de/ohmab/ent/timetable"
-	"hynie.de/ohmab/ent/user"
 )
 
 // Common entgql types.

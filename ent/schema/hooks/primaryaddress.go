@@ -3,10 +3,10 @@ package hooks
 import (
 	"context"
 	"errors"
-	"hynie.de/ohmab/ent"
-	"hynie.de/ohmab/ent/address"
-	"hynie.de/ohmab/ent/business"
-	"hynie.de/ohmab/ent/hook"
+	"github.com/hkonitzer/ohmab/ent"
+	"github.com/hkonitzer/ohmab/ent/address"
+	"github.com/hkonitzer/ohmab/ent/business"
+	"github.com/hkonitzer/ohmab/ent/hook"
 )
 
 // EnsureOnlyOnePrimaryAddress is a hook that ensures that only one address on a business is marked as primary address

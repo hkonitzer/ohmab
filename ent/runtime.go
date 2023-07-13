@@ -3,4 +3,4 @@
 
 package ent
 
-// The schema-stitching logic is generated in hynie.de/ohmab/ent/runtime/runtime.go
+// The schema-stitching logic is generated in github.com/hkonitzer/ohmab/ent/runtime/runtime.go

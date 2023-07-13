@@ -1,8 +1,8 @@
 package admin
 
 import (
+	"github.com/hkonitzer/ohmab/internal/pkg/common/config"
 	"github.com/spf13/cobra"
-	"hynie.de/ohmab/internal/pkg/common/config"
 )
 
 var cfgFile string

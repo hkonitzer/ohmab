@@ -1,7 +1,7 @@
 package schema
 
 import (
-	"hynie.de/ohmab/ent/schema/constants"
+	"github.com/hkonitzer/ohmab/ent/schema/constants"
 	"time"
 
 	"entgo.io/ent"

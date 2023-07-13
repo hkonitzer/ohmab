@@ -7,7 +7,7 @@ package privacy
 import (
 	"context"
 	"fmt"
-	"hynie.de/ohmab/ent/user"
+	"github.com/hkonitzer/ohmab/ent/user"
 )
 
 // Role for viewer actions.

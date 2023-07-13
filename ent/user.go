@@ -11,7 +11,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"hynie.de/ohmab/ent/user"
+	"github.com/hkonitzer/ohmab/ent/user"
 )
 
 // User is the model entity for the User schema.

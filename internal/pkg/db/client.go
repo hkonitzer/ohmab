@@ -4,9 +4,9 @@ import (
 	"context"
 	"entgo.io/ent/dialect"
 	"fmt"
+	"github.com/hkonitzer/ohmab/ent"
+	"github.com/hkonitzer/ohmab/internal/pkg/common/log"
 	"github.com/spf13/viper"
-	"hynie.de/ohmab/ent"
-	"hynie.de/ohmab/internal/pkg/common/log"
 )
 
 // Get logger

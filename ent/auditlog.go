@@ -12,7 +12,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"hynie.de/ohmab/ent/auditlog"
+	"github.com/hkonitzer/ohmab/ent/auditlog"
 )
 
 // AuditLog is the model entity for the AuditLog schema.

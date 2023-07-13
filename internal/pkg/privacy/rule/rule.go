@@ -6,9 +6,9 @@ package rule
 
 import (
 	"context"
-	entprivacy "hynie.de/ohmab/internal/pkg/privacy"
+	entprivacy "github.com/hkonitzer/ohmab/internal/pkg/privacy"
 
-	"hynie.de/ohmab/ent/privacy"
+	"github.com/hkonitzer/ohmab/ent/privacy"
 )
 
 // DenyIfNoViewer is a rule that returns deny decision if the viewer is missing in the context.

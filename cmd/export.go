@@ -3,12 +3,12 @@ package main
 import (
 	"context"
 	"encoding/csv"
-	_ "hynie.de/ohmab/ent/runtime"
-	"hynie.de/ohmab/internal/pkg/common/config"
-	"hynie.de/ohmab/internal/pkg/common/log"
-	"hynie.de/ohmab/internal/pkg/db"
-	"hynie.de/ohmab/internal/pkg/privacy"
-	"hynie.de/ohmab/internal/pkg/utils"
+	_ "github.com/hkonitzer/ohmab/ent/runtime"
+	"github.com/hkonitzer/ohmab/internal/pkg/common/config"
+	"github.com/hkonitzer/ohmab/internal/pkg/common/log"
+	"github.com/hkonitzer/ohmab/internal/pkg/db"
+	"github.com/hkonitzer/ohmab/internal/pkg/privacy"
+	"github.com/hkonitzer/ohmab/internal/pkg/utils"
 	"os"
 	"strconv"
 )

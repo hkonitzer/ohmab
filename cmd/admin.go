@@ -1,6 +1,6 @@
 package main
 
-import "hynie.de/ohmab/cmd/admin"
+import "github.com/hkonitzer/ohmab/cmd/admin"
 
 func main() {
 

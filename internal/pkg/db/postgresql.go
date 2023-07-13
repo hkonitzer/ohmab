@@ -3,9 +3,9 @@ package db
 import (
 	"context"
 	"entgo.io/ent/dialect"
+	"github.com/hkonitzer/ohmab/ent"
+	"github.com/hkonitzer/ohmab/ent/migrate"
 	_ "github.com/lib/pq"
-	"hynie.de/ohmab/ent"
-	"hynie.de/ohmab/ent/migrate"
 )
 
 func CreatePGClient(dsn string, ctx context.Context, debug bool) *ent.Client { // Create entutils.Client and run the schema migration.

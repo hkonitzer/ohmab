@@ -9,8 +9,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"hynie.de/ohmab/ent/predicate"
-	"hynie.de/ohmab/ent/timetable"
+	"github.com/hkonitzer/ohmab/ent/predicate"
+	"github.com/hkonitzer/ohmab/ent/timetable"
 )
 
 // TimetableDelete is the builder for deleting a Timetable entity.

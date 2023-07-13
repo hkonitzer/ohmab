@@ -1,9 +1,9 @@
 package utils
 
 import (
-	"hynie.de/ohmab/ent/address"
-	"hynie.de/ohmab/ent/business"
-	"hynie.de/ohmab/ent/schema/constants"
+	"github.com/hkonitzer/ohmab/ent/address"
+	"github.com/hkonitzer/ohmab/ent/business"
+	"github.com/hkonitzer/ohmab/ent/schema/constants"
 	"strings"
 )
 

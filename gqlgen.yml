@@ -14,18 +14,18 @@ resolver:
 # autobind tells gqngen to search for any type names in the GraphQL schema in the
 # provided package. If they match it will use them, otherwise it will generate new.
 autobind:
-  - hynie.de/ohmab/ent
-  - hynie.de/ohmab/ent/business
-  - hynie.de/ohmab/ent/address
-  - hynie.de/ohmab/ent/timetable
-  - hynie.de/ohmab/ent/user
+  - github.com/hkonitzer/ohmab/ent
+  - github.com/hkonitzer/ohmab/ent/business
+  - github.com/hkonitzer/ohmab/ent/address
+  - github.com/hkonitzer/ohmab/ent/timetable
+  - github.com/hkonitzer/ohmab/ent/user
 
 # This section declares type mapping between the GraphQL and Go type systems.
 models:
   # Defines the ID field as UUID
   ID:
     model:
-      - hynie.de/ohmab/ent/schema/uuidgql.UUID
+      - github.com/hkonitzer/ohmab/ent/schema/uuidgql.UUID
   Node:
     model:
-      - hynie.de/ohmab/ent.Noder
+      - github.com/hkonitzer/ohmab/ent.Noder

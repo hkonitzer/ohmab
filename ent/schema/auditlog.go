@@ -6,7 +6,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
 	"github.com/google/uuid"
-	"hynie.de/ohmab/ent/schema/constants"
+	"github.com/hkonitzer/ohmab/ent/schema/constants"
 	"time"
 )
 

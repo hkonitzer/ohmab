@@ -6,12 +6,12 @@ package enttest
 import (
 	"context"
 
-	"hynie.de/ohmab/ent"
+	"github.com/hkonitzer/ohmab/ent"
 	// required by schema hooks.
-	_ "hynie.de/ohmab/ent/runtime"
+	_ "github.com/hkonitzer/ohmab/ent/runtime"
 
 	"entgo.io/ent/dialect/sql/schema"
-	"hynie.de/ohmab/ent/migrate"
+	"github.com/hkonitzer/ohmab/ent/migrate"
 )
 
 type (

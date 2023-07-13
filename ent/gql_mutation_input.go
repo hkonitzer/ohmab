@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"hynie.de/ohmab/ent/timetable"
+	"github.com/hkonitzer/ohmab/ent/timetable"
 )
 
 // CreateBusinessInput represents a mutation input for creating businesses.

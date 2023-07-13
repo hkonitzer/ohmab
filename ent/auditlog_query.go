@@ -12,8 +12,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"hynie.de/ohmab/ent/auditlog"
-	"hynie.de/ohmab/ent/predicate"
+	"github.com/hkonitzer/ohmab/ent/auditlog"
+	"github.com/hkonitzer/ohmab/ent/predicate"
 )
 
 // AuditLogQuery is the builder for querying AuditLog entities.

@@ -9,8 +9,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"hynie.de/ohmab/ent/auditlog"
-	"hynie.de/ohmab/ent/predicate"
+	"github.com/hkonitzer/ohmab/ent/auditlog"
+	"github.com/hkonitzer/ohmab/ent/predicate"
 )
 
 // AuditLogDelete is the builder for deleting a AuditLog entity.

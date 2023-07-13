@@ -101,20 +101,23 @@ func configFileExists(path string) bool {
 func read() {
 	// Set the file name of the config file
 	viper.SetConfigName("config")
-	// Set the path to look for the configurations' file
-	configFile := flag.String("config", "", "path to the config file")
-	flag.Parse()
-	// use config provided by flag
-	if *configFile != "" {
-		viper.AddConfigPath(*configFile)
-	} else if configFileExists(".") { // search config in current directory
+
+	if configFileExists(".") { // search config in current directory
 		viper.AddConfigPath(".")
 	} else { // use home directory
 		home, err := os.UserHomeDir()
 		if err != nil {
 			panic(fmt.Sprintf("Error getting user home directory, %s", err))
 		}
-		viper.AddConfigPath(home)
+		if configFileExists(home) {
+			viper.AddConfigPath(home)
+		} else {
+			// use config provided by flag
+			// Set the path to look for the configurations' file
+			configFile := flag.String("config", "./config.yml", "path to the config file")
+			flag.Parse()
+			viper.AddConfigPath(*configFile)
+		}
 	}
 
 	// Enable VIPER to read Environment Variables

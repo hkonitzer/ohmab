@@ -11,7 +11,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"hynie.de/ohmab/ent/business"
+	"github.com/hkonitzer/ohmab/ent/business"
 )
 
 // Business is the model entity for the Business schema.

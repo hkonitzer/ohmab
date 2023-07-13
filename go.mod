@@ -1,4 +1,4 @@
-module hynie.de/ohmab
+module github.com/hkonitzer/ohmab
 
 go 1.20
 

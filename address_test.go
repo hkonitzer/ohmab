@@ -2,9 +2,9 @@ package OHMAB
 
 import (
 	"context"
+	"github.com/hkonitzer/ohmab/ent/enttest"
+	"github.com/hkonitzer/ohmab/internal/pkg/privacy"
 	_ "github.com/mattn/go-sqlite3"
-	"hynie.de/ohmab/ent/enttest"
-	"hynie.de/ohmab/internal/pkg/privacy"
 	"testing"
 )
 
@@ -18,6 +18,18 @@ func TestCreateAddress(t *testing.T) {
 	if err := client.Schema.Create(ctx); err != nil {
 		t.Fatal("failed creating schema resources: ", err)
 	}
+
+	// create admin viewer
+	adminViewer := privacy.UserViewer{Role: privacy.Admin}
+	adminViewer.SetUserID("TESTADMIN")
+	// create admin context
+	adminCtx := privacy.NewContext(ctx, &adminViewer)
+	// create owner viewer
+	ownerViewer := privacy.UserViewer{Role: privacy.Owner}
+	ownerViewer.SetUserID("TESTOWNER")
+	// create owner context
+	ownerCtx := privacy.NewContext(ctx, &ownerViewer)
+
 	// create users first
 	// admin user
 	adminUser, err := client.User.Create().
@@ -27,7 +39,7 @@ func TestCreateAddress(t *testing.T) {
 		SetSurname("Erika").
 		SetFirstname("Musterfrau").
 		SetEmail("admin@localhost").
-		Save(ctx)
+		Save(adminCtx)
 	if err != nil {
 		t.Errorf("failed creating admin user: %v", err)
 	}
@@ -39,20 +51,14 @@ func TestCreateAddress(t *testing.T) {
 		SetSurname("Doe").
 		SetFirstname("Joey").
 		SetEmail("owner@localhost").
-		Save(ctx)
+		Save(adminCtx)
 	if err != nil {
 		t.Errorf("failed creating owner user: %v", err)
 	}
-	// create admin viewer
-	adminViewer := privacy.UserViewer{Role: privacy.Admin}
+	// update viewers
 	adminViewer.SetUserID(adminUser.ID.String())
-	// create admin context
-	adminCtx := privacy.NewContext(ctx, &adminViewer)
-	// create owner viewer
-	ownerViewer := privacy.UserViewer{Role: privacy.Owner}
 	ownerViewer.SetUserID(ownerUser.ID.String())
-	// create owner context
-	ownerCtx := privacy.NewContext(ctx, &ownerViewer)
+
 	// create a business for the address first
 	business, err := client.Business.Create().
 		SetComment("TESTDATA").

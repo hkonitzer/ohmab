@@ -4,12 +4,12 @@ import (
 	"context"
 	"fmt"
 	"github.com/google/uuid"
+	"github.com/hkonitzer/ohmab/ent/business"
+	_ "github.com/hkonitzer/ohmab/ent/runtime"
+	"github.com/hkonitzer/ohmab/internal/pkg/db"
+	"github.com/hkonitzer/ohmab/internal/pkg/privacy"
+	"github.com/hkonitzer/ohmab/internal/pkg/utils"
 	"github.com/spf13/cobra"
-	"hynie.de/ohmab/ent/business"
-	_ "hynie.de/ohmab/ent/runtime"
-	"hynie.de/ohmab/internal/pkg/db"
-	"hynie.de/ohmab/internal/pkg/privacy"
-	"hynie.de/ohmab/internal/pkg/utils"
 	"os"
 )
 

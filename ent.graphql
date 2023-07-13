@@ -567,7 +567,7 @@ type Content implements Node {
   publishedAt: Time
 }
 """ContentLocation is enum for the field location"""
-enum ContentLocation @goModel(model: "hynie.de/ohmab/ent/content.Location") {
+enum ContentLocation @goModel(model: "github.com/hkonitzer/ohmab/ent/content.Location") {
   TOP
   BOTTOM
 }
@@ -583,12 +583,12 @@ enum ContentOrderField {
   published_at
 }
 """ContentStatus is enum for the field status"""
-enum ContentStatus @goModel(model: "hynie.de/ohmab/ent/content.Status") {
+enum ContentStatus @goModel(model: "github.com/hkonitzer/ohmab/ent/content.Status") {
   DRAFT
   PUBLISHED
 }
 """ContentTimetableType is enum for the field timetable_type"""
-enum ContentTimetableType @goModel(model: "hynie.de/ohmab/ent/content.TimetableType") {
+enum ContentTimetableType @goModel(model: "github.com/hkonitzer/ohmab/ent/content.TimetableType") {
   DEFAULT
   REGULAR
   CLOSED
@@ -597,7 +597,7 @@ enum ContentTimetableType @goModel(model: "hynie.de/ohmab/ent/content.TimetableT
   SPECIAL
 }
 """ContentType is enum for the field type"""
-enum ContentType @goModel(model: "hynie.de/ohmab/ent/content.Type") {
+enum ContentType @goModel(model: "github.com/hkonitzer/ohmab/ent/content.Type") {
   TEXT
   HTML
   CSS
@@ -772,7 +772,7 @@ scalar Map
 An object with an ID.
 Follows the [Relay Global Object Identification Specification](https://relay.dev/graphql/objectidentification.htm)
 """
-interface Node @goModel(model: "hynie.de/ohmab/ent.Noder") {
+interface Node @goModel(model: "github.com/hkonitzer/ohmab/ent.Noder") {
   """The id of the object."""
   id: ID!
 }
@@ -1020,7 +1020,7 @@ enum TimetableOrderField {
   datetime_from
 }
 """TimetableTimetableType is enum for the field timetable_type"""
-enum TimetableTimetableType @goModel(model: "hynie.de/ohmab/ent/timetable.TimetableType") {
+enum TimetableTimetableType @goModel(model: "github.com/hkonitzer/ohmab/ent/timetable.TimetableType") {
   DEFAULT
   REGULAR
   CLOSED

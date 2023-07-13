@@ -8,10 +8,10 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-	"hynie.de/ohmab/ent"
-	"hynie.de/ohmab/ent/user"
-	"hynie.de/ohmab/internal/pkg/common/log"
-	"hynie.de/ohmab/internal/pkg/privacy"
+	"github.com/hkonitzer/ohmab/ent"
+	"github.com/hkonitzer/ohmab/ent/user"
+	"github.com/hkonitzer/ohmab/internal/pkg/common/log"
+	"github.com/hkonitzer/ohmab/internal/pkg/privacy"
 )
 
 // CreateBusiness is the resolver for the createBusiness field.

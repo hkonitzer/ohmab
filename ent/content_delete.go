@@ -9,8 +9,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"hynie.de/ohmab/ent/content"
-	"hynie.de/ohmab/ent/predicate"
+	"github.com/hkonitzer/ohmab/ent/content"
+	"github.com/hkonitzer/ohmab/ent/predicate"
 )
 
 // ContentDelete is the builder for deleting a Content entity.

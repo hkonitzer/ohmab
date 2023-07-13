@@ -6,8 +6,8 @@ import (
 	"encoding/json"
 	"fmt"
 	jose "github.com/dvsekhvalnov/jose2go"
-	"hynie.de/ohmab/internal/pkg/common/config"
-	"hynie.de/ohmab/internal/pkg/common/log"
+	"github.com/hkonitzer/ohmab/internal/pkg/common/config"
+	"github.com/hkonitzer/ohmab/internal/pkg/common/log"
 	"io"
 	"net/http"
 	"regexp"
@@ -77,15 +77,15 @@ type RequestError struct {
 	Property       string                `json:"property,omitempty"`
 	Help           string                `json:"help,omitempty"`
 	Code           string                `json:"code,omitempty"`
-	id             string                `json:"id"`
+	Id             string                `json:"id"`
 	GhostErrorCode string                `json:"ghostErrorCode,omitempty"`
 }
 
 type RequestErrorDetails struct {
 	Keyword    string `json:"keyword,omitempty"`
 	DataPath   string `json:"dataPath,omitempty"`
-	schemaPath string `json:"schemaPath,omitempty"`
-	params     string `json:"params,omitempty"`
+	SchemaPath string `json:"schemaPath,omitempty"`
+	Params     string `json:"params,omitempty"`
 	Message    string `json:"message,omitempty"`
 }
 

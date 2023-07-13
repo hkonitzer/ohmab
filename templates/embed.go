@@ -2,8 +2,8 @@ package templates
 
 import (
 	"embed"
+	"github.com/hkonitzer/ohmab/internal/pkg/utils"
 	"html/template"
-	"hynie.de/ohmab/internal/pkg/utils"
 )
 
 var (

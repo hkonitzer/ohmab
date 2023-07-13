@@ -4,11 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"hynie.de/ohmab/ent"
-	"hynie.de/ohmab/ent/address"
-	"hynie.de/ohmab/ent/hook"
-	"hynie.de/ohmab/ent/schema/constants"
-	"hynie.de/ohmab/internal/pkg/privacy"
+	"github.com/hkonitzer/ohmab/ent"
+	"github.com/hkonitzer/ohmab/ent/address"
+	"github.com/hkonitzer/ohmab/ent/hook"
+	"github.com/hkonitzer/ohmab/ent/schema/constants"
+	"github.com/hkonitzer/ohmab/internal/pkg/privacy"
 )
 
 type AuditLog struct {

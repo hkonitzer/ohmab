@@ -1,8 +1,8 @@
 package admin
 
 import (
+	"github.com/hkonitzer/ohmab/internal/pkg/privacy"
 	"github.com/spf13/cobra"
-	"hynie.de/ohmab/internal/pkg/privacy"
 )
 
 type newUser struct {

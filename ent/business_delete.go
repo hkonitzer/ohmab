@@ -9,8 +9,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"hynie.de/ohmab/ent/business"
-	"hynie.de/ohmab/ent/predicate"
+	"github.com/hkonitzer/ohmab/ent/business"
+	"github.com/hkonitzer/ohmab/ent/predicate"
 )
 
 // BusinessDelete is the builder for deleting a Business entity.

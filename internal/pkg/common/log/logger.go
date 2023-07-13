@@ -1,9 +1,9 @@
 package log
 
 import (
+	"github.com/hkonitzer/ohmab/internal/pkg/common/config"
 	"github.com/rs/zerolog"
 	"github.com/spf13/viper"
-	"hynie.de/ohmab/internal/pkg/common/config"
 	"os"
 	"runtime/debug"
 	"sync"

@@ -12,7 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"hynie.de/ohmab/ent/content"
+	"github.com/hkonitzer/ohmab/ent/content"
 )
 
 // ContentCreate is the builder for creating a Content entity.

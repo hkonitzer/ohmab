@@ -11,7 +11,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"hynie.de/ohmab/ent/tag"
+	"github.com/hkonitzer/ohmab/ent/tag"
 )
 
 // Tag is the model entity for the Tag schema.

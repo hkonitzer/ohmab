@@ -13,10 +13,10 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"hynie.de/ohmab/ent/address"
-	"hynie.de/ohmab/ent/business"
-	"hynie.de/ohmab/ent/predicate"
-	"hynie.de/ohmab/ent/timetable"
+	"github.com/hkonitzer/ohmab/ent/address"
+	"github.com/hkonitzer/ohmab/ent/business"
+	"github.com/hkonitzer/ohmab/ent/predicate"
+	"github.com/hkonitzer/ohmab/ent/timetable"
 )
 
 // AddressUpdate is the builder for updating Address entities.

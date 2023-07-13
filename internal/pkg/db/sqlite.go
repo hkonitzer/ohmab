@@ -3,9 +3,9 @@ package db
 import (
 	"context"
 	"entgo.io/ent/dialect"
-	"hynie.de/ohmab/ent"
-	"hynie.de/ohmab/ent/migrate"
-	"hynie.de/ohmab/internal/pkg/common/log"
+	"github.com/hkonitzer/ohmab/ent"
+	"github.com/hkonitzer/ohmab/ent/migrate"
+	"github.com/hkonitzer/ohmab/internal/pkg/common/log"
 )
 
 func CreateSQLiteClient(dsn string, ctx context.Context, debug bool) *ent.Client {

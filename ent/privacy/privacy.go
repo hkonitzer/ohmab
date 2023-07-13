@@ -7,7 +7,7 @@ import (
 	"context"
 	"fmt"
 
-	"hynie.de/ohmab/ent"
+	"github.com/hkonitzer/ohmab/ent"
 
 	"entgo.io/ent/privacy"
 )

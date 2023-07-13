@@ -3,10 +3,10 @@ package admin
 import (
 	"context"
 	"fmt"
+	"github.com/hkonitzer/ohmab/internal/pkg/db"
+	"github.com/hkonitzer/ohmab/internal/pkg/privacy"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
-	"hynie.de/ohmab/internal/pkg/db"
-	"hynie.de/ohmab/internal/pkg/privacy"
 	"os"
 	"strconv"
 	"time"

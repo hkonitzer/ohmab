@@ -3,9 +3,9 @@ package hooks
 import (
 	"context"
 	"errors"
-	"hynie.de/ohmab/ent"
-	"hynie.de/ohmab/ent/hook"
-	"hynie.de/ohmab/internal/pkg/common/log"
+	"github.com/hkonitzer/ohmab/ent"
+	"github.com/hkonitzer/ohmab/ent/hook"
+	"github.com/hkonitzer/ohmab/internal/pkg/common/log"
 	"time"
 )
 

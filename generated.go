@@ -17,12 +17,12 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
 	"github.com/google/uuid"
+	"github.com/hkonitzer/ohmab/ent"
+	"github.com/hkonitzer/ohmab/ent/content"
+	"github.com/hkonitzer/ohmab/ent/schema/uuidgql"
+	"github.com/hkonitzer/ohmab/ent/timetable"
 	gqlparser "github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
-	"hynie.de/ohmab/ent"
-	"hynie.de/ohmab/ent/content"
-	"hynie.de/ohmab/ent/schema/uuidgql"
-	"hynie.de/ohmab/ent/timetable"
 )
 
 // region    ************************** generated!.gotpl **************************

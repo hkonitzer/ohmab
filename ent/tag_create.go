@@ -12,9 +12,9 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"hynie.de/ohmab/ent/business"
-	"hynie.de/ohmab/ent/tag"
-	"hynie.de/ohmab/ent/user"
+	"github.com/hkonitzer/ohmab/ent/business"
+	"github.com/hkonitzer/ohmab/ent/tag"
+	"github.com/hkonitzer/ohmab/ent/user"
 )
 
 // TagCreate is the builder for creating a Tag entity.

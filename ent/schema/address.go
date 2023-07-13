@@ -7,8 +7,8 @@ import (
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"hynie.de/ohmab/ent/schema/constants"
-	"hynie.de/ohmab/ent/schema/hooks"
+	"github.com/hkonitzer/ohmab/ent/schema/constants"
+	"github.com/hkonitzer/ohmab/ent/schema/hooks"
 	"regexp"
 )
 

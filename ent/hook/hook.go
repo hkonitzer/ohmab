@@ -7,7 +7,7 @@ import (
 	"context"
 	"fmt"
 
-	"hynie.de/ohmab/ent"
+	"github.com/hkonitzer/ohmab/ent"
 )
 
 // The AddressFunc type is an adapter to allow the use of ordinary

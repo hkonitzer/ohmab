@@ -9,10 +9,10 @@ import (
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
 	"github.com/google/uuid"
-	"hynie.de/ohmab/ent/privacy"
-	"hynie.de/ohmab/ent/schema/constants"
-	"hynie.de/ohmab/ent/schema/hooks"
-	"hynie.de/ohmab/internal/pkg/privacy/rule"
+	"github.com/hkonitzer/ohmab/ent/privacy"
+	"github.com/hkonitzer/ohmab/ent/schema/constants"
+	"github.com/hkonitzer/ohmab/ent/schema/hooks"
+	"github.com/hkonitzer/ohmab/internal/pkg/privacy/rule"
 )
 
 // Business holds the schema definition for the Business entity.

@@ -4,21 +4,19 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"hynie.de/ohmab/ent"
-	_ "hynie.de/ohmab/ent/runtime"
-	"hynie.de/ohmab/ent/timetable"
-	"hynie.de/ohmab/internal/pkg/common/config"
-	"hynie.de/ohmab/internal/pkg/common/log"
-	"hynie.de/ohmab/internal/pkg/db"
-	"hynie.de/ohmab/internal/pkg/ghost"
-	"hynie.de/ohmab/internal/pkg/routes"
-	"hynie.de/ohmab/internal/pkg/utils"
-	"hynie.de/ohmab/templates"
+	"github.com/hkonitzer/ohmab/ent"
+	_ "github.com/hkonitzer/ohmab/ent/runtime"
+	"github.com/hkonitzer/ohmab/ent/timetable"
+	"github.com/hkonitzer/ohmab/internal/pkg/common/config"
+	"github.com/hkonitzer/ohmab/internal/pkg/common/log"
+	"github.com/hkonitzer/ohmab/internal/pkg/db"
+	"github.com/hkonitzer/ohmab/internal/pkg/ghost"
+	"github.com/hkonitzer/ohmab/internal/pkg/routes"
+	"github.com/hkonitzer/ohmab/internal/pkg/utils"
+	"github.com/hkonitzer/ohmab/templates"
 	"strings"
 	"time"
 )
-
-const AcceptMinGhostVersion = "v5.0"
 
 var logger = log.GetLoggerInstance()
 var configurations = config.GetX()

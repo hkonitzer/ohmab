@@ -15,7 +15,7 @@ func CreateSQLiteClient(dsn string, ctx context.Context, debug bool) *ent.Client
 	// Create entutils.Client and run the schema migration.
 	client, err := ent.Open(dialect.SQLite, dsn, ent.Log(ClientDebuglog))
 	if err != nil {
-		logger.Fatal().Msgf("opening entutils sqlite client", err)
+		logger.Fatal().Msgf("opening entutils sqlite client: %v", err)
 	}
 	if err := client.Schema.Create(
 		ctx,
@@ -23,7 +23,7 @@ func CreateSQLiteClient(dsn string, ctx context.Context, debug bool) *ent.Client
 		//migrate.WithDropIndex(true),
 		//migrate.WithDropColumn(true),
 	); err != nil {
-		logger.Fatal().Msgf("creating schema", err)
+		logger.Fatal().Msgf("creating schema: %v", err)
 	} else {
 		logger.Debug().Msgf("entutils db client created")
 	}

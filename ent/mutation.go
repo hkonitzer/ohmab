@@ -5185,22 +5185,9 @@ func (m *TimetableMutation) OldDatetimeFrom(ctx context.Context) (v time.Time, e
 	return oldValue.DatetimeFrom, nil
 }
 
-// ClearDatetimeFrom clears the value of the "datetime_from" field.
-func (m *TimetableMutation) ClearDatetimeFrom() {
-	m.datetime_from = nil
-	m.clearedFields[timetable.FieldDatetimeFrom] = struct{}{}
-}
-
-// DatetimeFromCleared returns if the "datetime_from" field was cleared in this mutation.
-func (m *TimetableMutation) DatetimeFromCleared() bool {
-	_, ok := m.clearedFields[timetable.FieldDatetimeFrom]
-	return ok
-}
-
 // ResetDatetimeFrom resets all changes to the "datetime_from" field.
 func (m *TimetableMutation) ResetDatetimeFrom() {
 	m.datetime_from = nil
-	delete(m.clearedFields, timetable.FieldDatetimeFrom)
 }
 
 // SetDuration sets the "duration" field.
@@ -5304,9 +5291,22 @@ func (m *TimetableMutation) OldDatetimeTo(ctx context.Context) (v time.Time, err
 	return oldValue.DatetimeTo, nil
 }
 
+// ClearDatetimeTo clears the value of the "datetime_to" field.
+func (m *TimetableMutation) ClearDatetimeTo() {
+	m.datetime_to = nil
+	m.clearedFields[timetable.FieldDatetimeTo] = struct{}{}
+}
+
+// DatetimeToCleared returns if the "datetime_to" field was cleared in this mutation.
+func (m *TimetableMutation) DatetimeToCleared() bool {
+	_, ok := m.clearedFields[timetable.FieldDatetimeTo]
+	return ok
+}
+
 // ResetDatetimeTo resets all changes to the "datetime_to" field.
 func (m *TimetableMutation) ResetDatetimeTo() {
 	m.datetime_to = nil
+	delete(m.clearedFields, timetable.FieldDatetimeTo)
 }
 
 // SetTimeWholeDay sets the "time_whole_day" field.
@@ -5974,11 +5974,11 @@ func (m *TimetableMutation) ClearedFields() []string {
 	if m.FieldCleared(timetable.FieldDeletedAt) {
 		fields = append(fields, timetable.FieldDeletedAt)
 	}
-	if m.FieldCleared(timetable.FieldDatetimeFrom) {
-		fields = append(fields, timetable.FieldDatetimeFrom)
-	}
 	if m.FieldCleared(timetable.FieldDuration) {
 		fields = append(fields, timetable.FieldDuration)
+	}
+	if m.FieldCleared(timetable.FieldDatetimeTo) {
+		fields = append(fields, timetable.FieldDatetimeTo)
 	}
 	if m.FieldCleared(timetable.FieldComment) {
 		fields = append(fields, timetable.FieldComment)
@@ -6012,11 +6012,11 @@ func (m *TimetableMutation) ClearField(name string) error {
 	case timetable.FieldDeletedAt:
 		m.ClearDeletedAt()
 		return nil
-	case timetable.FieldDatetimeFrom:
-		m.ClearDatetimeFrom()
-		return nil
 	case timetable.FieldDuration:
 		m.ClearDuration()
+		return nil
+	case timetable.FieldDatetimeTo:
+		m.ClearDatetimeTo()
 		return nil
 	case timetable.FieldComment:
 		m.ClearComment()

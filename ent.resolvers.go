@@ -45,12 +45,15 @@ func (r *queryResolver) Timetables(ctx context.Context, after *entgql.Cursor[uui
 
 // Duration is the resolver for the duration field.
 func (r *timetableResolver) Duration(ctx context.Context, obj *ent.Timetable) (*int, error) {
-	panic(fmt.Errorf("not implemented: Duration - duration"))
+	i := int(obj.Duration)
+	return &i, nil
 }
 
 // Duration is the resolver for the duration field.
 func (r *createTimetableInputResolver) Duration(ctx context.Context, obj *ent.CreateTimetableInput, data *int) error {
-	panic(fmt.Errorf("not implemented: Duration - duration"))
+	ui := uint8(*data)
+	obj.Duration = &ui
+	return nil
 }
 
 // Duration is the resolver for the duration field.
@@ -93,6 +96,13 @@ func (r *timetableWhereInputResolver) DurationLte(ctx context.Context, obj *ent.
 	panic(fmt.Errorf("not implemented: DurationLte - durationLTE"))
 }
 
+// Duration is the resolver for the duration field.
+func (r *updateTimetableInputResolver) Duration(ctx context.Context, obj *ent.UpdateTimetableInput, data *int) error {
+	var ui = uint8(*data)
+	obj.Duration = &ui
+	return nil
+}
+
 // AuditLog returns AuditLogResolver implementation.
 func (r *Resolver) AuditLog() AuditLogResolver { return &auditLogResolver{r} }
 
@@ -112,8 +122,14 @@ func (r *Resolver) TimetableWhereInput() TimetableWhereInputResolver {
 	return &timetableWhereInputResolver{r}
 }
 
+// UpdateTimetableInput returns UpdateTimetableInputResolver implementation.
+func (r *Resolver) UpdateTimetableInput() UpdateTimetableInputResolver {
+	return &updateTimetableInputResolver{r}
+}
+
 type auditLogResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
 type timetableResolver struct{ *Resolver }
 type createTimetableInputResolver struct{ *Resolver }
 type timetableWhereInputResolver struct{ *Resolver }
+type updateTimetableInputResolver struct{ *Resolver }

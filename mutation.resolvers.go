@@ -6,7 +6,6 @@ package OHMAB
 
 import (
 	"context"
-
 	"github.com/google/uuid"
 	"github.com/hkonitzer/ohmab/ent"
 	"github.com/hkonitzer/ohmab/ent/user"
@@ -34,6 +33,17 @@ func (r *mutationResolver) CreateBusiness(ctx context.Context, input ent.CreateB
 		return nil, err
 	}
 	return b, err
+}
+
+// CreateTimetable is the resolver for the createTimetable field.
+func (r *mutationResolver) CreateTimetable(ctx context.Context, input ent.CreateTimetableInput) (*ent.Timetable, error) {
+	t, err := r.client.Timetable.Create().SetInput(input).Save(ctx)
+	return t, err
+}
+
+// UpdateTimetable is the resolver for the updateTimetable field.
+func (r *mutationResolver) UpdateTimetable(ctx context.Context, id uuid.UUID, input ent.UpdateTimetableInput) (*ent.Timetable, error) {
+	return r.client.Timetable.UpdateOneID(id).SetInput(input).Save(ctx)
 }
 
 // Mutation returns MutationResolver implementation.

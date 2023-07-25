@@ -25,8 +25,7 @@ func (Timetable) Fields() []ent.Field {
 		field.UUID(constants.IDFieldName, uuid.UUID{}).
 			Immutable().Default(uuid.New),
 		field.Time("datetime_from").
-			Annotations(entgql.OrderField("datetime_from")).
-			Optional(),
+			Annotations(entgql.OrderField("datetime_from")),
 		field.Uint8("duration").
 			Positive().Range(1, 24).Optional().
 			SchemaType(map[string]string{
@@ -34,7 +33,8 @@ func (Timetable) Fields() []ent.Field {
 				dialect.Postgres: "SMALLINT", // Override Postgres.
 				dialect.SQLite:   "INTEGER",  // Override SQLite.
 			}).Comment("The duration of the timetable entry in hours, overwrites datetime_to"),
-		field.Time("datetime_to").Comment("The end of the timetable entry, only used if duration is not set"),
+		field.Time("datetime_to").
+			Optional().Comment("The end of the timetable entry, only used if duration is not set"),
 		field.Bool("time_whole_day").Default(false),
 		field.Text("comment").Optional(),
 		field.Text("availability_by_phone").Optional(),
@@ -66,7 +66,7 @@ func (Timetable) Edges() []ent.Edge {
 func (Timetable) Annotations() []schema.Annotation {
 	return []schema.Annotation{
 		entgql.QueryField(),
-		entgql.Mutations(entgql.MutationCreate()),
+		entgql.Mutations(entgql.MutationCreate(), entgql.MutationUpdate()),
 		entgql.MultiOrder(),
 		entgql.RelayConnection(),
 	}
@@ -79,7 +79,8 @@ func (Timetable) Indexes() []ent.Index {
 }
 func (t Timetable) Hooks() []ent.Hook {
 	return []ent.Hook{
-		t.AuditLogForTimetable(),
 		hooks.EnsureDurationIsSet(),
+		hooks.EnsureOnlyOneTimetableEntry(),
+		t.AuditLogForTimetable(),
 	}
 }

@@ -307,16 +307,6 @@ func DatetimeFromLTE(v time.Time) predicate.Timetable {
 	return predicate.Timetable(sql.FieldLTE(FieldDatetimeFrom, v))
 }
 
-// DatetimeFromIsNil applies the IsNil predicate on the "datetime_from" field.
-func DatetimeFromIsNil() predicate.Timetable {
-	return predicate.Timetable(sql.FieldIsNull(FieldDatetimeFrom))
-}
-
-// DatetimeFromNotNil applies the NotNil predicate on the "datetime_from" field.
-func DatetimeFromNotNil() predicate.Timetable {
-	return predicate.Timetable(sql.FieldNotNull(FieldDatetimeFrom))
-}
-
 // DurationEQ applies the EQ predicate on the "duration" field.
 func DurationEQ(v uint8) predicate.Timetable {
 	return predicate.Timetable(sql.FieldEQ(FieldDuration, v))
@@ -405,6 +395,16 @@ func DatetimeToLT(v time.Time) predicate.Timetable {
 // DatetimeToLTE applies the LTE predicate on the "datetime_to" field.
 func DatetimeToLTE(v time.Time) predicate.Timetable {
 	return predicate.Timetable(sql.FieldLTE(FieldDatetimeTo, v))
+}
+
+// DatetimeToIsNil applies the IsNil predicate on the "datetime_to" field.
+func DatetimeToIsNil() predicate.Timetable {
+	return predicate.Timetable(sql.FieldIsNull(FieldDatetimeTo))
+}
+
+// DatetimeToNotNil applies the NotNil predicate on the "datetime_to" field.
+func DatetimeToNotNil() predicate.Timetable {
+	return predicate.Timetable(sql.FieldNotNull(FieldDatetimeTo))
 }
 
 // TimeWholeDayEQ applies the EQ predicate on the "time_whole_day" field.

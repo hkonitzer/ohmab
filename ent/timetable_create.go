@@ -86,14 +86,6 @@ func (tc *TimetableCreate) SetDatetimeFrom(t time.Time) *TimetableCreate {
 	return tc
 }
 
-// SetNillableDatetimeFrom sets the "datetime_from" field if the given value is not nil.
-func (tc *TimetableCreate) SetNillableDatetimeFrom(t *time.Time) *TimetableCreate {
-	if t != nil {
-		tc.SetDatetimeFrom(*t)
-	}
-	return tc
-}
-
 // SetDuration sets the "duration" field.
 func (tc *TimetableCreate) SetDuration(u uint8) *TimetableCreate {
 	tc.mutation.SetDuration(u)
@@ -111,6 +103,14 @@ func (tc *TimetableCreate) SetNillableDuration(u *uint8) *TimetableCreate {
 // SetDatetimeTo sets the "datetime_to" field.
 func (tc *TimetableCreate) SetDatetimeTo(t time.Time) *TimetableCreate {
 	tc.mutation.SetDatetimeTo(t)
+	return tc
+}
+
+// SetNillableDatetimeTo sets the "datetime_to" field if the given value is not nil.
+func (tc *TimetableCreate) SetNillableDatetimeTo(t *time.Time) *TimetableCreate {
+	if t != nil {
+		tc.SetDatetimeTo(*t)
+	}
 	return tc
 }
 
@@ -323,13 +323,13 @@ func (tc *TimetableCreate) check() error {
 			return &ValidationError{Name: "timetable_type", err: fmt.Errorf(`ent: validator failed for field "Timetable.timetable_type": %w`, err)}
 		}
 	}
+	if _, ok := tc.mutation.DatetimeFrom(); !ok {
+		return &ValidationError{Name: "datetime_from", err: errors.New(`ent: missing required field "Timetable.datetime_from"`)}
+	}
 	if v, ok := tc.mutation.Duration(); ok {
 		if err := timetable.DurationValidator(v); err != nil {
 			return &ValidationError{Name: "duration", err: fmt.Errorf(`ent: validator failed for field "Timetable.duration": %w`, err)}
 		}
-	}
-	if _, ok := tc.mutation.DatetimeTo(); !ok {
-		return &ValidationError{Name: "datetime_to", err: errors.New(`ent: missing required field "Timetable.datetime_to"`)}
 	}
 	if _, ok := tc.mutation.TimeWholeDay(); !ok {
 		return &ValidationError{Name: "time_whole_day", err: errors.New(`ent: missing required field "Timetable.time_whole_day"`)}

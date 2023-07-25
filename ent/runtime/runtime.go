@@ -210,6 +210,7 @@ func init() {
 	timetableHooks := schema.Timetable{}.Hooks()
 	timetable.Hooks[0] = timetableHooks[0]
 	timetable.Hooks[1] = timetableHooks[1]
+	timetable.Hooks[2] = timetableHooks[2]
 	timetableMixinFields0 := timetableMixin[0].Fields()
 	_ = timetableMixinFields0
 	timetableMixinFields1 := timetableMixin[1].Fields()

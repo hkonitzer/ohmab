@@ -2873,16 +2873,14 @@ type TimetableWhereInput struct {
 	TimetableTypeNotIn []timetable.TimetableType `json:"timetableTypeNotIn,omitempty"`
 
 	// "datetime_from" field predicates.
-	DatetimeFrom       *time.Time  `json:"datetimeFrom,omitempty"`
-	DatetimeFromNEQ    *time.Time  `json:"datetimeFromNEQ,omitempty"`
-	DatetimeFromIn     []time.Time `json:"datetimeFromIn,omitempty"`
-	DatetimeFromNotIn  []time.Time `json:"datetimeFromNotIn,omitempty"`
-	DatetimeFromGT     *time.Time  `json:"datetimeFromGT,omitempty"`
-	DatetimeFromGTE    *time.Time  `json:"datetimeFromGTE,omitempty"`
-	DatetimeFromLT     *time.Time  `json:"datetimeFromLT,omitempty"`
-	DatetimeFromLTE    *time.Time  `json:"datetimeFromLTE,omitempty"`
-	DatetimeFromIsNil  bool        `json:"datetimeFromIsNil,omitempty"`
-	DatetimeFromNotNil bool        `json:"datetimeFromNotNil,omitempty"`
+	DatetimeFrom      *time.Time  `json:"datetimeFrom,omitempty"`
+	DatetimeFromNEQ   *time.Time  `json:"datetimeFromNEQ,omitempty"`
+	DatetimeFromIn    []time.Time `json:"datetimeFromIn,omitempty"`
+	DatetimeFromNotIn []time.Time `json:"datetimeFromNotIn,omitempty"`
+	DatetimeFromGT    *time.Time  `json:"datetimeFromGT,omitempty"`
+	DatetimeFromGTE   *time.Time  `json:"datetimeFromGTE,omitempty"`
+	DatetimeFromLT    *time.Time  `json:"datetimeFromLT,omitempty"`
+	DatetimeFromLTE   *time.Time  `json:"datetimeFromLTE,omitempty"`
 
 	// "duration" field predicates.
 	Duration       *uint8  `json:"duration,omitempty"`
@@ -2897,14 +2895,16 @@ type TimetableWhereInput struct {
 	DurationNotNil bool    `json:"durationNotNil,omitempty"`
 
 	// "datetime_to" field predicates.
-	DatetimeTo      *time.Time  `json:"datetimeTo,omitempty"`
-	DatetimeToNEQ   *time.Time  `json:"datetimeToNEQ,omitempty"`
-	DatetimeToIn    []time.Time `json:"datetimeToIn,omitempty"`
-	DatetimeToNotIn []time.Time `json:"datetimeToNotIn,omitempty"`
-	DatetimeToGT    *time.Time  `json:"datetimeToGT,omitempty"`
-	DatetimeToGTE   *time.Time  `json:"datetimeToGTE,omitempty"`
-	DatetimeToLT    *time.Time  `json:"datetimeToLT,omitempty"`
-	DatetimeToLTE   *time.Time  `json:"datetimeToLTE,omitempty"`
+	DatetimeTo       *time.Time  `json:"datetimeTo,omitempty"`
+	DatetimeToNEQ    *time.Time  `json:"datetimeToNEQ,omitempty"`
+	DatetimeToIn     []time.Time `json:"datetimeToIn,omitempty"`
+	DatetimeToNotIn  []time.Time `json:"datetimeToNotIn,omitempty"`
+	DatetimeToGT     *time.Time  `json:"datetimeToGT,omitempty"`
+	DatetimeToGTE    *time.Time  `json:"datetimeToGTE,omitempty"`
+	DatetimeToLT     *time.Time  `json:"datetimeToLT,omitempty"`
+	DatetimeToLTE    *time.Time  `json:"datetimeToLTE,omitempty"`
+	DatetimeToIsNil  bool        `json:"datetimeToIsNil,omitempty"`
+	DatetimeToNotNil bool        `json:"datetimeToNotNil,omitempty"`
 
 	// "time_whole_day" field predicates.
 	TimeWholeDay    *bool `json:"timeWholeDay,omitempty"`
@@ -3213,12 +3213,6 @@ func (i *TimetableWhereInput) P() (predicate.Timetable, error) {
 	if i.DatetimeFromLTE != nil {
 		predicates = append(predicates, timetable.DatetimeFromLTE(*i.DatetimeFromLTE))
 	}
-	if i.DatetimeFromIsNil {
-		predicates = append(predicates, timetable.DatetimeFromIsNil())
-	}
-	if i.DatetimeFromNotNil {
-		predicates = append(predicates, timetable.DatetimeFromNotNil())
-	}
 	if i.Duration != nil {
 		predicates = append(predicates, timetable.DurationEQ(*i.Duration))
 	}
@@ -3272,6 +3266,12 @@ func (i *TimetableWhereInput) P() (predicate.Timetable, error) {
 	}
 	if i.DatetimeToLTE != nil {
 		predicates = append(predicates, timetable.DatetimeToLTE(*i.DatetimeToLTE))
+	}
+	if i.DatetimeToIsNil {
+		predicates = append(predicates, timetable.DatetimeToIsNil())
+	}
+	if i.DatetimeToNotNil {
+		predicates = append(predicates, timetable.DatetimeToNotNil())
 	}
 	if i.TimeWholeDay != nil {
 		predicates = append(predicates, timetable.TimeWholeDayEQ(*i.TimeWholeDay))

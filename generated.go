@@ -49,6 +49,7 @@ type ResolverRoot interface {
 	Timetable() TimetableResolver
 	CreateTimetableInput() CreateTimetableInputResolver
 	TimetableWhereInput() TimetableWhereInputResolver
+	UpdateTimetableInput() UpdateTimetableInputResolver
 }
 
 type DirectiveRoot struct {
@@ -139,7 +140,9 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		CreateBusiness func(childComplexity int, input ent.CreateBusinessInput) int
+		CreateBusiness  func(childComplexity int, input ent.CreateBusinessInput) int
+		CreateTimetable func(childComplexity int, input ent.CreateTimetableInput) int
+		UpdateTimetable func(childComplexity int, id uuid.UUID, input ent.UpdateTimetableInput) int
 	}
 
 	PageInfo struct {
@@ -220,6 +223,8 @@ type AuditLogResolver interface {
 }
 type MutationResolver interface {
 	CreateBusiness(ctx context.Context, input ent.CreateBusinessInput) (*ent.Business, error)
+	CreateTimetable(ctx context.Context, input ent.CreateTimetableInput) (*ent.Timetable, error)
+	UpdateTimetable(ctx context.Context, id uuid.UUID, input ent.UpdateTimetableInput) (*ent.Timetable, error)
 }
 type QueryResolver interface {
 	Node(ctx context.Context, id uuid.UUID) (ent.Noder, error)
@@ -244,6 +249,9 @@ type TimetableWhereInputResolver interface {
 	DurationGte(ctx context.Context, obj *ent.TimetableWhereInput, data *int) error
 	DurationLt(ctx context.Context, obj *ent.TimetableWhereInput, data *int) error
 	DurationLte(ctx context.Context, obj *ent.TimetableWhereInput, data *int) error
+}
+type UpdateTimetableInputResolver interface {
+	Duration(ctx context.Context, obj *ent.UpdateTimetableInput, data *int) error
 }
 
 type executableSchema struct {
@@ -686,6 +694,30 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.CreateBusiness(childComplexity, args["input"].(ent.CreateBusinessInput)), true
 
+	case "Mutation.createTimetable":
+		if e.complexity.Mutation.CreateTimetable == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createTimetable_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateTimetable(childComplexity, args["input"].(ent.CreateTimetableInput)), true
+
+	case "Mutation.updateTimetable":
+		if e.complexity.Mutation.UpdateTimetable == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateTimetable_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateTimetable(childComplexity, args["id"].(uuid.UUID), args["input"].(ent.UpdateTimetableInput)), true
+
 	case "PageInfo.endCursor":
 		if e.complexity.PageInfo.EndCursor == nil {
 			break
@@ -1088,6 +1120,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputTagWhereInput,
 		ec.unmarshalInputTimetableOrder,
 		ec.unmarshalInputTimetableWhereInput,
+		ec.unmarshalInputUpdateTimetableInput,
 		ec.unmarshalInputUserOrder,
 		ec.unmarshalInputUserWhereInput,
 	)
@@ -1186,7 +1219,7 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 	return introspection.WrapTypeFromDef(parsedSchema, parsedSchema.Types[name]), nil
 }
 
-//go:embed "ent.graphql" "business.graphql"
+//go:embed "ent.graphql" "mutation.graphql"
 var sourcesFS embed.FS
 
 func sourceData(filename string) string {
@@ -1199,7 +1232,7 @@ func sourceData(filename string) string {
 
 var sources = []*ast.Source{
 	{Name: "ent.graphql", Input: sourceData("ent.graphql"), BuiltIn: false},
-	{Name: "business.graphql", Input: sourceData("business.graphql"), BuiltIn: false},
+	{Name: "mutation.graphql", Input: sourceData("mutation.graphql"), BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
@@ -1213,12 +1246,51 @@ func (ec *executionContext) field_Mutation_createBusiness_args(ctx context.Conte
 	var arg0 ent.CreateBusinessInput
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNCreateBusinessInput2hynieᚗdeᚋohmabᚋentᚐCreateBusinessInput(ctx, tmp)
+		arg0, err = ec.unmarshalNCreateBusinessInput2githubᚗcomᚋhkonitzerᚋohmabᚋentᚐCreateBusinessInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
 	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_createTimetable_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 ent.CreateTimetableInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNCreateTimetableInput2githubᚗcomᚋhkonitzerᚋohmabᚋentᚐCreateTimetableInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateTimetable_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 uuid.UUID
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 ent.UpdateTimetableInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg1, err = ec.unmarshalNUpdateTimetableInput2githubᚗcomᚋhkonitzerᚋohmabᚋentᚐUpdateTimetableInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg1
 	return args, nil
 }
 
@@ -1279,7 +1351,7 @@ func (ec *executionContext) field_Query_addresses_args(ctx context.Context, rawA
 	var arg4 *ent.AddressWhereInput
 	if tmp, ok := rawArgs["where"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("where"))
-		arg4, err = ec.unmarshalOAddressWhereInput2ᚖhynieᚗdeᚋohmabᚋentᚐAddressWhereInput(ctx, tmp)
+		arg4, err = ec.unmarshalOAddressWhereInput2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐAddressWhereInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1330,7 +1402,7 @@ func (ec *executionContext) field_Query_businesses_args(ctx context.Context, raw
 	var arg4 []*ent.BusinessOrder
 	if tmp, ok := rawArgs["orderBy"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("orderBy"))
-		arg4, err = ec.unmarshalOBusinessOrder2ᚕᚖhynieᚗdeᚋohmabᚋentᚐBusinessOrderᚄ(ctx, tmp)
+		arg4, err = ec.unmarshalOBusinessOrder2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐBusinessOrderᚄ(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1339,7 +1411,7 @@ func (ec *executionContext) field_Query_businesses_args(ctx context.Context, raw
 	var arg5 *ent.BusinessWhereInput
 	if tmp, ok := rawArgs["where"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("where"))
-		arg5, err = ec.unmarshalOBusinessWhereInput2ᚖhynieᚗdeᚋohmabᚋentᚐBusinessWhereInput(ctx, tmp)
+		arg5, err = ec.unmarshalOBusinessWhereInput2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐBusinessWhereInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1420,7 +1492,7 @@ func (ec *executionContext) field_Query_timetables_args(ctx context.Context, raw
 	var arg4 []*ent.TimetableOrder
 	if tmp, ok := rawArgs["orderBy"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("orderBy"))
-		arg4, err = ec.unmarshalOTimetableOrder2ᚕᚖhynieᚗdeᚋohmabᚋentᚐTimetableOrderᚄ(ctx, tmp)
+		arg4, err = ec.unmarshalOTimetableOrder2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐTimetableOrderᚄ(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1429,7 +1501,7 @@ func (ec *executionContext) field_Query_timetables_args(ctx context.Context, raw
 	var arg5 *ent.TimetableWhereInput
 	if tmp, ok := rawArgs["where"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("where"))
-		arg5, err = ec.unmarshalOTimetableWhereInput2ᚖhynieᚗdeᚋohmabᚋentᚐTimetableWhereInput(ctx, tmp)
+		arg5, err = ec.unmarshalOTimetableWhereInput2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐTimetableWhereInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -2090,7 +2162,7 @@ func (ec *executionContext) _Address_business(ctx context.Context, field graphql
 	}
 	res := resTmp.(*ent.Business)
 	fc.Result = res
-	return ec.marshalOBusiness2ᚖhynieᚗdeᚋohmabᚋentᚐBusiness(ctx, field.Selections, res)
+	return ec.marshalOBusiness2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐBusiness(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Address_business(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2163,7 +2235,7 @@ func (ec *executionContext) _Address_timetables(ctx context.Context, field graph
 	}
 	res := resTmp.([]*ent.Timetable)
 	fc.Result = res
-	return ec.marshalOTimetable2ᚕᚖhynieᚗdeᚋohmabᚋentᚐTimetableᚄ(ctx, field.Selections, res)
+	return ec.marshalOTimetable2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐTimetableᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Address_timetables(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2238,7 +2310,7 @@ func (ec *executionContext) _AddressConnection_edges(ctx context.Context, field 
 	}
 	res := resTmp.([]*ent.AddressEdge)
 	fc.Result = res
-	return ec.marshalOAddressEdge2ᚕᚖhynieᚗdeᚋohmabᚋentᚐAddressEdge(ctx, field.Selections, res)
+	return ec.marshalOAddressEdge2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐAddressEdge(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_AddressConnection_edges(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2383,7 +2455,7 @@ func (ec *executionContext) _AddressEdge_node(ctx context.Context, field graphql
 	}
 	res := resTmp.(*ent.Address)
 	fc.Result = res
-	return ec.marshalOAddress2ᚖhynieᚗdeᚋohmabᚋentᚐAddress(ctx, field.Selections, res)
+	return ec.marshalOAddress2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐAddress(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_AddressEdge_node(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3314,7 +3386,7 @@ func (ec *executionContext) _Business_addresses(ctx context.Context, field graph
 	}
 	res := resTmp.([]*ent.Address)
 	fc.Result = res
-	return ec.marshalOAddress2ᚕᚖhynieᚗdeᚋohmabᚋentᚐAddressᚄ(ctx, field.Selections, res)
+	return ec.marshalOAddress2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐAddressᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Business_addresses(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3389,7 +3461,7 @@ func (ec *executionContext) _Business_tags(ctx context.Context, field graphql.Co
 	}
 	res := resTmp.([]*ent.Tag)
 	fc.Result = res
-	return ec.marshalOTag2ᚕᚖhynieᚗdeᚋohmabᚋentᚐTagᚄ(ctx, field.Selections, res)
+	return ec.marshalOTag2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐTagᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Business_tags(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3448,7 +3520,7 @@ func (ec *executionContext) _Business_users(ctx context.Context, field graphql.C
 	}
 	res := resTmp.([]*ent.User)
 	fc.Result = res
-	return ec.marshalOUser2ᚕᚖhynieᚗdeᚋohmabᚋentᚐUserᚄ(ctx, field.Selections, res)
+	return ec.marshalOUser2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐUserᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Business_users(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3517,7 +3589,7 @@ func (ec *executionContext) _BusinessConnection_edges(ctx context.Context, field
 	}
 	res := resTmp.([]*ent.BusinessEdge)
 	fc.Result = res
-	return ec.marshalOBusinessEdge2ᚕᚖhynieᚗdeᚋohmabᚋentᚐBusinessEdge(ctx, field.Selections, res)
+	return ec.marshalOBusinessEdge2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐBusinessEdge(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_BusinessConnection_edges(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3662,7 +3734,7 @@ func (ec *executionContext) _BusinessEdge_node(ctx context.Context, field graphq
 	}
 	res := resTmp.(*ent.Business)
 	fc.Result = res
-	return ec.marshalOBusiness2ᚖhynieᚗdeᚋohmabᚋentᚐBusiness(ctx, field.Selections, res)
+	return ec.marshalOBusiness2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐBusiness(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_BusinessEdge_node(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3955,7 +4027,7 @@ func (ec *executionContext) _Content_timetableType(ctx context.Context, field gr
 	}
 	res := resTmp.(content.TimetableType)
 	fc.Result = res
-	return ec.marshalNContentTimetableType2hynieᚗdeᚋohmabᚋentᚋcontentᚐTimetableType(ctx, field.Selections, res)
+	return ec.marshalNContentTimetableType2githubᚗcomᚋhkonitzerᚋohmabᚋentᚋcontentᚐTimetableType(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Content_timetableType(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3999,7 +4071,7 @@ func (ec *executionContext) _Content_type(ctx context.Context, field graphql.Col
 	}
 	res := resTmp.(content.Type)
 	fc.Result = res
-	return ec.marshalNContentType2hynieᚗdeᚋohmabᚋentᚋcontentᚐType(ctx, field.Selections, res)
+	return ec.marshalNContentType2githubᚗcomᚋhkonitzerᚋohmabᚋentᚋcontentᚐType(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Content_type(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4087,7 +4159,7 @@ func (ec *executionContext) _Content_location(ctx context.Context, field graphql
 	}
 	res := resTmp.(content.Location)
 	fc.Result = res
-	return ec.marshalNContentLocation2hynieᚗdeᚋohmabᚋentᚋcontentᚐLocation(ctx, field.Selections, res)
+	return ec.marshalNContentLocation2githubᚗcomᚋhkonitzerᚋohmabᚋentᚋcontentᚐLocation(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Content_location(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4175,7 +4247,7 @@ func (ec *executionContext) _Content_status(ctx context.Context, field graphql.C
 	}
 	res := resTmp.(content.Status)
 	fc.Result = res
-	return ec.marshalNContentStatus2hynieᚗdeᚋohmabᚋentᚋcontentᚐStatus(ctx, field.Selections, res)
+	return ec.marshalNContentStatus2githubᚗcomᚋhkonitzerᚋohmabᚋentᚋcontentᚐStatus(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Content_status(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4257,7 +4329,7 @@ func (ec *executionContext) _Mutation_createBusiness(ctx context.Context, field 
 	}
 	res := resTmp.(*ent.Business)
 	fc.Result = res
-	return ec.marshalOBusiness2ᚖhynieᚗdeᚋohmabᚋentᚐBusiness(ctx, field.Selections, res)
+	return ec.marshalOBusiness2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐBusiness(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_createBusiness(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4310,6 +4382,178 @@ func (ec *executionContext) fieldContext_Mutation_createBusiness(ctx context.Con
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_createBusiness_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_createTimetable(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_createTimetable(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateTimetable(rctx, fc.Args["input"].(ent.CreateTimetableInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Timetable)
+	fc.Result = res
+	return ec.marshalOTimetable2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐTimetable(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_createTimetable(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Timetable_id(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Timetable_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Timetable_updatedAt(ctx, field)
+			case "deletedAt":
+				return ec.fieldContext_Timetable_deletedAt(ctx, field)
+			case "timetableType":
+				return ec.fieldContext_Timetable_timetableType(ctx, field)
+			case "datetimeFrom":
+				return ec.fieldContext_Timetable_datetimeFrom(ctx, field)
+			case "duration":
+				return ec.fieldContext_Timetable_duration(ctx, field)
+			case "datetimeTo":
+				return ec.fieldContext_Timetable_datetimeTo(ctx, field)
+			case "timeWholeDay":
+				return ec.fieldContext_Timetable_timeWholeDay(ctx, field)
+			case "comment":
+				return ec.fieldContext_Timetable_comment(ctx, field)
+			case "availabilityByPhone":
+				return ec.fieldContext_Timetable_availabilityByPhone(ctx, field)
+			case "availabilityByEmail":
+				return ec.fieldContext_Timetable_availabilityByEmail(ctx, field)
+			case "availabilityBySms":
+				return ec.fieldContext_Timetable_availabilityBySms(ctx, field)
+			case "availabilityByWhatsapp":
+				return ec.fieldContext_Timetable_availabilityByWhatsapp(ctx, field)
+			case "address":
+				return ec.fieldContext_Timetable_address(ctx, field)
+			case "usersOnDuty":
+				return ec.fieldContext_Timetable_usersOnDuty(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Timetable", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_createTimetable_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_updateTimetable(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_updateTimetable(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateTimetable(rctx, fc.Args["id"].(uuid.UUID), fc.Args["input"].(ent.UpdateTimetableInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Timetable)
+	fc.Result = res
+	return ec.marshalOTimetable2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐTimetable(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_updateTimetable(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Timetable_id(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Timetable_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Timetable_updatedAt(ctx, field)
+			case "deletedAt":
+				return ec.fieldContext_Timetable_deletedAt(ctx, field)
+			case "timetableType":
+				return ec.fieldContext_Timetable_timetableType(ctx, field)
+			case "datetimeFrom":
+				return ec.fieldContext_Timetable_datetimeFrom(ctx, field)
+			case "duration":
+				return ec.fieldContext_Timetable_duration(ctx, field)
+			case "datetimeTo":
+				return ec.fieldContext_Timetable_datetimeTo(ctx, field)
+			case "timeWholeDay":
+				return ec.fieldContext_Timetable_timeWholeDay(ctx, field)
+			case "comment":
+				return ec.fieldContext_Timetable_comment(ctx, field)
+			case "availabilityByPhone":
+				return ec.fieldContext_Timetable_availabilityByPhone(ctx, field)
+			case "availabilityByEmail":
+				return ec.fieldContext_Timetable_availabilityByEmail(ctx, field)
+			case "availabilityBySms":
+				return ec.fieldContext_Timetable_availabilityBySms(ctx, field)
+			case "availabilityByWhatsapp":
+				return ec.fieldContext_Timetable_availabilityByWhatsapp(ctx, field)
+			case "address":
+				return ec.fieldContext_Timetable_address(ctx, field)
+			case "usersOnDuty":
+				return ec.fieldContext_Timetable_usersOnDuty(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Timetable", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_updateTimetable_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -4511,7 +4755,7 @@ func (ec *executionContext) _Query_node(ctx context.Context, field graphql.Colle
 	}
 	res := resTmp.(ent.Noder)
 	fc.Result = res
-	return ec.marshalONode2hynieᚗdeᚋohmabᚋentᚐNoder(ctx, field.Selections, res)
+	return ec.marshalONode2githubᚗcomᚋhkonitzerᚋohmabᚋentᚐNoder(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_node(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4566,7 +4810,7 @@ func (ec *executionContext) _Query_nodes(ctx context.Context, field graphql.Coll
 	}
 	res := resTmp.([]ent.Noder)
 	fc.Result = res
-	return ec.marshalNNode2ᚕhynieᚗdeᚋohmabᚋentᚐNoder(ctx, field.Selections, res)
+	return ec.marshalNNode2ᚕgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐNoder(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_nodes(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4621,7 +4865,7 @@ func (ec *executionContext) _Query_addresses(ctx context.Context, field graphql.
 	}
 	res := resTmp.(*ent.AddressConnection)
 	fc.Result = res
-	return ec.marshalNAddressConnection2ᚖhynieᚗdeᚋohmabᚋentᚐAddressConnection(ctx, field.Selections, res)
+	return ec.marshalNAddressConnection2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐAddressConnection(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_addresses(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4684,7 +4928,7 @@ func (ec *executionContext) _Query_businesses(ctx context.Context, field graphql
 	}
 	res := resTmp.(*ent.BusinessConnection)
 	fc.Result = res
-	return ec.marshalNBusinessConnection2ᚖhynieᚗdeᚋohmabᚋentᚐBusinessConnection(ctx, field.Selections, res)
+	return ec.marshalNBusinessConnection2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐBusinessConnection(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_businesses(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4747,7 +4991,7 @@ func (ec *executionContext) _Query_timetables(ctx context.Context, field graphql
 	}
 	res := resTmp.(*ent.TimetableConnection)
 	fc.Result = res
-	return ec.marshalNTimetableConnection2ᚖhynieᚗdeᚋohmabᚋentᚐTimetableConnection(ctx, field.Selections, res)
+	return ec.marshalNTimetableConnection2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐTimetableConnection(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_timetables(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -5194,7 +5438,7 @@ func (ec *executionContext) _Tag_business(ctx context.Context, field graphql.Col
 	}
 	res := resTmp.([]*ent.Business)
 	fc.Result = res
-	return ec.marshalOBusiness2ᚕᚖhynieᚗdeᚋohmabᚋentᚐBusinessᚄ(ctx, field.Selections, res)
+	return ec.marshalOBusiness2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐBusinessᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Tag_business(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -5267,7 +5511,7 @@ func (ec *executionContext) _Tag_user(ctx context.Context, field graphql.Collect
 	}
 	res := resTmp.([]*ent.User)
 	fc.Result = res
-	return ec.marshalOUser2ᚕᚖhynieᚗdeᚋohmabᚋentᚐUserᚄ(ctx, field.Selections, res)
+	return ec.marshalOUser2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐUserᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Tag_user(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -5512,7 +5756,7 @@ func (ec *executionContext) _Timetable_timetableType(ctx context.Context, field 
 	}
 	res := resTmp.(timetable.TimetableType)
 	fc.Result = res
-	return ec.marshalNTimetableTimetableType2hynieᚗdeᚋohmabᚋentᚋtimetableᚐTimetableType(ctx, field.Selections, res)
+	return ec.marshalNTimetableTimetableType2githubᚗcomᚋhkonitzerᚋohmabᚋentᚋtimetableᚐTimetableType(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Timetable_timetableType(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -5549,11 +5793,14 @@ func (ec *executionContext) _Timetable_datetimeFrom(ctx context.Context, field g
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
 	res := resTmp.(time.Time)
 	fc.Result = res
-	return ec.marshalOTime2timeᚐTime(ctx, field.Selections, res)
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Timetable_datetimeFrom(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -5631,14 +5878,11 @@ func (ec *executionContext) _Timetable_datetimeTo(ctx context.Context, field gra
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
 	res := resTmp.(time.Time)
 	fc.Result = res
-	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+	return ec.marshalOTime2timeᚐTime(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Timetable_datetimeTo(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -5931,7 +6175,7 @@ func (ec *executionContext) _Timetable_address(ctx context.Context, field graphq
 	}
 	res := resTmp.(*ent.Address)
 	fc.Result = res
-	return ec.marshalNAddress2ᚖhynieᚗdeᚋohmabᚋentᚐAddress(ctx, field.Selections, res)
+	return ec.marshalNAddress2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐAddress(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Timetable_address(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -6006,7 +6250,7 @@ func (ec *executionContext) _Timetable_usersOnDuty(ctx context.Context, field gr
 	}
 	res := resTmp.([]*ent.User)
 	fc.Result = res
-	return ec.marshalOUser2ᚕᚖhynieᚗdeᚋohmabᚋentᚐUserᚄ(ctx, field.Selections, res)
+	return ec.marshalOUser2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐUserᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Timetable_usersOnDuty(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -6075,7 +6319,7 @@ func (ec *executionContext) _TimetableConnection_edges(ctx context.Context, fiel
 	}
 	res := resTmp.([]*ent.TimetableEdge)
 	fc.Result = res
-	return ec.marshalOTimetableEdge2ᚕᚖhynieᚗdeᚋohmabᚋentᚐTimetableEdge(ctx, field.Selections, res)
+	return ec.marshalOTimetableEdge2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐTimetableEdge(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_TimetableConnection_edges(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -6220,7 +6464,7 @@ func (ec *executionContext) _TimetableEdge_node(ctx context.Context, field graph
 	}
 	res := resTmp.(*ent.Timetable)
 	fc.Result = res
-	return ec.marshalOTimetable2ᚖhynieᚗdeᚋohmabᚋentᚐTimetable(ctx, field.Selections, res)
+	return ec.marshalOTimetable2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐTimetable(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_TimetableEdge_node(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -6770,7 +7014,7 @@ func (ec *executionContext) _User_businesses(ctx context.Context, field graphql.
 	}
 	res := resTmp.([]*ent.Business)
 	fc.Result = res
-	return ec.marshalOBusiness2ᚕᚖhynieᚗdeᚋohmabᚋentᚐBusinessᚄ(ctx, field.Selections, res)
+	return ec.marshalOBusiness2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐBusinessᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_User_businesses(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -6843,7 +7087,7 @@ func (ec *executionContext) _User_tags(ctx context.Context, field graphql.Collec
 	}
 	res := resTmp.([]*ent.Tag)
 	fc.Result = res
-	return ec.marshalOTag2ᚕᚖhynieᚗdeᚋohmabᚋentᚐTagᚄ(ctx, field.Selections, res)
+	return ec.marshalOTag2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐTagᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_User_tags(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -6902,7 +7146,7 @@ func (ec *executionContext) _User_timetable(ctx context.Context, field graphql.C
 	}
 	res := resTmp.([]*ent.Timetable)
 	fc.Result = res
-	return ec.marshalOTimetable2ᚕᚖhynieᚗdeᚋohmabᚋentᚐTimetableᚄ(ctx, field.Selections, res)
+	return ec.marshalOTimetable2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐTimetableᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_User_timetable(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -8743,7 +8987,7 @@ func (ec *executionContext) unmarshalInputAddressWhereInput(ctx context.Context,
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("not"))
-			data, err := ec.unmarshalOAddressWhereInput2ᚖhynieᚗdeᚋohmabᚋentᚐAddressWhereInput(ctx, v)
+			data, err := ec.unmarshalOAddressWhereInput2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐAddressWhereInput(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -8752,7 +8996,7 @@ func (ec *executionContext) unmarshalInputAddressWhereInput(ctx context.Context,
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("and"))
-			data, err := ec.unmarshalOAddressWhereInput2ᚕᚖhynieᚗdeᚋohmabᚋentᚐAddressWhereInputᚄ(ctx, v)
+			data, err := ec.unmarshalOAddressWhereInput2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐAddressWhereInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -8761,7 +9005,7 @@ func (ec *executionContext) unmarshalInputAddressWhereInput(ctx context.Context,
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("or"))
-			data, err := ec.unmarshalOAddressWhereInput2ᚕᚖhynieᚗdeᚋohmabᚋentᚐAddressWhereInputᚄ(ctx, v)
+			data, err := ec.unmarshalOAddressWhereInput2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐAddressWhereInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -10300,7 +10544,7 @@ func (ec *executionContext) unmarshalInputAddressWhereInput(ctx context.Context,
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasBusinessWith"))
-			data, err := ec.unmarshalOBusinessWhereInput2ᚕᚖhynieᚗdeᚋohmabᚋentᚐBusinessWhereInputᚄ(ctx, v)
+			data, err := ec.unmarshalOBusinessWhereInput2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐBusinessWhereInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -10318,7 +10562,7 @@ func (ec *executionContext) unmarshalInputAddressWhereInput(ctx context.Context,
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasTimetablesWith"))
-			data, err := ec.unmarshalOTimetableWhereInput2ᚕᚖhynieᚗdeᚋohmabᚋentᚐTimetableWhereInputᚄ(ctx, v)
+			data, err := ec.unmarshalOTimetableWhereInput2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐTimetableWhereInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -10347,7 +10591,7 @@ func (ec *executionContext) unmarshalInputAuditLogWhereInput(ctx context.Context
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("not"))
-			data, err := ec.unmarshalOAuditLogWhereInput2ᚖhynieᚗdeᚋohmabᚋentᚐAuditLogWhereInput(ctx, v)
+			data, err := ec.unmarshalOAuditLogWhereInput2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐAuditLogWhereInput(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -10356,7 +10600,7 @@ func (ec *executionContext) unmarshalInputAuditLogWhereInput(ctx context.Context
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("and"))
-			data, err := ec.unmarshalOAuditLogWhereInput2ᚕᚖhynieᚗdeᚋohmabᚋentᚐAuditLogWhereInputᚄ(ctx, v)
+			data, err := ec.unmarshalOAuditLogWhereInput2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐAuditLogWhereInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -10365,7 +10609,7 @@ func (ec *executionContext) unmarshalInputAuditLogWhereInput(ctx context.Context
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("or"))
-			data, err := ec.unmarshalOAuditLogWhereInput2ᚕᚖhynieᚗdeᚋohmabᚋentᚐAuditLogWhereInputᚄ(ctx, v)
+			data, err := ec.unmarshalOAuditLogWhereInput2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐAuditLogWhereInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -11037,7 +11281,7 @@ func (ec *executionContext) unmarshalInputBusinessOrder(ctx context.Context, obj
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("field"))
-			data, err := ec.unmarshalNBusinessOrderField2ᚖhynieᚗdeᚋohmabᚋentᚐBusinessOrderField(ctx, v)
+			data, err := ec.unmarshalNBusinessOrderField2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐBusinessOrderField(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -11066,7 +11310,7 @@ func (ec *executionContext) unmarshalInputBusinessWhereInput(ctx context.Context
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("not"))
-			data, err := ec.unmarshalOBusinessWhereInput2ᚖhynieᚗdeᚋohmabᚋentᚐBusinessWhereInput(ctx, v)
+			data, err := ec.unmarshalOBusinessWhereInput2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐBusinessWhereInput(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -11075,7 +11319,7 @@ func (ec *executionContext) unmarshalInputBusinessWhereInput(ctx context.Context
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("and"))
-			data, err := ec.unmarshalOBusinessWhereInput2ᚕᚖhynieᚗdeᚋohmabᚋentᚐBusinessWhereInputᚄ(ctx, v)
+			data, err := ec.unmarshalOBusinessWhereInput2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐBusinessWhereInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -11084,7 +11328,7 @@ func (ec *executionContext) unmarshalInputBusinessWhereInput(ctx context.Context
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("or"))
-			data, err := ec.unmarshalOBusinessWhereInput2ᚕᚖhynieᚗdeᚋohmabᚋentᚐBusinessWhereInputᚄ(ctx, v)
+			data, err := ec.unmarshalOBusinessWhereInput2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐBusinessWhereInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -12335,7 +12579,7 @@ func (ec *executionContext) unmarshalInputBusinessWhereInput(ctx context.Context
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasAddressesWith"))
-			data, err := ec.unmarshalOAddressWhereInput2ᚕᚖhynieᚗdeᚋohmabᚋentᚐAddressWhereInputᚄ(ctx, v)
+			data, err := ec.unmarshalOAddressWhereInput2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐAddressWhereInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -12353,7 +12597,7 @@ func (ec *executionContext) unmarshalInputBusinessWhereInput(ctx context.Context
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasTagsWith"))
-			data, err := ec.unmarshalOTagWhereInput2ᚕᚖhynieᚗdeᚋohmabᚋentᚐTagWhereInputᚄ(ctx, v)
+			data, err := ec.unmarshalOTagWhereInput2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐTagWhereInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -12371,7 +12615,7 @@ func (ec *executionContext) unmarshalInputBusinessWhereInput(ctx context.Context
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasUsersWith"))
-			data, err := ec.unmarshalOUserWhereInput2ᚕᚖhynieᚗdeᚋohmabᚋentᚐUserWhereInputᚄ(ctx, v)
+			data, err := ec.unmarshalOUserWhereInput2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐUserWhereInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -12413,7 +12657,7 @@ func (ec *executionContext) unmarshalInputContentOrder(ctx context.Context, obj 
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("field"))
-			data, err := ec.unmarshalNContentOrderField2ᚖhynieᚗdeᚋohmabᚋentᚐContentOrderField(ctx, v)
+			data, err := ec.unmarshalNContentOrderField2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐContentOrderField(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -12442,7 +12686,7 @@ func (ec *executionContext) unmarshalInputContentWhereInput(ctx context.Context,
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("not"))
-			data, err := ec.unmarshalOContentWhereInput2ᚖhynieᚗdeᚋohmabᚋentᚐContentWhereInput(ctx, v)
+			data, err := ec.unmarshalOContentWhereInput2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐContentWhereInput(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -12451,7 +12695,7 @@ func (ec *executionContext) unmarshalInputContentWhereInput(ctx context.Context,
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("and"))
-			data, err := ec.unmarshalOContentWhereInput2ᚕᚖhynieᚗdeᚋohmabᚋentᚐContentWhereInputᚄ(ctx, v)
+			data, err := ec.unmarshalOContentWhereInput2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐContentWhereInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -12460,7 +12704,7 @@ func (ec *executionContext) unmarshalInputContentWhereInput(ctx context.Context,
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("or"))
-			data, err := ec.unmarshalOContentWhereInput2ᚕᚖhynieᚗdeᚋohmabᚋentᚐContentWhereInputᚄ(ctx, v)
+			data, err := ec.unmarshalOContentWhereInput2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐContentWhereInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -12775,7 +13019,7 @@ func (ec *executionContext) unmarshalInputContentWhereInput(ctx context.Context,
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("timetableType"))
-			data, err := ec.unmarshalOContentTimetableType2ᚖhynieᚗdeᚋohmabᚋentᚋcontentᚐTimetableType(ctx, v)
+			data, err := ec.unmarshalOContentTimetableType2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚋcontentᚐTimetableType(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -12784,7 +13028,7 @@ func (ec *executionContext) unmarshalInputContentWhereInput(ctx context.Context,
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("timetableTypeNEQ"))
-			data, err := ec.unmarshalOContentTimetableType2ᚖhynieᚗdeᚋohmabᚋentᚋcontentᚐTimetableType(ctx, v)
+			data, err := ec.unmarshalOContentTimetableType2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚋcontentᚐTimetableType(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -12793,7 +13037,7 @@ func (ec *executionContext) unmarshalInputContentWhereInput(ctx context.Context,
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("timetableTypeIn"))
-			data, err := ec.unmarshalOContentTimetableType2ᚕhynieᚗdeᚋohmabᚋentᚋcontentᚐTimetableTypeᚄ(ctx, v)
+			data, err := ec.unmarshalOContentTimetableType2ᚕgithubᚗcomᚋhkonitzerᚋohmabᚋentᚋcontentᚐTimetableTypeᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -12802,7 +13046,7 @@ func (ec *executionContext) unmarshalInputContentWhereInput(ctx context.Context,
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("timetableTypeNotIn"))
-			data, err := ec.unmarshalOContentTimetableType2ᚕhynieᚗdeᚋohmabᚋentᚋcontentᚐTimetableTypeᚄ(ctx, v)
+			data, err := ec.unmarshalOContentTimetableType2ᚕgithubᚗcomᚋhkonitzerᚋohmabᚋentᚋcontentᚐTimetableTypeᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -12811,7 +13055,7 @@ func (ec *executionContext) unmarshalInputContentWhereInput(ctx context.Context,
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("type"))
-			data, err := ec.unmarshalOContentType2ᚖhynieᚗdeᚋohmabᚋentᚋcontentᚐType(ctx, v)
+			data, err := ec.unmarshalOContentType2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚋcontentᚐType(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -12820,7 +13064,7 @@ func (ec *executionContext) unmarshalInputContentWhereInput(ctx context.Context,
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("typeNEQ"))
-			data, err := ec.unmarshalOContentType2ᚖhynieᚗdeᚋohmabᚋentᚋcontentᚐType(ctx, v)
+			data, err := ec.unmarshalOContentType2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚋcontentᚐType(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -12829,7 +13073,7 @@ func (ec *executionContext) unmarshalInputContentWhereInput(ctx context.Context,
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("typeIn"))
-			data, err := ec.unmarshalOContentType2ᚕhynieᚗdeᚋohmabᚋentᚋcontentᚐTypeᚄ(ctx, v)
+			data, err := ec.unmarshalOContentType2ᚕgithubᚗcomᚋhkonitzerᚋohmabᚋentᚋcontentᚐTypeᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -12838,7 +13082,7 @@ func (ec *executionContext) unmarshalInputContentWhereInput(ctx context.Context,
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("typeNotIn"))
-			data, err := ec.unmarshalOContentType2ᚕhynieᚗdeᚋohmabᚋentᚋcontentᚐTypeᚄ(ctx, v)
+			data, err := ec.unmarshalOContentType2ᚕgithubᚗcomᚋhkonitzerᚋohmabᚋentᚋcontentᚐTypeᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -12964,7 +13208,7 @@ func (ec *executionContext) unmarshalInputContentWhereInput(ctx context.Context,
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("location"))
-			data, err := ec.unmarshalOContentLocation2ᚖhynieᚗdeᚋohmabᚋentᚋcontentᚐLocation(ctx, v)
+			data, err := ec.unmarshalOContentLocation2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚋcontentᚐLocation(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -12973,7 +13217,7 @@ func (ec *executionContext) unmarshalInputContentWhereInput(ctx context.Context,
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("locationNEQ"))
-			data, err := ec.unmarshalOContentLocation2ᚖhynieᚗdeᚋohmabᚋentᚋcontentᚐLocation(ctx, v)
+			data, err := ec.unmarshalOContentLocation2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚋcontentᚐLocation(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -12982,7 +13226,7 @@ func (ec *executionContext) unmarshalInputContentWhereInput(ctx context.Context,
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("locationIn"))
-			data, err := ec.unmarshalOContentLocation2ᚕhynieᚗdeᚋohmabᚋentᚋcontentᚐLocationᚄ(ctx, v)
+			data, err := ec.unmarshalOContentLocation2ᚕgithubᚗcomᚋhkonitzerᚋohmabᚋentᚋcontentᚐLocationᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -12991,7 +13235,7 @@ func (ec *executionContext) unmarshalInputContentWhereInput(ctx context.Context,
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("locationNotIn"))
-			data, err := ec.unmarshalOContentLocation2ᚕhynieᚗdeᚋohmabᚋentᚋcontentᚐLocationᚄ(ctx, v)
+			data, err := ec.unmarshalOContentLocation2ᚕgithubᚗcomᚋhkonitzerᚋohmabᚋentᚋcontentᚐLocationᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -13117,7 +13361,7 @@ func (ec *executionContext) unmarshalInputContentWhereInput(ctx context.Context,
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("status"))
-			data, err := ec.unmarshalOContentStatus2ᚖhynieᚗdeᚋohmabᚋentᚋcontentᚐStatus(ctx, v)
+			data, err := ec.unmarshalOContentStatus2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚋcontentᚐStatus(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -13126,7 +13370,7 @@ func (ec *executionContext) unmarshalInputContentWhereInput(ctx context.Context,
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("statusNEQ"))
-			data, err := ec.unmarshalOContentStatus2ᚖhynieᚗdeᚋohmabᚋentᚋcontentᚐStatus(ctx, v)
+			data, err := ec.unmarshalOContentStatus2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚋcontentᚐStatus(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -13135,7 +13379,7 @@ func (ec *executionContext) unmarshalInputContentWhereInput(ctx context.Context,
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("statusIn"))
-			data, err := ec.unmarshalOContentStatus2ᚕhynieᚗdeᚋohmabᚋentᚋcontentᚐStatusᚄ(ctx, v)
+			data, err := ec.unmarshalOContentStatus2ᚕgithubᚗcomᚋhkonitzerᚋohmabᚋentᚋcontentᚐStatusᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -13144,7 +13388,7 @@ func (ec *executionContext) unmarshalInputContentWhereInput(ctx context.Context,
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("statusNotIn"))
-			data, err := ec.unmarshalOContentStatus2ᚕhynieᚗdeᚋohmabᚋentᚋcontentᚐStatusᚄ(ctx, v)
+			data, err := ec.unmarshalOContentStatus2ᚕgithubᚗcomᚋhkonitzerᚋohmabᚋentᚋcontentᚐStatusᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -13436,7 +13680,7 @@ func (ec *executionContext) unmarshalInputCreateTimetableInput(ctx context.Conte
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("timetableType"))
-			data, err := ec.unmarshalOTimetableTimetableType2ᚖhynieᚗdeᚋohmabᚋentᚋtimetableᚐTimetableType(ctx, v)
+			data, err := ec.unmarshalOTimetableTimetableType2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚋtimetableᚐTimetableType(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -13445,7 +13689,7 @@ func (ec *executionContext) unmarshalInputCreateTimetableInput(ctx context.Conte
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("datetimeFrom"))
-			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			data, err := ec.unmarshalNTime2timeᚐTime(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -13465,7 +13709,7 @@ func (ec *executionContext) unmarshalInputCreateTimetableInput(ctx context.Conte
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("datetimeTo"))
-			data, err := ec.unmarshalNTime2timeᚐTime(ctx, v)
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -13579,7 +13823,7 @@ func (ec *executionContext) unmarshalInputTagOrder(ctx context.Context, obj inte
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("field"))
-			data, err := ec.unmarshalNTagOrderField2ᚖhynieᚗdeᚋohmabᚋentᚐTagOrderField(ctx, v)
+			data, err := ec.unmarshalNTagOrderField2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐTagOrderField(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -13608,7 +13852,7 @@ func (ec *executionContext) unmarshalInputTagWhereInput(ctx context.Context, obj
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("not"))
-			data, err := ec.unmarshalOTagWhereInput2ᚖhynieᚗdeᚋohmabᚋentᚐTagWhereInput(ctx, v)
+			data, err := ec.unmarshalOTagWhereInput2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐTagWhereInput(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -13617,7 +13861,7 @@ func (ec *executionContext) unmarshalInputTagWhereInput(ctx context.Context, obj
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("and"))
-			data, err := ec.unmarshalOTagWhereInput2ᚕᚖhynieᚗdeᚋohmabᚋentᚐTagWhereInputᚄ(ctx, v)
+			data, err := ec.unmarshalOTagWhereInput2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐTagWhereInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -13626,7 +13870,7 @@ func (ec *executionContext) unmarshalInputTagWhereInput(ctx context.Context, obj
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("or"))
-			data, err := ec.unmarshalOTagWhereInput2ᚕᚖhynieᚗdeᚋohmabᚋentᚐTagWhereInputᚄ(ctx, v)
+			data, err := ec.unmarshalOTagWhereInput2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐTagWhereInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -14202,7 +14446,7 @@ func (ec *executionContext) unmarshalInputTagWhereInput(ctx context.Context, obj
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasBusinessWith"))
-			data, err := ec.unmarshalOBusinessWhereInput2ᚕᚖhynieᚗdeᚋohmabᚋentᚐBusinessWhereInputᚄ(ctx, v)
+			data, err := ec.unmarshalOBusinessWhereInput2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐBusinessWhereInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -14220,7 +14464,7 @@ func (ec *executionContext) unmarshalInputTagWhereInput(ctx context.Context, obj
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasUserWith"))
-			data, err := ec.unmarshalOUserWhereInput2ᚕᚖhynieᚗdeᚋohmabᚋentᚐUserWhereInputᚄ(ctx, v)
+			data, err := ec.unmarshalOUserWhereInput2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐUserWhereInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -14262,7 +14506,7 @@ func (ec *executionContext) unmarshalInputTimetableOrder(ctx context.Context, ob
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("field"))
-			data, err := ec.unmarshalNTimetableOrderField2ᚖhynieᚗdeᚋohmabᚋentᚐTimetableOrderField(ctx, v)
+			data, err := ec.unmarshalNTimetableOrderField2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐTimetableOrderField(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -14280,7 +14524,7 @@ func (ec *executionContext) unmarshalInputTimetableWhereInput(ctx context.Contex
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createdAt", "createdAtNEQ", "createdAtIn", "createdAtNotIn", "createdAtGT", "createdAtGTE", "createdAtLT", "createdAtLTE", "updatedAt", "updatedAtNEQ", "updatedAtIn", "updatedAtNotIn", "updatedAtGT", "updatedAtGTE", "updatedAtLT", "updatedAtLTE", "deletedAt", "deletedAtNEQ", "deletedAtIn", "deletedAtNotIn", "deletedAtGT", "deletedAtGTE", "deletedAtLT", "deletedAtLTE", "deletedAtIsNil", "deletedAtNotNil", "timetableType", "timetableTypeNEQ", "timetableTypeIn", "timetableTypeNotIn", "datetimeFrom", "datetimeFromNEQ", "datetimeFromIn", "datetimeFromNotIn", "datetimeFromGT", "datetimeFromGTE", "datetimeFromLT", "datetimeFromLTE", "datetimeFromIsNil", "datetimeFromNotNil", "duration", "durationNEQ", "durationIn", "durationNotIn", "durationGT", "durationGTE", "durationLT", "durationLTE", "durationIsNil", "durationNotNil", "datetimeTo", "datetimeToNEQ", "datetimeToIn", "datetimeToNotIn", "datetimeToGT", "datetimeToGTE", "datetimeToLT", "datetimeToLTE", "timeWholeDay", "timeWholeDayNEQ", "comment", "commentNEQ", "commentIn", "commentNotIn", "commentGT", "commentGTE", "commentLT", "commentLTE", "commentContains", "commentHasPrefix", "commentHasSuffix", "commentIsNil", "commentNotNil", "commentEqualFold", "commentContainsFold", "availabilityByPhone", "availabilityByPhoneNEQ", "availabilityByPhoneIn", "availabilityByPhoneNotIn", "availabilityByPhoneGT", "availabilityByPhoneGTE", "availabilityByPhoneLT", "availabilityByPhoneLTE", "availabilityByPhoneContains", "availabilityByPhoneHasPrefix", "availabilityByPhoneHasSuffix", "availabilityByPhoneIsNil", "availabilityByPhoneNotNil", "availabilityByPhoneEqualFold", "availabilityByPhoneContainsFold", "availabilityByEmail", "availabilityByEmailNEQ", "availabilityByEmailIn", "availabilityByEmailNotIn", "availabilityByEmailGT", "availabilityByEmailGTE", "availabilityByEmailLT", "availabilityByEmailLTE", "availabilityByEmailContains", "availabilityByEmailHasPrefix", "availabilityByEmailHasSuffix", "availabilityByEmailIsNil", "availabilityByEmailNotNil", "availabilityByEmailEqualFold", "availabilityByEmailContainsFold", "availabilityBySms", "availabilityBySmsNEQ", "availabilityBySmsIn", "availabilityBySmsNotIn", "availabilityBySmsGT", "availabilityBySmsGTE", "availabilityBySmsLT", "availabilityBySmsLTE", "availabilityBySmsContains", "availabilityBySmsHasPrefix", "availabilityBySmsHasSuffix", "availabilityBySmsIsNil", "availabilityBySmsNotNil", "availabilityBySmsEqualFold", "availabilityBySmsContainsFold", "availabilityByWhatsapp", "availabilityByWhatsappNEQ", "availabilityByWhatsappIn", "availabilityByWhatsappNotIn", "availabilityByWhatsappGT", "availabilityByWhatsappGTE", "availabilityByWhatsappLT", "availabilityByWhatsappLTE", "availabilityByWhatsappContains", "availabilityByWhatsappHasPrefix", "availabilityByWhatsappHasSuffix", "availabilityByWhatsappIsNil", "availabilityByWhatsappNotNil", "availabilityByWhatsappEqualFold", "availabilityByWhatsappContainsFold", "hasAddress", "hasAddressWith", "hasUsersOnDuty", "hasUsersOnDutyWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createdAt", "createdAtNEQ", "createdAtIn", "createdAtNotIn", "createdAtGT", "createdAtGTE", "createdAtLT", "createdAtLTE", "updatedAt", "updatedAtNEQ", "updatedAtIn", "updatedAtNotIn", "updatedAtGT", "updatedAtGTE", "updatedAtLT", "updatedAtLTE", "deletedAt", "deletedAtNEQ", "deletedAtIn", "deletedAtNotIn", "deletedAtGT", "deletedAtGTE", "deletedAtLT", "deletedAtLTE", "deletedAtIsNil", "deletedAtNotNil", "timetableType", "timetableTypeNEQ", "timetableTypeIn", "timetableTypeNotIn", "datetimeFrom", "datetimeFromNEQ", "datetimeFromIn", "datetimeFromNotIn", "datetimeFromGT", "datetimeFromGTE", "datetimeFromLT", "datetimeFromLTE", "duration", "durationNEQ", "durationIn", "durationNotIn", "durationGT", "durationGTE", "durationLT", "durationLTE", "durationIsNil", "durationNotNil", "datetimeTo", "datetimeToNEQ", "datetimeToIn", "datetimeToNotIn", "datetimeToGT", "datetimeToGTE", "datetimeToLT", "datetimeToLTE", "datetimeToIsNil", "datetimeToNotNil", "timeWholeDay", "timeWholeDayNEQ", "comment", "commentNEQ", "commentIn", "commentNotIn", "commentGT", "commentGTE", "commentLT", "commentLTE", "commentContains", "commentHasPrefix", "commentHasSuffix", "commentIsNil", "commentNotNil", "commentEqualFold", "commentContainsFold", "availabilityByPhone", "availabilityByPhoneNEQ", "availabilityByPhoneIn", "availabilityByPhoneNotIn", "availabilityByPhoneGT", "availabilityByPhoneGTE", "availabilityByPhoneLT", "availabilityByPhoneLTE", "availabilityByPhoneContains", "availabilityByPhoneHasPrefix", "availabilityByPhoneHasSuffix", "availabilityByPhoneIsNil", "availabilityByPhoneNotNil", "availabilityByPhoneEqualFold", "availabilityByPhoneContainsFold", "availabilityByEmail", "availabilityByEmailNEQ", "availabilityByEmailIn", "availabilityByEmailNotIn", "availabilityByEmailGT", "availabilityByEmailGTE", "availabilityByEmailLT", "availabilityByEmailLTE", "availabilityByEmailContains", "availabilityByEmailHasPrefix", "availabilityByEmailHasSuffix", "availabilityByEmailIsNil", "availabilityByEmailNotNil", "availabilityByEmailEqualFold", "availabilityByEmailContainsFold", "availabilityBySms", "availabilityBySmsNEQ", "availabilityBySmsIn", "availabilityBySmsNotIn", "availabilityBySmsGT", "availabilityBySmsGTE", "availabilityBySmsLT", "availabilityBySmsLTE", "availabilityBySmsContains", "availabilityBySmsHasPrefix", "availabilityBySmsHasSuffix", "availabilityBySmsIsNil", "availabilityBySmsNotNil", "availabilityBySmsEqualFold", "availabilityBySmsContainsFold", "availabilityByWhatsapp", "availabilityByWhatsappNEQ", "availabilityByWhatsappIn", "availabilityByWhatsappNotIn", "availabilityByWhatsappGT", "availabilityByWhatsappGTE", "availabilityByWhatsappLT", "availabilityByWhatsappLTE", "availabilityByWhatsappContains", "availabilityByWhatsappHasPrefix", "availabilityByWhatsappHasSuffix", "availabilityByWhatsappIsNil", "availabilityByWhatsappNotNil", "availabilityByWhatsappEqualFold", "availabilityByWhatsappContainsFold", "hasAddress", "hasAddressWith", "hasUsersOnDuty", "hasUsersOnDutyWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -14291,7 +14535,7 @@ func (ec *executionContext) unmarshalInputTimetableWhereInput(ctx context.Contex
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("not"))
-			data, err := ec.unmarshalOTimetableWhereInput2ᚖhynieᚗdeᚋohmabᚋentᚐTimetableWhereInput(ctx, v)
+			data, err := ec.unmarshalOTimetableWhereInput2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐTimetableWhereInput(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -14300,7 +14544,7 @@ func (ec *executionContext) unmarshalInputTimetableWhereInput(ctx context.Contex
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("and"))
-			data, err := ec.unmarshalOTimetableWhereInput2ᚕᚖhynieᚗdeᚋohmabᚋentᚐTimetableWhereInputᚄ(ctx, v)
+			data, err := ec.unmarshalOTimetableWhereInput2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐTimetableWhereInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -14309,7 +14553,7 @@ func (ec *executionContext) unmarshalInputTimetableWhereInput(ctx context.Contex
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("or"))
-			data, err := ec.unmarshalOTimetableWhereInput2ᚕᚖhynieᚗdeᚋohmabᚋentᚐTimetableWhereInputᚄ(ctx, v)
+			data, err := ec.unmarshalOTimetableWhereInput2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐTimetableWhereInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -14624,7 +14868,7 @@ func (ec *executionContext) unmarshalInputTimetableWhereInput(ctx context.Contex
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("timetableType"))
-			data, err := ec.unmarshalOTimetableTimetableType2ᚖhynieᚗdeᚋohmabᚋentᚋtimetableᚐTimetableType(ctx, v)
+			data, err := ec.unmarshalOTimetableTimetableType2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚋtimetableᚐTimetableType(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -14633,7 +14877,7 @@ func (ec *executionContext) unmarshalInputTimetableWhereInput(ctx context.Contex
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("timetableTypeNEQ"))
-			data, err := ec.unmarshalOTimetableTimetableType2ᚖhynieᚗdeᚋohmabᚋentᚋtimetableᚐTimetableType(ctx, v)
+			data, err := ec.unmarshalOTimetableTimetableType2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚋtimetableᚐTimetableType(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -14642,7 +14886,7 @@ func (ec *executionContext) unmarshalInputTimetableWhereInput(ctx context.Contex
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("timetableTypeIn"))
-			data, err := ec.unmarshalOTimetableTimetableType2ᚕhynieᚗdeᚋohmabᚋentᚋtimetableᚐTimetableTypeᚄ(ctx, v)
+			data, err := ec.unmarshalOTimetableTimetableType2ᚕgithubᚗcomᚋhkonitzerᚋohmabᚋentᚋtimetableᚐTimetableTypeᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -14651,7 +14895,7 @@ func (ec *executionContext) unmarshalInputTimetableWhereInput(ctx context.Contex
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("timetableTypeNotIn"))
-			data, err := ec.unmarshalOTimetableTimetableType2ᚕhynieᚗdeᚋohmabᚋentᚋtimetableᚐTimetableTypeᚄ(ctx, v)
+			data, err := ec.unmarshalOTimetableTimetableType2ᚕgithubᚗcomᚋhkonitzerᚋohmabᚋentᚋtimetableᚐTimetableTypeᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -14728,24 +14972,6 @@ func (ec *executionContext) unmarshalInputTimetableWhereInput(ctx context.Contex
 				return it, err
 			}
 			it.DatetimeFromLTE = data
-		case "datetimeFromIsNil":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("datetimeFromIsNil"))
-			data, err := ec.unmarshalOBoolean2bool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.DatetimeFromIsNil = data
-		case "datetimeFromNotNil":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("datetimeFromNotNil"))
-			data, err := ec.unmarshalOBoolean2bool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.DatetimeFromNotNil = data
 		case "duration":
 			var err error
 
@@ -14924,6 +15150,24 @@ func (ec *executionContext) unmarshalInputTimetableWhereInput(ctx context.Contex
 				return it, err
 			}
 			it.DatetimeToLTE = data
+		case "datetimeToIsNil":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("datetimeToIsNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DatetimeToIsNil = data
+		case "datetimeToNotNil":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("datetimeToNotNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DatetimeToNotNil = data
 		case "timeWholeDay":
 			var err error
 
@@ -15630,7 +15874,7 @@ func (ec *executionContext) unmarshalInputTimetableWhereInput(ctx context.Contex
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasAddressWith"))
-			data, err := ec.unmarshalOAddressWhereInput2ᚕᚖhynieᚗdeᚋohmabᚋentᚐAddressWhereInputᚄ(ctx, v)
+			data, err := ec.unmarshalOAddressWhereInput2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐAddressWhereInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -15648,11 +15892,249 @@ func (ec *executionContext) unmarshalInputTimetableWhereInput(ctx context.Contex
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasUsersOnDutyWith"))
-			data, err := ec.unmarshalOUserWhereInput2ᚕᚖhynieᚗdeᚋohmabᚋentᚐUserWhereInputᚄ(ctx, v)
+			data, err := ec.unmarshalOUserWhereInput2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐUserWhereInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.HasUsersOnDutyWith = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputUpdateTimetableInput(ctx context.Context, obj interface{}) (ent.UpdateTimetableInput, error) {
+	var it ent.UpdateTimetableInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"updatedAt", "deletedAt", "clearDeletedAt", "timetableType", "datetimeFrom", "duration", "clearDuration", "datetimeTo", "clearDatetimeTo", "timeWholeDay", "comment", "clearComment", "availabilityByPhone", "clearAvailabilityByPhone", "availabilityByEmail", "clearAvailabilityByEmail", "availabilityBySms", "clearAvailabilityBySms", "availabilityByWhatsapp", "clearAvailabilityByWhatsapp", "addressID", "addUsersOnDutyIDs", "removeUsersOnDutyIDs", "clearUsersOnDuty"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "updatedAt":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updatedAt"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdatedAt = data
+		case "deletedAt":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("deletedAt"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DeletedAt = data
+		case "clearDeletedAt":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearDeletedAt"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearDeletedAt = data
+		case "timetableType":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("timetableType"))
+			data, err := ec.unmarshalOTimetableTimetableType2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚋtimetableᚐTimetableType(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TimetableType = data
+		case "datetimeFrom":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("datetimeFrom"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DatetimeFrom = data
+		case "duration":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("duration"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			if err = ec.resolvers.UpdateTimetableInput().Duration(ctx, &it, data); err != nil {
+				return it, err
+			}
+		case "clearDuration":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearDuration"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearDuration = data
+		case "datetimeTo":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("datetimeTo"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DatetimeTo = data
+		case "clearDatetimeTo":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearDatetimeTo"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearDatetimeTo = data
+		case "timeWholeDay":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("timeWholeDay"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TimeWholeDay = data
+		case "comment":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("comment"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Comment = data
+		case "clearComment":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearComment"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearComment = data
+		case "availabilityByPhone":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("availabilityByPhone"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AvailabilityByPhone = data
+		case "clearAvailabilityByPhone":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearAvailabilityByPhone"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearAvailabilityByPhone = data
+		case "availabilityByEmail":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("availabilityByEmail"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AvailabilityByEmail = data
+		case "clearAvailabilityByEmail":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearAvailabilityByEmail"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearAvailabilityByEmail = data
+		case "availabilityBySms":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("availabilityBySms"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AvailabilityBySms = data
+		case "clearAvailabilityBySms":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearAvailabilityBySms"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearAvailabilityBySms = data
+		case "availabilityByWhatsapp":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("availabilityByWhatsapp"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AvailabilityByWhatsapp = data
+		case "clearAvailabilityByWhatsapp":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearAvailabilityByWhatsapp"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearAvailabilityByWhatsapp = data
+		case "addressID":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("addressID"))
+			data, err := ec.unmarshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AddressID = data
+		case "addUsersOnDutyIDs":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("addUsersOnDutyIDs"))
+			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AddUsersOnDutyIDs = data
+		case "removeUsersOnDutyIDs":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("removeUsersOnDutyIDs"))
+			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.RemoveUsersOnDutyIDs = data
+		case "clearUsersOnDuty":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearUsersOnDuty"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearUsersOnDuty = data
 		}
 	}
 
@@ -15690,7 +16172,7 @@ func (ec *executionContext) unmarshalInputUserOrder(ctx context.Context, obj int
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("field"))
-			data, err := ec.unmarshalNUserOrderField2ᚖhynieᚗdeᚋohmabᚋentᚐUserOrderField(ctx, v)
+			data, err := ec.unmarshalNUserOrderField2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐUserOrderField(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -15719,7 +16201,7 @@ func (ec *executionContext) unmarshalInputUserWhereInput(ctx context.Context, ob
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("not"))
-			data, err := ec.unmarshalOUserWhereInput2ᚖhynieᚗdeᚋohmabᚋentᚐUserWhereInput(ctx, v)
+			data, err := ec.unmarshalOUserWhereInput2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐUserWhereInput(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -15728,7 +16210,7 @@ func (ec *executionContext) unmarshalInputUserWhereInput(ctx context.Context, ob
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("and"))
-			data, err := ec.unmarshalOUserWhereInput2ᚕᚖhynieᚗdeᚋohmabᚋentᚐUserWhereInputᚄ(ctx, v)
+			data, err := ec.unmarshalOUserWhereInput2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐUserWhereInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -15737,7 +16219,7 @@ func (ec *executionContext) unmarshalInputUserWhereInput(ctx context.Context, ob
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("or"))
-			data, err := ec.unmarshalOUserWhereInput2ᚕᚖhynieᚗdeᚋohmabᚋentᚐUserWhereInputᚄ(ctx, v)
+			data, err := ec.unmarshalOUserWhereInput2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐUserWhereInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -16700,7 +17182,7 @@ func (ec *executionContext) unmarshalInputUserWhereInput(ctx context.Context, ob
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasBusinessesWith"))
-			data, err := ec.unmarshalOBusinessWhereInput2ᚕᚖhynieᚗdeᚋohmabᚋentᚐBusinessWhereInputᚄ(ctx, v)
+			data, err := ec.unmarshalOBusinessWhereInput2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐBusinessWhereInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -16718,7 +17200,7 @@ func (ec *executionContext) unmarshalInputUserWhereInput(ctx context.Context, ob
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasTagsWith"))
-			data, err := ec.unmarshalOTagWhereInput2ᚕᚖhynieᚗdeᚋohmabᚋentᚐTagWhereInputᚄ(ctx, v)
+			data, err := ec.unmarshalOTagWhereInput2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐTagWhereInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -16736,7 +17218,7 @@ func (ec *executionContext) unmarshalInputUserWhereInput(ctx context.Context, ob
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasTimetableWith"))
-			data, err := ec.unmarshalOTimetableWhereInput2ᚕᚖhynieᚗdeᚋohmabᚋentᚐTimetableWhereInputᚄ(ctx, v)
+			data, err := ec.unmarshalOTimetableWhereInput2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐTimetableWhereInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -17491,6 +17973,14 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_createBusiness(ctx, field)
 			})
+		case "createTimetable":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_createTimetable(ctx, field)
+			})
+		case "updateTimetable":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_updateTimetable(ctx, field)
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -17878,6 +18368,9 @@ func (ec *executionContext) _Timetable(ctx context.Context, sel ast.SelectionSet
 			}
 		case "datetimeFrom":
 			out.Values[i] = ec._Timetable_datetimeFrom(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
 		case "duration":
 			field := field
 
@@ -17913,9 +18406,6 @@ func (ec *executionContext) _Timetable(ctx context.Context, sel ast.SelectionSet
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "datetimeTo":
 			out.Values[i] = ec._Timetable_datetimeTo(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&out.Invalids, 1)
-			}
 		case "timeWholeDay":
 			out.Values[i] = ec._Timetable_timeWholeDay(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -18610,7 +19100,7 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 
 // region    ***************************** type.gotpl *****************************
 
-func (ec *executionContext) marshalNAddress2ᚖhynieᚗdeᚋohmabᚋentᚐAddress(ctx context.Context, sel ast.SelectionSet, v *ent.Address) graphql.Marshaler {
+func (ec *executionContext) marshalNAddress2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐAddress(ctx context.Context, sel ast.SelectionSet, v *ent.Address) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -18620,11 +19110,11 @@ func (ec *executionContext) marshalNAddress2ᚖhynieᚗdeᚋohmabᚋentᚐAddres
 	return ec._Address(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNAddressConnection2hynieᚗdeᚋohmabᚋentᚐAddressConnection(ctx context.Context, sel ast.SelectionSet, v ent.AddressConnection) graphql.Marshaler {
+func (ec *executionContext) marshalNAddressConnection2githubᚗcomᚋhkonitzerᚋohmabᚋentᚐAddressConnection(ctx context.Context, sel ast.SelectionSet, v ent.AddressConnection) graphql.Marshaler {
 	return ec._AddressConnection(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNAddressConnection2ᚖhynieᚗdeᚋohmabᚋentᚐAddressConnection(ctx context.Context, sel ast.SelectionSet, v *ent.AddressConnection) graphql.Marshaler {
+func (ec *executionContext) marshalNAddressConnection2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐAddressConnection(ctx context.Context, sel ast.SelectionSet, v *ent.AddressConnection) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -18634,12 +19124,12 @@ func (ec *executionContext) marshalNAddressConnection2ᚖhynieᚗdeᚋohmabᚋen
 	return ec._AddressConnection(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNAddressWhereInput2ᚖhynieᚗdeᚋohmabᚋentᚐAddressWhereInput(ctx context.Context, v interface{}) (*ent.AddressWhereInput, error) {
+func (ec *executionContext) unmarshalNAddressWhereInput2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐAddressWhereInput(ctx context.Context, v interface{}) (*ent.AddressWhereInput, error) {
 	res, err := ec.unmarshalInputAddressWhereInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNAuditLogWhereInput2ᚖhynieᚗdeᚋohmabᚋentᚐAuditLogWhereInput(ctx context.Context, v interface{}) (*ent.AuditLogWhereInput, error) {
+func (ec *executionContext) unmarshalNAuditLogWhereInput2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐAuditLogWhereInput(ctx context.Context, v interface{}) (*ent.AuditLogWhereInput, error) {
 	res, err := ec.unmarshalInputAuditLogWhereInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
@@ -18659,7 +19149,7 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
-func (ec *executionContext) marshalNBusiness2ᚖhynieᚗdeᚋohmabᚋentᚐBusiness(ctx context.Context, sel ast.SelectionSet, v *ent.Business) graphql.Marshaler {
+func (ec *executionContext) marshalNBusiness2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐBusiness(ctx context.Context, sel ast.SelectionSet, v *ent.Business) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -18669,11 +19159,11 @@ func (ec *executionContext) marshalNBusiness2ᚖhynieᚗdeᚋohmabᚋentᚐBusin
 	return ec._Business(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNBusinessConnection2hynieᚗdeᚋohmabᚋentᚐBusinessConnection(ctx context.Context, sel ast.SelectionSet, v ent.BusinessConnection) graphql.Marshaler {
+func (ec *executionContext) marshalNBusinessConnection2githubᚗcomᚋhkonitzerᚋohmabᚋentᚐBusinessConnection(ctx context.Context, sel ast.SelectionSet, v ent.BusinessConnection) graphql.Marshaler {
 	return ec._BusinessConnection(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNBusinessConnection2ᚖhynieᚗdeᚋohmabᚋentᚐBusinessConnection(ctx context.Context, sel ast.SelectionSet, v *ent.BusinessConnection) graphql.Marshaler {
+func (ec *executionContext) marshalNBusinessConnection2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐBusinessConnection(ctx context.Context, sel ast.SelectionSet, v *ent.BusinessConnection) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -18683,18 +19173,18 @@ func (ec *executionContext) marshalNBusinessConnection2ᚖhynieᚗdeᚋohmabᚋe
 	return ec._BusinessConnection(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNBusinessOrder2ᚖhynieᚗdeᚋohmabᚋentᚐBusinessOrder(ctx context.Context, v interface{}) (*ent.BusinessOrder, error) {
+func (ec *executionContext) unmarshalNBusinessOrder2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐBusinessOrder(ctx context.Context, v interface{}) (*ent.BusinessOrder, error) {
 	res, err := ec.unmarshalInputBusinessOrder(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNBusinessOrderField2ᚖhynieᚗdeᚋohmabᚋentᚐBusinessOrderField(ctx context.Context, v interface{}) (*ent.BusinessOrderField, error) {
+func (ec *executionContext) unmarshalNBusinessOrderField2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐBusinessOrderField(ctx context.Context, v interface{}) (*ent.BusinessOrderField, error) {
 	var res = new(ent.BusinessOrderField)
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNBusinessOrderField2ᚖhynieᚗdeᚋohmabᚋentᚐBusinessOrderField(ctx context.Context, sel ast.SelectionSet, v *ent.BusinessOrderField) graphql.Marshaler {
+func (ec *executionContext) marshalNBusinessOrderField2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐBusinessOrderField(ctx context.Context, sel ast.SelectionSet, v *ent.BusinessOrderField) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -18704,28 +19194,28 @@ func (ec *executionContext) marshalNBusinessOrderField2ᚖhynieᚗdeᚋohmabᚋe
 	return v
 }
 
-func (ec *executionContext) unmarshalNBusinessWhereInput2ᚖhynieᚗdeᚋohmabᚋentᚐBusinessWhereInput(ctx context.Context, v interface{}) (*ent.BusinessWhereInput, error) {
+func (ec *executionContext) unmarshalNBusinessWhereInput2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐBusinessWhereInput(ctx context.Context, v interface{}) (*ent.BusinessWhereInput, error) {
 	res, err := ec.unmarshalInputBusinessWhereInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNContentLocation2hynieᚗdeᚋohmabᚋentᚋcontentᚐLocation(ctx context.Context, v interface{}) (content.Location, error) {
+func (ec *executionContext) unmarshalNContentLocation2githubᚗcomᚋhkonitzerᚋohmabᚋentᚋcontentᚐLocation(ctx context.Context, v interface{}) (content.Location, error) {
 	var res content.Location
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNContentLocation2hynieᚗdeᚋohmabᚋentᚋcontentᚐLocation(ctx context.Context, sel ast.SelectionSet, v content.Location) graphql.Marshaler {
+func (ec *executionContext) marshalNContentLocation2githubᚗcomᚋhkonitzerᚋohmabᚋentᚋcontentᚐLocation(ctx context.Context, sel ast.SelectionSet, v content.Location) graphql.Marshaler {
 	return v
 }
 
-func (ec *executionContext) unmarshalNContentOrderField2ᚖhynieᚗdeᚋohmabᚋentᚐContentOrderField(ctx context.Context, v interface{}) (*ent.ContentOrderField, error) {
+func (ec *executionContext) unmarshalNContentOrderField2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐContentOrderField(ctx context.Context, v interface{}) (*ent.ContentOrderField, error) {
 	var res = new(ent.ContentOrderField)
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNContentOrderField2ᚖhynieᚗdeᚋohmabᚋentᚐContentOrderField(ctx context.Context, sel ast.SelectionSet, v *ent.ContentOrderField) graphql.Marshaler {
+func (ec *executionContext) marshalNContentOrderField2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐContentOrderField(ctx context.Context, sel ast.SelectionSet, v *ent.ContentOrderField) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -18735,43 +19225,48 @@ func (ec *executionContext) marshalNContentOrderField2ᚖhynieᚗdeᚋohmabᚋen
 	return v
 }
 
-func (ec *executionContext) unmarshalNContentStatus2hynieᚗdeᚋohmabᚋentᚋcontentᚐStatus(ctx context.Context, v interface{}) (content.Status, error) {
+func (ec *executionContext) unmarshalNContentStatus2githubᚗcomᚋhkonitzerᚋohmabᚋentᚋcontentᚐStatus(ctx context.Context, v interface{}) (content.Status, error) {
 	var res content.Status
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNContentStatus2hynieᚗdeᚋohmabᚋentᚋcontentᚐStatus(ctx context.Context, sel ast.SelectionSet, v content.Status) graphql.Marshaler {
+func (ec *executionContext) marshalNContentStatus2githubᚗcomᚋhkonitzerᚋohmabᚋentᚋcontentᚐStatus(ctx context.Context, sel ast.SelectionSet, v content.Status) graphql.Marshaler {
 	return v
 }
 
-func (ec *executionContext) unmarshalNContentTimetableType2hynieᚗdeᚋohmabᚋentᚋcontentᚐTimetableType(ctx context.Context, v interface{}) (content.TimetableType, error) {
+func (ec *executionContext) unmarshalNContentTimetableType2githubᚗcomᚋhkonitzerᚋohmabᚋentᚋcontentᚐTimetableType(ctx context.Context, v interface{}) (content.TimetableType, error) {
 	var res content.TimetableType
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNContentTimetableType2hynieᚗdeᚋohmabᚋentᚋcontentᚐTimetableType(ctx context.Context, sel ast.SelectionSet, v content.TimetableType) graphql.Marshaler {
+func (ec *executionContext) marshalNContentTimetableType2githubᚗcomᚋhkonitzerᚋohmabᚋentᚋcontentᚐTimetableType(ctx context.Context, sel ast.SelectionSet, v content.TimetableType) graphql.Marshaler {
 	return v
 }
 
-func (ec *executionContext) unmarshalNContentType2hynieᚗdeᚋohmabᚋentᚋcontentᚐType(ctx context.Context, v interface{}) (content.Type, error) {
+func (ec *executionContext) unmarshalNContentType2githubᚗcomᚋhkonitzerᚋohmabᚋentᚋcontentᚐType(ctx context.Context, v interface{}) (content.Type, error) {
 	var res content.Type
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNContentType2hynieᚗdeᚋohmabᚋentᚋcontentᚐType(ctx context.Context, sel ast.SelectionSet, v content.Type) graphql.Marshaler {
+func (ec *executionContext) marshalNContentType2githubᚗcomᚋhkonitzerᚋohmabᚋentᚋcontentᚐType(ctx context.Context, sel ast.SelectionSet, v content.Type) graphql.Marshaler {
 	return v
 }
 
-func (ec *executionContext) unmarshalNContentWhereInput2ᚖhynieᚗdeᚋohmabᚋentᚐContentWhereInput(ctx context.Context, v interface{}) (*ent.ContentWhereInput, error) {
+func (ec *executionContext) unmarshalNContentWhereInput2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐContentWhereInput(ctx context.Context, v interface{}) (*ent.ContentWhereInput, error) {
 	res, err := ec.unmarshalInputContentWhereInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNCreateBusinessInput2hynieᚗdeᚋohmabᚋentᚐCreateBusinessInput(ctx context.Context, v interface{}) (ent.CreateBusinessInput, error) {
+func (ec *executionContext) unmarshalNCreateBusinessInput2githubᚗcomᚋhkonitzerᚋohmabᚋentᚐCreateBusinessInput(ctx context.Context, v interface{}) (ent.CreateBusinessInput, error) {
 	res, err := ec.unmarshalInputCreateBusinessInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNCreateTimetableInput2githubᚗcomᚋhkonitzerᚋohmabᚋentᚐCreateTimetableInput(ctx context.Context, v interface{}) (ent.CreateTimetableInput, error) {
+	res, err := ec.unmarshalInputCreateTimetableInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
@@ -18847,7 +19342,7 @@ func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.Selecti
 	return res
 }
 
-func (ec *executionContext) marshalNNode2ᚕhynieᚗdeᚋohmabᚋentᚐNoder(ctx context.Context, sel ast.SelectionSet, v []ent.Noder) graphql.Marshaler {
+func (ec *executionContext) marshalNNode2ᚕgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐNoder(ctx context.Context, sel ast.SelectionSet, v []ent.Noder) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -18871,7 +19366,7 @@ func (ec *executionContext) marshalNNode2ᚕhynieᚗdeᚋohmabᚋentᚐNoder(ctx
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalONode2hynieᚗdeᚋohmabᚋentᚐNoder(ctx, sel, v[i])
+			ret[i] = ec.marshalONode2githubᚗcomᚋhkonitzerᚋohmabᚋentᚐNoder(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -18914,7 +19409,7 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 	return res
 }
 
-func (ec *executionContext) marshalNTag2ᚖhynieᚗdeᚋohmabᚋentᚐTag(ctx context.Context, sel ast.SelectionSet, v *ent.Tag) graphql.Marshaler {
+func (ec *executionContext) marshalNTag2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐTag(ctx context.Context, sel ast.SelectionSet, v *ent.Tag) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -18924,13 +19419,13 @@ func (ec *executionContext) marshalNTag2ᚖhynieᚗdeᚋohmabᚋentᚐTag(ctx co
 	return ec._Tag(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNTagOrderField2ᚖhynieᚗdeᚋohmabᚋentᚐTagOrderField(ctx context.Context, v interface{}) (*ent.TagOrderField, error) {
+func (ec *executionContext) unmarshalNTagOrderField2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐTagOrderField(ctx context.Context, v interface{}) (*ent.TagOrderField, error) {
 	var res = new(ent.TagOrderField)
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNTagOrderField2ᚖhynieᚗdeᚋohmabᚋentᚐTagOrderField(ctx context.Context, sel ast.SelectionSet, v *ent.TagOrderField) graphql.Marshaler {
+func (ec *executionContext) marshalNTagOrderField2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐTagOrderField(ctx context.Context, sel ast.SelectionSet, v *ent.TagOrderField) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -18940,7 +19435,7 @@ func (ec *executionContext) marshalNTagOrderField2ᚖhynieᚗdeᚋohmabᚋentᚐ
 	return v
 }
 
-func (ec *executionContext) unmarshalNTagWhereInput2ᚖhynieᚗdeᚋohmabᚋentᚐTagWhereInput(ctx context.Context, v interface{}) (*ent.TagWhereInput, error) {
+func (ec *executionContext) unmarshalNTagWhereInput2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐTagWhereInput(ctx context.Context, v interface{}) (*ent.TagWhereInput, error) {
 	res, err := ec.unmarshalInputTagWhereInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
@@ -18960,7 +19455,7 @@ func (ec *executionContext) marshalNTime2timeᚐTime(ctx context.Context, sel as
 	return res
 }
 
-func (ec *executionContext) marshalNTimetable2ᚖhynieᚗdeᚋohmabᚋentᚐTimetable(ctx context.Context, sel ast.SelectionSet, v *ent.Timetable) graphql.Marshaler {
+func (ec *executionContext) marshalNTimetable2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐTimetable(ctx context.Context, sel ast.SelectionSet, v *ent.Timetable) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -18970,11 +19465,11 @@ func (ec *executionContext) marshalNTimetable2ᚖhynieᚗdeᚋohmabᚋentᚐTime
 	return ec._Timetable(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNTimetableConnection2hynieᚗdeᚋohmabᚋentᚐTimetableConnection(ctx context.Context, sel ast.SelectionSet, v ent.TimetableConnection) graphql.Marshaler {
+func (ec *executionContext) marshalNTimetableConnection2githubᚗcomᚋhkonitzerᚋohmabᚋentᚐTimetableConnection(ctx context.Context, sel ast.SelectionSet, v ent.TimetableConnection) graphql.Marshaler {
 	return ec._TimetableConnection(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNTimetableConnection2ᚖhynieᚗdeᚋohmabᚋentᚐTimetableConnection(ctx context.Context, sel ast.SelectionSet, v *ent.TimetableConnection) graphql.Marshaler {
+func (ec *executionContext) marshalNTimetableConnection2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐTimetableConnection(ctx context.Context, sel ast.SelectionSet, v *ent.TimetableConnection) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -18984,18 +19479,18 @@ func (ec *executionContext) marshalNTimetableConnection2ᚖhynieᚗdeᚋohmabᚋ
 	return ec._TimetableConnection(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNTimetableOrder2ᚖhynieᚗdeᚋohmabᚋentᚐTimetableOrder(ctx context.Context, v interface{}) (*ent.TimetableOrder, error) {
+func (ec *executionContext) unmarshalNTimetableOrder2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐTimetableOrder(ctx context.Context, v interface{}) (*ent.TimetableOrder, error) {
 	res, err := ec.unmarshalInputTimetableOrder(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNTimetableOrderField2ᚖhynieᚗdeᚋohmabᚋentᚐTimetableOrderField(ctx context.Context, v interface{}) (*ent.TimetableOrderField, error) {
+func (ec *executionContext) unmarshalNTimetableOrderField2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐTimetableOrderField(ctx context.Context, v interface{}) (*ent.TimetableOrderField, error) {
 	var res = new(ent.TimetableOrderField)
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNTimetableOrderField2ᚖhynieᚗdeᚋohmabᚋentᚐTimetableOrderField(ctx context.Context, sel ast.SelectionSet, v *ent.TimetableOrderField) graphql.Marshaler {
+func (ec *executionContext) marshalNTimetableOrderField2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐTimetableOrderField(ctx context.Context, sel ast.SelectionSet, v *ent.TimetableOrderField) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -19005,22 +19500,27 @@ func (ec *executionContext) marshalNTimetableOrderField2ᚖhynieᚗdeᚋohmabᚋ
 	return v
 }
 
-func (ec *executionContext) unmarshalNTimetableTimetableType2hynieᚗdeᚋohmabᚋentᚋtimetableᚐTimetableType(ctx context.Context, v interface{}) (timetable.TimetableType, error) {
+func (ec *executionContext) unmarshalNTimetableTimetableType2githubᚗcomᚋhkonitzerᚋohmabᚋentᚋtimetableᚐTimetableType(ctx context.Context, v interface{}) (timetable.TimetableType, error) {
 	var res timetable.TimetableType
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNTimetableTimetableType2hynieᚗdeᚋohmabᚋentᚋtimetableᚐTimetableType(ctx context.Context, sel ast.SelectionSet, v timetable.TimetableType) graphql.Marshaler {
+func (ec *executionContext) marshalNTimetableTimetableType2githubᚗcomᚋhkonitzerᚋohmabᚋentᚋtimetableᚐTimetableType(ctx context.Context, sel ast.SelectionSet, v timetable.TimetableType) graphql.Marshaler {
 	return v
 }
 
-func (ec *executionContext) unmarshalNTimetableWhereInput2ᚖhynieᚗdeᚋohmabᚋentᚐTimetableWhereInput(ctx context.Context, v interface{}) (*ent.TimetableWhereInput, error) {
+func (ec *executionContext) unmarshalNTimetableWhereInput2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐTimetableWhereInput(ctx context.Context, v interface{}) (*ent.TimetableWhereInput, error) {
 	res, err := ec.unmarshalInputTimetableWhereInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNUser2ᚖhynieᚗdeᚋohmabᚋentᚐUser(ctx context.Context, sel ast.SelectionSet, v *ent.User) graphql.Marshaler {
+func (ec *executionContext) unmarshalNUpdateTimetableInput2githubᚗcomᚋhkonitzerᚋohmabᚋentᚐUpdateTimetableInput(ctx context.Context, v interface{}) (ent.UpdateTimetableInput, error) {
+	res, err := ec.unmarshalInputUpdateTimetableInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐUser(ctx context.Context, sel ast.SelectionSet, v *ent.User) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -19030,13 +19530,13 @@ func (ec *executionContext) marshalNUser2ᚖhynieᚗdeᚋohmabᚋentᚐUser(ctx 
 	return ec._User(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNUserOrderField2ᚖhynieᚗdeᚋohmabᚋentᚐUserOrderField(ctx context.Context, v interface{}) (*ent.UserOrderField, error) {
+func (ec *executionContext) unmarshalNUserOrderField2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐUserOrderField(ctx context.Context, v interface{}) (*ent.UserOrderField, error) {
 	var res = new(ent.UserOrderField)
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNUserOrderField2ᚖhynieᚗdeᚋohmabᚋentᚐUserOrderField(ctx context.Context, sel ast.SelectionSet, v *ent.UserOrderField) graphql.Marshaler {
+func (ec *executionContext) marshalNUserOrderField2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐUserOrderField(ctx context.Context, sel ast.SelectionSet, v *ent.UserOrderField) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -19046,7 +19546,7 @@ func (ec *executionContext) marshalNUserOrderField2ᚖhynieᚗdeᚋohmabᚋent�
 	return v
 }
 
-func (ec *executionContext) unmarshalNUserWhereInput2ᚖhynieᚗdeᚋohmabᚋentᚐUserWhereInput(ctx context.Context, v interface{}) (*ent.UserWhereInput, error) {
+func (ec *executionContext) unmarshalNUserWhereInput2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐUserWhereInput(ctx context.Context, v interface{}) (*ent.UserWhereInput, error) {
 	res, err := ec.unmarshalInputUserWhereInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
@@ -19304,7 +19804,7 @@ func (ec *executionContext) marshalN__TypeKind2string(ctx context.Context, sel a
 	return res
 }
 
-func (ec *executionContext) marshalOAddress2ᚕᚖhynieᚗdeᚋohmabᚋentᚐAddressᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.Address) graphql.Marshaler {
+func (ec *executionContext) marshalOAddress2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐAddressᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.Address) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -19331,7 +19831,7 @@ func (ec *executionContext) marshalOAddress2ᚕᚖhynieᚗdeᚋohmabᚋentᚐAdd
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNAddress2ᚖhynieᚗdeᚋohmabᚋentᚐAddress(ctx, sel, v[i])
+			ret[i] = ec.marshalNAddress2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐAddress(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -19351,14 +19851,14 @@ func (ec *executionContext) marshalOAddress2ᚕᚖhynieᚗdeᚋohmabᚋentᚐAdd
 	return ret
 }
 
-func (ec *executionContext) marshalOAddress2ᚖhynieᚗdeᚋohmabᚋentᚐAddress(ctx context.Context, sel ast.SelectionSet, v *ent.Address) graphql.Marshaler {
+func (ec *executionContext) marshalOAddress2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐAddress(ctx context.Context, sel ast.SelectionSet, v *ent.Address) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._Address(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOAddressEdge2ᚕᚖhynieᚗdeᚋohmabᚋentᚐAddressEdge(ctx context.Context, sel ast.SelectionSet, v []*ent.AddressEdge) graphql.Marshaler {
+func (ec *executionContext) marshalOAddressEdge2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐAddressEdge(ctx context.Context, sel ast.SelectionSet, v []*ent.AddressEdge) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -19385,7 +19885,7 @@ func (ec *executionContext) marshalOAddressEdge2ᚕᚖhynieᚗdeᚋohmabᚋent�
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalOAddressEdge2ᚖhynieᚗdeᚋohmabᚋentᚐAddressEdge(ctx, sel, v[i])
+			ret[i] = ec.marshalOAddressEdge2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐAddressEdge(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -19399,14 +19899,14 @@ func (ec *executionContext) marshalOAddressEdge2ᚕᚖhynieᚗdeᚋohmabᚋent�
 	return ret
 }
 
-func (ec *executionContext) marshalOAddressEdge2ᚖhynieᚗdeᚋohmabᚋentᚐAddressEdge(ctx context.Context, sel ast.SelectionSet, v *ent.AddressEdge) graphql.Marshaler {
+func (ec *executionContext) marshalOAddressEdge2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐAddressEdge(ctx context.Context, sel ast.SelectionSet, v *ent.AddressEdge) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._AddressEdge(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalOAddressWhereInput2ᚕᚖhynieᚗdeᚋohmabᚋentᚐAddressWhereInputᚄ(ctx context.Context, v interface{}) ([]*ent.AddressWhereInput, error) {
+func (ec *executionContext) unmarshalOAddressWhereInput2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐAddressWhereInputᚄ(ctx context.Context, v interface{}) ([]*ent.AddressWhereInput, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -19418,7 +19918,7 @@ func (ec *executionContext) unmarshalOAddressWhereInput2ᚕᚖhynieᚗdeᚋohmab
 	res := make([]*ent.AddressWhereInput, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNAddressWhereInput2ᚖhynieᚗdeᚋohmabᚋentᚐAddressWhereInput(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNAddressWhereInput2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐAddressWhereInput(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
@@ -19426,7 +19926,7 @@ func (ec *executionContext) unmarshalOAddressWhereInput2ᚕᚖhynieᚗdeᚋohmab
 	return res, nil
 }
 
-func (ec *executionContext) unmarshalOAddressWhereInput2ᚖhynieᚗdeᚋohmabᚋentᚐAddressWhereInput(ctx context.Context, v interface{}) (*ent.AddressWhereInput, error) {
+func (ec *executionContext) unmarshalOAddressWhereInput2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐAddressWhereInput(ctx context.Context, v interface{}) (*ent.AddressWhereInput, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -19434,7 +19934,7 @@ func (ec *executionContext) unmarshalOAddressWhereInput2ᚖhynieᚗdeᚋohmabᚋ
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalOAuditLogWhereInput2ᚕᚖhynieᚗdeᚋohmabᚋentᚐAuditLogWhereInputᚄ(ctx context.Context, v interface{}) ([]*ent.AuditLogWhereInput, error) {
+func (ec *executionContext) unmarshalOAuditLogWhereInput2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐAuditLogWhereInputᚄ(ctx context.Context, v interface{}) ([]*ent.AuditLogWhereInput, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -19446,7 +19946,7 @@ func (ec *executionContext) unmarshalOAuditLogWhereInput2ᚕᚖhynieᚗdeᚋohma
 	res := make([]*ent.AuditLogWhereInput, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNAuditLogWhereInput2ᚖhynieᚗdeᚋohmabᚋentᚐAuditLogWhereInput(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNAuditLogWhereInput2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐAuditLogWhereInput(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
@@ -19454,7 +19954,7 @@ func (ec *executionContext) unmarshalOAuditLogWhereInput2ᚕᚖhynieᚗdeᚋohma
 	return res, nil
 }
 
-func (ec *executionContext) unmarshalOAuditLogWhereInput2ᚖhynieᚗdeᚋohmabᚋentᚐAuditLogWhereInput(ctx context.Context, v interface{}) (*ent.AuditLogWhereInput, error) {
+func (ec *executionContext) unmarshalOAuditLogWhereInput2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐAuditLogWhereInput(ctx context.Context, v interface{}) (*ent.AuditLogWhereInput, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -19488,7 +19988,7 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return res
 }
 
-func (ec *executionContext) marshalOBusiness2ᚕᚖhynieᚗdeᚋohmabᚋentᚐBusinessᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.Business) graphql.Marshaler {
+func (ec *executionContext) marshalOBusiness2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐBusinessᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.Business) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -19515,7 +20015,7 @@ func (ec *executionContext) marshalOBusiness2ᚕᚖhynieᚗdeᚋohmabᚋentᚐBu
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNBusiness2ᚖhynieᚗdeᚋohmabᚋentᚐBusiness(ctx, sel, v[i])
+			ret[i] = ec.marshalNBusiness2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐBusiness(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -19535,14 +20035,14 @@ func (ec *executionContext) marshalOBusiness2ᚕᚖhynieᚗdeᚋohmabᚋentᚐBu
 	return ret
 }
 
-func (ec *executionContext) marshalOBusiness2ᚖhynieᚗdeᚋohmabᚋentᚐBusiness(ctx context.Context, sel ast.SelectionSet, v *ent.Business) graphql.Marshaler {
+func (ec *executionContext) marshalOBusiness2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐBusiness(ctx context.Context, sel ast.SelectionSet, v *ent.Business) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._Business(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOBusinessEdge2ᚕᚖhynieᚗdeᚋohmabᚋentᚐBusinessEdge(ctx context.Context, sel ast.SelectionSet, v []*ent.BusinessEdge) graphql.Marshaler {
+func (ec *executionContext) marshalOBusinessEdge2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐBusinessEdge(ctx context.Context, sel ast.SelectionSet, v []*ent.BusinessEdge) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -19569,7 +20069,7 @@ func (ec *executionContext) marshalOBusinessEdge2ᚕᚖhynieᚗdeᚋohmabᚋent�
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalOBusinessEdge2ᚖhynieᚗdeᚋohmabᚋentᚐBusinessEdge(ctx, sel, v[i])
+			ret[i] = ec.marshalOBusinessEdge2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐBusinessEdge(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -19583,14 +20083,14 @@ func (ec *executionContext) marshalOBusinessEdge2ᚕᚖhynieᚗdeᚋohmabᚋent�
 	return ret
 }
 
-func (ec *executionContext) marshalOBusinessEdge2ᚖhynieᚗdeᚋohmabᚋentᚐBusinessEdge(ctx context.Context, sel ast.SelectionSet, v *ent.BusinessEdge) graphql.Marshaler {
+func (ec *executionContext) marshalOBusinessEdge2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐBusinessEdge(ctx context.Context, sel ast.SelectionSet, v *ent.BusinessEdge) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._BusinessEdge(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalOBusinessOrder2ᚕᚖhynieᚗdeᚋohmabᚋentᚐBusinessOrderᚄ(ctx context.Context, v interface{}) ([]*ent.BusinessOrder, error) {
+func (ec *executionContext) unmarshalOBusinessOrder2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐBusinessOrderᚄ(ctx context.Context, v interface{}) ([]*ent.BusinessOrder, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -19602,7 +20102,7 @@ func (ec *executionContext) unmarshalOBusinessOrder2ᚕᚖhynieᚗdeᚋohmabᚋe
 	res := make([]*ent.BusinessOrder, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNBusinessOrder2ᚖhynieᚗdeᚋohmabᚋentᚐBusinessOrder(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNBusinessOrder2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐBusinessOrder(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
@@ -19610,7 +20110,7 @@ func (ec *executionContext) unmarshalOBusinessOrder2ᚕᚖhynieᚗdeᚋohmabᚋe
 	return res, nil
 }
 
-func (ec *executionContext) unmarshalOBusinessWhereInput2ᚕᚖhynieᚗdeᚋohmabᚋentᚐBusinessWhereInputᚄ(ctx context.Context, v interface{}) ([]*ent.BusinessWhereInput, error) {
+func (ec *executionContext) unmarshalOBusinessWhereInput2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐBusinessWhereInputᚄ(ctx context.Context, v interface{}) ([]*ent.BusinessWhereInput, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -19622,7 +20122,7 @@ func (ec *executionContext) unmarshalOBusinessWhereInput2ᚕᚖhynieᚗdeᚋohma
 	res := make([]*ent.BusinessWhereInput, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNBusinessWhereInput2ᚖhynieᚗdeᚋohmabᚋentᚐBusinessWhereInput(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNBusinessWhereInput2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐBusinessWhereInput(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
@@ -19630,7 +20130,7 @@ func (ec *executionContext) unmarshalOBusinessWhereInput2ᚕᚖhynieᚗdeᚋohma
 	return res, nil
 }
 
-func (ec *executionContext) unmarshalOBusinessWhereInput2ᚖhynieᚗdeᚋohmabᚋentᚐBusinessWhereInput(ctx context.Context, v interface{}) (*ent.BusinessWhereInput, error) {
+func (ec *executionContext) unmarshalOBusinessWhereInput2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐBusinessWhereInput(ctx context.Context, v interface{}) (*ent.BusinessWhereInput, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -19638,7 +20138,7 @@ func (ec *executionContext) unmarshalOBusinessWhereInput2ᚖhynieᚗdeᚋohmab�
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalOContentLocation2ᚕhynieᚗdeᚋohmabᚋentᚋcontentᚐLocationᚄ(ctx context.Context, v interface{}) ([]content.Location, error) {
+func (ec *executionContext) unmarshalOContentLocation2ᚕgithubᚗcomᚋhkonitzerᚋohmabᚋentᚋcontentᚐLocationᚄ(ctx context.Context, v interface{}) ([]content.Location, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -19650,7 +20150,7 @@ func (ec *executionContext) unmarshalOContentLocation2ᚕhynieᚗdeᚋohmabᚋen
 	res := make([]content.Location, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNContentLocation2hynieᚗdeᚋohmabᚋentᚋcontentᚐLocation(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNContentLocation2githubᚗcomᚋhkonitzerᚋohmabᚋentᚋcontentᚐLocation(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
@@ -19658,7 +20158,7 @@ func (ec *executionContext) unmarshalOContentLocation2ᚕhynieᚗdeᚋohmabᚋen
 	return res, nil
 }
 
-func (ec *executionContext) marshalOContentLocation2ᚕhynieᚗdeᚋohmabᚋentᚋcontentᚐLocationᚄ(ctx context.Context, sel ast.SelectionSet, v []content.Location) graphql.Marshaler {
+func (ec *executionContext) marshalOContentLocation2ᚕgithubᚗcomᚋhkonitzerᚋohmabᚋentᚋcontentᚐLocationᚄ(ctx context.Context, sel ast.SelectionSet, v []content.Location) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -19685,7 +20185,7 @@ func (ec *executionContext) marshalOContentLocation2ᚕhynieᚗdeᚋohmabᚋent�
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNContentLocation2hynieᚗdeᚋohmabᚋentᚋcontentᚐLocation(ctx, sel, v[i])
+			ret[i] = ec.marshalNContentLocation2githubᚗcomᚋhkonitzerᚋohmabᚋentᚋcontentᚐLocation(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -19705,7 +20205,7 @@ func (ec *executionContext) marshalOContentLocation2ᚕhynieᚗdeᚋohmabᚋent�
 	return ret
 }
 
-func (ec *executionContext) unmarshalOContentLocation2ᚖhynieᚗdeᚋohmabᚋentᚋcontentᚐLocation(ctx context.Context, v interface{}) (*content.Location, error) {
+func (ec *executionContext) unmarshalOContentLocation2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚋcontentᚐLocation(ctx context.Context, v interface{}) (*content.Location, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -19714,14 +20214,14 @@ func (ec *executionContext) unmarshalOContentLocation2ᚖhynieᚗdeᚋohmabᚋen
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOContentLocation2ᚖhynieᚗdeᚋohmabᚋentᚋcontentᚐLocation(ctx context.Context, sel ast.SelectionSet, v *content.Location) graphql.Marshaler {
+func (ec *executionContext) marshalOContentLocation2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚋcontentᚐLocation(ctx context.Context, sel ast.SelectionSet, v *content.Location) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return v
 }
 
-func (ec *executionContext) unmarshalOContentStatus2ᚕhynieᚗdeᚋohmabᚋentᚋcontentᚐStatusᚄ(ctx context.Context, v interface{}) ([]content.Status, error) {
+func (ec *executionContext) unmarshalOContentStatus2ᚕgithubᚗcomᚋhkonitzerᚋohmabᚋentᚋcontentᚐStatusᚄ(ctx context.Context, v interface{}) ([]content.Status, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -19733,7 +20233,7 @@ func (ec *executionContext) unmarshalOContentStatus2ᚕhynieᚗdeᚋohmabᚋent�
 	res := make([]content.Status, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNContentStatus2hynieᚗdeᚋohmabᚋentᚋcontentᚐStatus(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNContentStatus2githubᚗcomᚋhkonitzerᚋohmabᚋentᚋcontentᚐStatus(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
@@ -19741,7 +20241,7 @@ func (ec *executionContext) unmarshalOContentStatus2ᚕhynieᚗdeᚋohmabᚋent�
 	return res, nil
 }
 
-func (ec *executionContext) marshalOContentStatus2ᚕhynieᚗdeᚋohmabᚋentᚋcontentᚐStatusᚄ(ctx context.Context, sel ast.SelectionSet, v []content.Status) graphql.Marshaler {
+func (ec *executionContext) marshalOContentStatus2ᚕgithubᚗcomᚋhkonitzerᚋohmabᚋentᚋcontentᚐStatusᚄ(ctx context.Context, sel ast.SelectionSet, v []content.Status) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -19768,7 +20268,7 @@ func (ec *executionContext) marshalOContentStatus2ᚕhynieᚗdeᚋohmabᚋentᚋ
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNContentStatus2hynieᚗdeᚋohmabᚋentᚋcontentᚐStatus(ctx, sel, v[i])
+			ret[i] = ec.marshalNContentStatus2githubᚗcomᚋhkonitzerᚋohmabᚋentᚋcontentᚐStatus(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -19788,7 +20288,7 @@ func (ec *executionContext) marshalOContentStatus2ᚕhynieᚗdeᚋohmabᚋentᚋ
 	return ret
 }
 
-func (ec *executionContext) unmarshalOContentStatus2ᚖhynieᚗdeᚋohmabᚋentᚋcontentᚐStatus(ctx context.Context, v interface{}) (*content.Status, error) {
+func (ec *executionContext) unmarshalOContentStatus2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚋcontentᚐStatus(ctx context.Context, v interface{}) (*content.Status, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -19797,14 +20297,14 @@ func (ec *executionContext) unmarshalOContentStatus2ᚖhynieᚗdeᚋohmabᚋent�
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOContentStatus2ᚖhynieᚗdeᚋohmabᚋentᚋcontentᚐStatus(ctx context.Context, sel ast.SelectionSet, v *content.Status) graphql.Marshaler {
+func (ec *executionContext) marshalOContentStatus2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚋcontentᚐStatus(ctx context.Context, sel ast.SelectionSet, v *content.Status) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return v
 }
 
-func (ec *executionContext) unmarshalOContentTimetableType2ᚕhynieᚗdeᚋohmabᚋentᚋcontentᚐTimetableTypeᚄ(ctx context.Context, v interface{}) ([]content.TimetableType, error) {
+func (ec *executionContext) unmarshalOContentTimetableType2ᚕgithubᚗcomᚋhkonitzerᚋohmabᚋentᚋcontentᚐTimetableTypeᚄ(ctx context.Context, v interface{}) ([]content.TimetableType, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -19816,7 +20316,7 @@ func (ec *executionContext) unmarshalOContentTimetableType2ᚕhynieᚗdeᚋohmab
 	res := make([]content.TimetableType, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNContentTimetableType2hynieᚗdeᚋohmabᚋentᚋcontentᚐTimetableType(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNContentTimetableType2githubᚗcomᚋhkonitzerᚋohmabᚋentᚋcontentᚐTimetableType(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
@@ -19824,7 +20324,7 @@ func (ec *executionContext) unmarshalOContentTimetableType2ᚕhynieᚗdeᚋohmab
 	return res, nil
 }
 
-func (ec *executionContext) marshalOContentTimetableType2ᚕhynieᚗdeᚋohmabᚋentᚋcontentᚐTimetableTypeᚄ(ctx context.Context, sel ast.SelectionSet, v []content.TimetableType) graphql.Marshaler {
+func (ec *executionContext) marshalOContentTimetableType2ᚕgithubᚗcomᚋhkonitzerᚋohmabᚋentᚋcontentᚐTimetableTypeᚄ(ctx context.Context, sel ast.SelectionSet, v []content.TimetableType) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -19851,7 +20351,7 @@ func (ec *executionContext) marshalOContentTimetableType2ᚕhynieᚗdeᚋohmab�
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNContentTimetableType2hynieᚗdeᚋohmabᚋentᚋcontentᚐTimetableType(ctx, sel, v[i])
+			ret[i] = ec.marshalNContentTimetableType2githubᚗcomᚋhkonitzerᚋohmabᚋentᚋcontentᚐTimetableType(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -19871,7 +20371,7 @@ func (ec *executionContext) marshalOContentTimetableType2ᚕhynieᚗdeᚋohmab�
 	return ret
 }
 
-func (ec *executionContext) unmarshalOContentTimetableType2ᚖhynieᚗdeᚋohmabᚋentᚋcontentᚐTimetableType(ctx context.Context, v interface{}) (*content.TimetableType, error) {
+func (ec *executionContext) unmarshalOContentTimetableType2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚋcontentᚐTimetableType(ctx context.Context, v interface{}) (*content.TimetableType, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -19880,14 +20380,14 @@ func (ec *executionContext) unmarshalOContentTimetableType2ᚖhynieᚗdeᚋohmab
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOContentTimetableType2ᚖhynieᚗdeᚋohmabᚋentᚋcontentᚐTimetableType(ctx context.Context, sel ast.SelectionSet, v *content.TimetableType) graphql.Marshaler {
+func (ec *executionContext) marshalOContentTimetableType2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚋcontentᚐTimetableType(ctx context.Context, sel ast.SelectionSet, v *content.TimetableType) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return v
 }
 
-func (ec *executionContext) unmarshalOContentType2ᚕhynieᚗdeᚋohmabᚋentᚋcontentᚐTypeᚄ(ctx context.Context, v interface{}) ([]content.Type, error) {
+func (ec *executionContext) unmarshalOContentType2ᚕgithubᚗcomᚋhkonitzerᚋohmabᚋentᚋcontentᚐTypeᚄ(ctx context.Context, v interface{}) ([]content.Type, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -19899,7 +20399,7 @@ func (ec *executionContext) unmarshalOContentType2ᚕhynieᚗdeᚋohmabᚋentᚋ
 	res := make([]content.Type, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNContentType2hynieᚗdeᚋohmabᚋentᚋcontentᚐType(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNContentType2githubᚗcomᚋhkonitzerᚋohmabᚋentᚋcontentᚐType(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
@@ -19907,7 +20407,7 @@ func (ec *executionContext) unmarshalOContentType2ᚕhynieᚗdeᚋohmabᚋentᚋ
 	return res, nil
 }
 
-func (ec *executionContext) marshalOContentType2ᚕhynieᚗdeᚋohmabᚋentᚋcontentᚐTypeᚄ(ctx context.Context, sel ast.SelectionSet, v []content.Type) graphql.Marshaler {
+func (ec *executionContext) marshalOContentType2ᚕgithubᚗcomᚋhkonitzerᚋohmabᚋentᚋcontentᚐTypeᚄ(ctx context.Context, sel ast.SelectionSet, v []content.Type) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -19934,7 +20434,7 @@ func (ec *executionContext) marshalOContentType2ᚕhynieᚗdeᚋohmabᚋentᚋco
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNContentType2hynieᚗdeᚋohmabᚋentᚋcontentᚐType(ctx, sel, v[i])
+			ret[i] = ec.marshalNContentType2githubᚗcomᚋhkonitzerᚋohmabᚋentᚋcontentᚐType(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -19954,7 +20454,7 @@ func (ec *executionContext) marshalOContentType2ᚕhynieᚗdeᚋohmabᚋentᚋco
 	return ret
 }
 
-func (ec *executionContext) unmarshalOContentType2ᚖhynieᚗdeᚋohmabᚋentᚋcontentᚐType(ctx context.Context, v interface{}) (*content.Type, error) {
+func (ec *executionContext) unmarshalOContentType2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚋcontentᚐType(ctx context.Context, v interface{}) (*content.Type, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -19963,14 +20463,14 @@ func (ec *executionContext) unmarshalOContentType2ᚖhynieᚗdeᚋohmabᚋentᚋ
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOContentType2ᚖhynieᚗdeᚋohmabᚋentᚋcontentᚐType(ctx context.Context, sel ast.SelectionSet, v *content.Type) graphql.Marshaler {
+func (ec *executionContext) marshalOContentType2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚋcontentᚐType(ctx context.Context, sel ast.SelectionSet, v *content.Type) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return v
 }
 
-func (ec *executionContext) unmarshalOContentWhereInput2ᚕᚖhynieᚗdeᚋohmabᚋentᚐContentWhereInputᚄ(ctx context.Context, v interface{}) ([]*ent.ContentWhereInput, error) {
+func (ec *executionContext) unmarshalOContentWhereInput2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐContentWhereInputᚄ(ctx context.Context, v interface{}) ([]*ent.ContentWhereInput, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -19982,7 +20482,7 @@ func (ec *executionContext) unmarshalOContentWhereInput2ᚕᚖhynieᚗdeᚋohmab
 	res := make([]*ent.ContentWhereInput, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNContentWhereInput2ᚖhynieᚗdeᚋohmabᚋentᚐContentWhereInput(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNContentWhereInput2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐContentWhereInput(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
@@ -19990,7 +20490,7 @@ func (ec *executionContext) unmarshalOContentWhereInput2ᚕᚖhynieᚗdeᚋohmab
 	return res, nil
 }
 
-func (ec *executionContext) unmarshalOContentWhereInput2ᚖhynieᚗdeᚋohmabᚋentᚐContentWhereInput(ctx context.Context, v interface{}) (*ent.ContentWhereInput, error) {
+func (ec *executionContext) unmarshalOContentWhereInput2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐContentWhereInput(ctx context.Context, v interface{}) (*ent.ContentWhereInput, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -20138,7 +20638,7 @@ func (ec *executionContext) marshalOMap2map(ctx context.Context, sel ast.Selecti
 	return res
 }
 
-func (ec *executionContext) marshalONode2hynieᚗdeᚋohmabᚋentᚐNoder(ctx context.Context, sel ast.SelectionSet, v ent.Noder) graphql.Marshaler {
+func (ec *executionContext) marshalONode2githubᚗcomᚋhkonitzerᚋohmabᚋentᚐNoder(ctx context.Context, sel ast.SelectionSet, v ent.Noder) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -20209,7 +20709,7 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 	return res
 }
 
-func (ec *executionContext) marshalOTag2ᚕᚖhynieᚗdeᚋohmabᚋentᚐTagᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.Tag) graphql.Marshaler {
+func (ec *executionContext) marshalOTag2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐTagᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.Tag) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -20236,7 +20736,7 @@ func (ec *executionContext) marshalOTag2ᚕᚖhynieᚗdeᚋohmabᚋentᚐTagᚄ(
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNTag2ᚖhynieᚗdeᚋohmabᚋentᚐTag(ctx, sel, v[i])
+			ret[i] = ec.marshalNTag2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐTag(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -20256,7 +20756,7 @@ func (ec *executionContext) marshalOTag2ᚕᚖhynieᚗdeᚋohmabᚋentᚐTagᚄ(
 	return ret
 }
 
-func (ec *executionContext) unmarshalOTagWhereInput2ᚕᚖhynieᚗdeᚋohmabᚋentᚐTagWhereInputᚄ(ctx context.Context, v interface{}) ([]*ent.TagWhereInput, error) {
+func (ec *executionContext) unmarshalOTagWhereInput2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐTagWhereInputᚄ(ctx context.Context, v interface{}) ([]*ent.TagWhereInput, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -20268,7 +20768,7 @@ func (ec *executionContext) unmarshalOTagWhereInput2ᚕᚖhynieᚗdeᚋohmabᚋe
 	res := make([]*ent.TagWhereInput, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNTagWhereInput2ᚖhynieᚗdeᚋohmabᚋentᚐTagWhereInput(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNTagWhereInput2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐTagWhereInput(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
@@ -20276,7 +20776,7 @@ func (ec *executionContext) unmarshalOTagWhereInput2ᚕᚖhynieᚗdeᚋohmabᚋe
 	return res, nil
 }
 
-func (ec *executionContext) unmarshalOTagWhereInput2ᚖhynieᚗdeᚋohmabᚋentᚐTagWhereInput(ctx context.Context, v interface{}) (*ent.TagWhereInput, error) {
+func (ec *executionContext) unmarshalOTagWhereInput2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐTagWhereInput(ctx context.Context, v interface{}) (*ent.TagWhereInput, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -20348,7 +20848,7 @@ func (ec *executionContext) marshalOTime2ᚖtimeᚐTime(ctx context.Context, sel
 	return res
 }
 
-func (ec *executionContext) marshalOTimetable2ᚕᚖhynieᚗdeᚋohmabᚋentᚐTimetableᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.Timetable) graphql.Marshaler {
+func (ec *executionContext) marshalOTimetable2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐTimetableᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.Timetable) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -20375,7 +20875,7 @@ func (ec *executionContext) marshalOTimetable2ᚕᚖhynieᚗdeᚋohmabᚋentᚐT
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNTimetable2ᚖhynieᚗdeᚋohmabᚋentᚐTimetable(ctx, sel, v[i])
+			ret[i] = ec.marshalNTimetable2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐTimetable(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -20395,14 +20895,14 @@ func (ec *executionContext) marshalOTimetable2ᚕᚖhynieᚗdeᚋohmabᚋentᚐT
 	return ret
 }
 
-func (ec *executionContext) marshalOTimetable2ᚖhynieᚗdeᚋohmabᚋentᚐTimetable(ctx context.Context, sel ast.SelectionSet, v *ent.Timetable) graphql.Marshaler {
+func (ec *executionContext) marshalOTimetable2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐTimetable(ctx context.Context, sel ast.SelectionSet, v *ent.Timetable) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._Timetable(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOTimetableEdge2ᚕᚖhynieᚗdeᚋohmabᚋentᚐTimetableEdge(ctx context.Context, sel ast.SelectionSet, v []*ent.TimetableEdge) graphql.Marshaler {
+func (ec *executionContext) marshalOTimetableEdge2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐTimetableEdge(ctx context.Context, sel ast.SelectionSet, v []*ent.TimetableEdge) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -20429,7 +20929,7 @@ func (ec *executionContext) marshalOTimetableEdge2ᚕᚖhynieᚗdeᚋohmabᚋent
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalOTimetableEdge2ᚖhynieᚗdeᚋohmabᚋentᚐTimetableEdge(ctx, sel, v[i])
+			ret[i] = ec.marshalOTimetableEdge2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐTimetableEdge(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -20443,14 +20943,14 @@ func (ec *executionContext) marshalOTimetableEdge2ᚕᚖhynieᚗdeᚋohmabᚋent
 	return ret
 }
 
-func (ec *executionContext) marshalOTimetableEdge2ᚖhynieᚗdeᚋohmabᚋentᚐTimetableEdge(ctx context.Context, sel ast.SelectionSet, v *ent.TimetableEdge) graphql.Marshaler {
+func (ec *executionContext) marshalOTimetableEdge2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐTimetableEdge(ctx context.Context, sel ast.SelectionSet, v *ent.TimetableEdge) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._TimetableEdge(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalOTimetableOrder2ᚕᚖhynieᚗdeᚋohmabᚋentᚐTimetableOrderᚄ(ctx context.Context, v interface{}) ([]*ent.TimetableOrder, error) {
+func (ec *executionContext) unmarshalOTimetableOrder2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐTimetableOrderᚄ(ctx context.Context, v interface{}) ([]*ent.TimetableOrder, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -20462,7 +20962,7 @@ func (ec *executionContext) unmarshalOTimetableOrder2ᚕᚖhynieᚗdeᚋohmabᚋ
 	res := make([]*ent.TimetableOrder, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNTimetableOrder2ᚖhynieᚗdeᚋohmabᚋentᚐTimetableOrder(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNTimetableOrder2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐTimetableOrder(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
@@ -20470,7 +20970,7 @@ func (ec *executionContext) unmarshalOTimetableOrder2ᚕᚖhynieᚗdeᚋohmabᚋ
 	return res, nil
 }
 
-func (ec *executionContext) unmarshalOTimetableTimetableType2ᚕhynieᚗdeᚋohmabᚋentᚋtimetableᚐTimetableTypeᚄ(ctx context.Context, v interface{}) ([]timetable.TimetableType, error) {
+func (ec *executionContext) unmarshalOTimetableTimetableType2ᚕgithubᚗcomᚋhkonitzerᚋohmabᚋentᚋtimetableᚐTimetableTypeᚄ(ctx context.Context, v interface{}) ([]timetable.TimetableType, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -20482,7 +20982,7 @@ func (ec *executionContext) unmarshalOTimetableTimetableType2ᚕhynieᚗdeᚋohm
 	res := make([]timetable.TimetableType, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNTimetableTimetableType2hynieᚗdeᚋohmabᚋentᚋtimetableᚐTimetableType(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNTimetableTimetableType2githubᚗcomᚋhkonitzerᚋohmabᚋentᚋtimetableᚐTimetableType(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
@@ -20490,7 +20990,7 @@ func (ec *executionContext) unmarshalOTimetableTimetableType2ᚕhynieᚗdeᚋohm
 	return res, nil
 }
 
-func (ec *executionContext) marshalOTimetableTimetableType2ᚕhynieᚗdeᚋohmabᚋentᚋtimetableᚐTimetableTypeᚄ(ctx context.Context, sel ast.SelectionSet, v []timetable.TimetableType) graphql.Marshaler {
+func (ec *executionContext) marshalOTimetableTimetableType2ᚕgithubᚗcomᚋhkonitzerᚋohmabᚋentᚋtimetableᚐTimetableTypeᚄ(ctx context.Context, sel ast.SelectionSet, v []timetable.TimetableType) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -20517,7 +21017,7 @@ func (ec *executionContext) marshalOTimetableTimetableType2ᚕhynieᚗdeᚋohmab
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNTimetableTimetableType2hynieᚗdeᚋohmabᚋentᚋtimetableᚐTimetableType(ctx, sel, v[i])
+			ret[i] = ec.marshalNTimetableTimetableType2githubᚗcomᚋhkonitzerᚋohmabᚋentᚋtimetableᚐTimetableType(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -20537,7 +21037,7 @@ func (ec *executionContext) marshalOTimetableTimetableType2ᚕhynieᚗdeᚋohmab
 	return ret
 }
 
-func (ec *executionContext) unmarshalOTimetableTimetableType2ᚖhynieᚗdeᚋohmabᚋentᚋtimetableᚐTimetableType(ctx context.Context, v interface{}) (*timetable.TimetableType, error) {
+func (ec *executionContext) unmarshalOTimetableTimetableType2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚋtimetableᚐTimetableType(ctx context.Context, v interface{}) (*timetable.TimetableType, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -20546,14 +21046,14 @@ func (ec *executionContext) unmarshalOTimetableTimetableType2ᚖhynieᚗdeᚋohm
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOTimetableTimetableType2ᚖhynieᚗdeᚋohmabᚋentᚋtimetableᚐTimetableType(ctx context.Context, sel ast.SelectionSet, v *timetable.TimetableType) graphql.Marshaler {
+func (ec *executionContext) marshalOTimetableTimetableType2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚋtimetableᚐTimetableType(ctx context.Context, sel ast.SelectionSet, v *timetable.TimetableType) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return v
 }
 
-func (ec *executionContext) unmarshalOTimetableWhereInput2ᚕᚖhynieᚗdeᚋohmabᚋentᚐTimetableWhereInputᚄ(ctx context.Context, v interface{}) ([]*ent.TimetableWhereInput, error) {
+func (ec *executionContext) unmarshalOTimetableWhereInput2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐTimetableWhereInputᚄ(ctx context.Context, v interface{}) ([]*ent.TimetableWhereInput, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -20565,7 +21065,7 @@ func (ec *executionContext) unmarshalOTimetableWhereInput2ᚕᚖhynieᚗdeᚋohm
 	res := make([]*ent.TimetableWhereInput, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNTimetableWhereInput2ᚖhynieᚗdeᚋohmabᚋentᚐTimetableWhereInput(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNTimetableWhereInput2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐTimetableWhereInput(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
@@ -20573,7 +21073,7 @@ func (ec *executionContext) unmarshalOTimetableWhereInput2ᚕᚖhynieᚗdeᚋohm
 	return res, nil
 }
 
-func (ec *executionContext) unmarshalOTimetableWhereInput2ᚖhynieᚗdeᚋohmabᚋentᚐTimetableWhereInput(ctx context.Context, v interface{}) (*ent.TimetableWhereInput, error) {
+func (ec *executionContext) unmarshalOTimetableWhereInput2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐTimetableWhereInput(ctx context.Context, v interface{}) (*ent.TimetableWhereInput, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -20581,7 +21081,7 @@ func (ec *executionContext) unmarshalOTimetableWhereInput2ᚖhynieᚗdeᚋohmab�
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOUser2ᚕᚖhynieᚗdeᚋohmabᚋentᚐUserᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.User) graphql.Marshaler {
+func (ec *executionContext) marshalOUser2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐUserᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.User) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -20608,7 +21108,7 @@ func (ec *executionContext) marshalOUser2ᚕᚖhynieᚗdeᚋohmabᚋentᚐUser�
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNUser2ᚖhynieᚗdeᚋohmabᚋentᚐUser(ctx, sel, v[i])
+			ret[i] = ec.marshalNUser2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐUser(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -20628,7 +21128,7 @@ func (ec *executionContext) marshalOUser2ᚕᚖhynieᚗdeᚋohmabᚋentᚐUser�
 	return ret
 }
 
-func (ec *executionContext) unmarshalOUserWhereInput2ᚕᚖhynieᚗdeᚋohmabᚋentᚐUserWhereInputᚄ(ctx context.Context, v interface{}) ([]*ent.UserWhereInput, error) {
+func (ec *executionContext) unmarshalOUserWhereInput2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐUserWhereInputᚄ(ctx context.Context, v interface{}) ([]*ent.UserWhereInput, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -20640,7 +21140,7 @@ func (ec *executionContext) unmarshalOUserWhereInput2ᚕᚖhynieᚗdeᚋohmabᚋ
 	res := make([]*ent.UserWhereInput, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNUserWhereInput2ᚖhynieᚗdeᚋohmabᚋentᚐUserWhereInput(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNUserWhereInput2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐUserWhereInput(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
@@ -20648,7 +21148,7 @@ func (ec *executionContext) unmarshalOUserWhereInput2ᚕᚖhynieᚗdeᚋohmabᚋ
 	return res, nil
 }
 
-func (ec *executionContext) unmarshalOUserWhereInput2ᚖhynieᚗdeᚋohmabᚋentᚐUserWhereInput(ctx context.Context, v interface{}) (*ent.UserWhereInput, error) {
+func (ec *executionContext) unmarshalOUserWhereInput2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐUserWhereInput(ctx context.Context, v interface{}) (*ent.UserWhereInput, error) {
 	if v == nil {
 		return nil, nil
 	}

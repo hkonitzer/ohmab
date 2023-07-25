@@ -78,20 +78,6 @@ func (tu *TimetableUpdate) SetDatetimeFrom(t time.Time) *TimetableUpdate {
 	return tu
 }
 
-// SetNillableDatetimeFrom sets the "datetime_from" field if the given value is not nil.
-func (tu *TimetableUpdate) SetNillableDatetimeFrom(t *time.Time) *TimetableUpdate {
-	if t != nil {
-		tu.SetDatetimeFrom(*t)
-	}
-	return tu
-}
-
-// ClearDatetimeFrom clears the value of the "datetime_from" field.
-func (tu *TimetableUpdate) ClearDatetimeFrom() *TimetableUpdate {
-	tu.mutation.ClearDatetimeFrom()
-	return tu
-}
-
 // SetDuration sets the "duration" field.
 func (tu *TimetableUpdate) SetDuration(u uint8) *TimetableUpdate {
 	tu.mutation.ResetDuration()
@@ -122,6 +108,20 @@ func (tu *TimetableUpdate) ClearDuration() *TimetableUpdate {
 // SetDatetimeTo sets the "datetime_to" field.
 func (tu *TimetableUpdate) SetDatetimeTo(t time.Time) *TimetableUpdate {
 	tu.mutation.SetDatetimeTo(t)
+	return tu
+}
+
+// SetNillableDatetimeTo sets the "datetime_to" field if the given value is not nil.
+func (tu *TimetableUpdate) SetNillableDatetimeTo(t *time.Time) *TimetableUpdate {
+	if t != nil {
+		tu.SetDatetimeTo(*t)
+	}
+	return tu
+}
+
+// ClearDatetimeTo clears the value of the "datetime_to" field.
+func (tu *TimetableUpdate) ClearDatetimeTo() *TimetableUpdate {
+	tu.mutation.ClearDatetimeTo()
 	return tu
 }
 
@@ -384,9 +384,6 @@ func (tu *TimetableUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := tu.mutation.DatetimeFrom(); ok {
 		_spec.SetField(timetable.FieldDatetimeFrom, field.TypeTime, value)
 	}
-	if tu.mutation.DatetimeFromCleared() {
-		_spec.ClearField(timetable.FieldDatetimeFrom, field.TypeTime)
-	}
 	if value, ok := tu.mutation.Duration(); ok {
 		_spec.SetField(timetable.FieldDuration, field.TypeUint8, value)
 	}
@@ -398,6 +395,9 @@ func (tu *TimetableUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := tu.mutation.DatetimeTo(); ok {
 		_spec.SetField(timetable.FieldDatetimeTo, field.TypeTime, value)
+	}
+	if tu.mutation.DatetimeToCleared() {
+		_spec.ClearField(timetable.FieldDatetimeTo, field.TypeTime)
 	}
 	if value, ok := tu.mutation.TimeWholeDay(); ok {
 		_spec.SetField(timetable.FieldTimeWholeDay, field.TypeBool, value)
@@ -572,20 +572,6 @@ func (tuo *TimetableUpdateOne) SetDatetimeFrom(t time.Time) *TimetableUpdateOne 
 	return tuo
 }
 
-// SetNillableDatetimeFrom sets the "datetime_from" field if the given value is not nil.
-func (tuo *TimetableUpdateOne) SetNillableDatetimeFrom(t *time.Time) *TimetableUpdateOne {
-	if t != nil {
-		tuo.SetDatetimeFrom(*t)
-	}
-	return tuo
-}
-
-// ClearDatetimeFrom clears the value of the "datetime_from" field.
-func (tuo *TimetableUpdateOne) ClearDatetimeFrom() *TimetableUpdateOne {
-	tuo.mutation.ClearDatetimeFrom()
-	return tuo
-}
-
 // SetDuration sets the "duration" field.
 func (tuo *TimetableUpdateOne) SetDuration(u uint8) *TimetableUpdateOne {
 	tuo.mutation.ResetDuration()
@@ -616,6 +602,20 @@ func (tuo *TimetableUpdateOne) ClearDuration() *TimetableUpdateOne {
 // SetDatetimeTo sets the "datetime_to" field.
 func (tuo *TimetableUpdateOne) SetDatetimeTo(t time.Time) *TimetableUpdateOne {
 	tuo.mutation.SetDatetimeTo(t)
+	return tuo
+}
+
+// SetNillableDatetimeTo sets the "datetime_to" field if the given value is not nil.
+func (tuo *TimetableUpdateOne) SetNillableDatetimeTo(t *time.Time) *TimetableUpdateOne {
+	if t != nil {
+		tuo.SetDatetimeTo(*t)
+	}
+	return tuo
+}
+
+// ClearDatetimeTo clears the value of the "datetime_to" field.
+func (tuo *TimetableUpdateOne) ClearDatetimeTo() *TimetableUpdateOne {
+	tuo.mutation.ClearDatetimeTo()
 	return tuo
 }
 
@@ -908,9 +908,6 @@ func (tuo *TimetableUpdateOne) sqlSave(ctx context.Context) (_node *Timetable, e
 	if value, ok := tuo.mutation.DatetimeFrom(); ok {
 		_spec.SetField(timetable.FieldDatetimeFrom, field.TypeTime, value)
 	}
-	if tuo.mutation.DatetimeFromCleared() {
-		_spec.ClearField(timetable.FieldDatetimeFrom, field.TypeTime)
-	}
 	if value, ok := tuo.mutation.Duration(); ok {
 		_spec.SetField(timetable.FieldDuration, field.TypeUint8, value)
 	}
@@ -922,6 +919,9 @@ func (tuo *TimetableUpdateOne) sqlSave(ctx context.Context) (_node *Timetable, e
 	}
 	if value, ok := tuo.mutation.DatetimeTo(); ok {
 		_spec.SetField(timetable.FieldDatetimeTo, field.TypeTime, value)
+	}
+	if tuo.mutation.DatetimeToCleared() {
+		_spec.ClearField(timetable.FieldDatetimeTo, field.TypeTime)
 	}
 	if value, ok := tuo.mutation.TimeWholeDay(); ok {
 		_spec.SetField(timetable.FieldTimeWholeDay, field.TypeBool, value)

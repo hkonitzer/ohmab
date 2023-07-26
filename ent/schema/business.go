@@ -35,7 +35,8 @@ func (Business) Fields() []ent.Field {
 			MaxLen(20).
 			Annotations(entsql.Annotation{ // If using a SQL-database: change the underlying data type to varchar(20).
 				Size: 20,
-			}).
+			},
+				entgql.OrderField("ALIAS")).
 			Comment("The unqiue alias of the business (short name)"),
 		field.Text("telephone").
 			Optional().Unique().Comment("Telephone number"),
@@ -78,6 +79,7 @@ func (Business) Annotations() []schema.Annotation {
 func (Business) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("name1", "name2"),
+		index.Fields("alias"),
 		index.Fields("email"),
 	}
 }

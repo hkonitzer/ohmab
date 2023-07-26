@@ -382,6 +382,7 @@ input BusinessOrder {
 """Properties by which Business connections can be ordered."""
 enum BusinessOrderField {
   NAME1
+  ALIAS
 }
 """
 BusinessWhereInput is used for filtering Business objects.

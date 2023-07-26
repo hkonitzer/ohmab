@@ -91,6 +91,11 @@ var (
 				Columns: []*schema.Column{BusinessesColumns[4], BusinessesColumns[5]},
 			},
 			{
+				Name:    "business_alias",
+				Unique:  false,
+				Columns: []*schema.Column{BusinessesColumns[6]},
+			},
+			{
 				Name:    "business_email",
 				Unique:  false,
 				Columns: []*schema.Column{BusinessesColumns[8]},

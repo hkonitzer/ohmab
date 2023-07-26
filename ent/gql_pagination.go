@@ -854,6 +854,20 @@ var (
 			}
 		},
 	}
+	// BusinessOrderFieldAlias orders Business by alias.
+	BusinessOrderFieldAlias = &BusinessOrderField{
+		Value: func(b *Business) (ent.Value, error) {
+			return b.Alias, nil
+		},
+		column: business.FieldAlias,
+		toTerm: business.ByAlias,
+		toCursor: func(b *Business) Cursor {
+			return Cursor{
+				ID:    b.ID,
+				Value: b.Alias,
+			}
+		},
+	}
 )
 
 // String implement fmt.Stringer interface.
@@ -862,6 +876,8 @@ func (f BusinessOrderField) String() string {
 	switch f.column {
 	case BusinessOrderFieldName1.column:
 		str = "NAME1"
+	case BusinessOrderFieldAlias.column:
+		str = "ALIAS"
 	}
 	return str
 }
@@ -880,6 +896,8 @@ func (f *BusinessOrderField) UnmarshalGQL(v interface{}) error {
 	switch str {
 	case "NAME1":
 		*f = *BusinessOrderFieldName1
+	case "ALIAS":
+		*f = *BusinessOrderFieldAlias
 	default:
 		return fmt.Errorf("%s is not a valid BusinessOrderField", str)
 	}

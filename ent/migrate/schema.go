@@ -152,7 +152,7 @@ var (
 		{Name: "deleted_at", Type: field.TypeTime, Nullable: true},
 		{Name: "timetable_type", Type: field.TypeEnum, Enums: []string{"DEFAULT", "REGULAR", "CLOSED", "EMERGENCYSERVICE", "HOLIDAY", "SPECIAL"}, Default: "DEFAULT"},
 		{Name: "datetime_from", Type: field.TypeTime},
-		{Name: "duration", Type: field.TypeUint8, Nullable: true, SchemaType: map[string]string{"mysql": "TINYINT", "postgres": "SMALLINT", "sqlite3": "INTEGER"}},
+		{Name: "duration", Type: field.TypeInt, Nullable: true, SchemaType: map[string]string{"mysql": "TINYINT", "postgres": "SMALLINT", "sqlite3": "INTEGER"}},
 		{Name: "datetime_to", Type: field.TypeTime, Nullable: true},
 		{Name: "time_whole_day", Type: field.TypeBool, Default: false},
 		{Name: "comment", Type: field.TypeString, Nullable: true, Size: 2147483647},

@@ -87,15 +87,15 @@ func (tc *TimetableCreate) SetDatetimeFrom(t time.Time) *TimetableCreate {
 }
 
 // SetDuration sets the "duration" field.
-func (tc *TimetableCreate) SetDuration(u uint8) *TimetableCreate {
-	tc.mutation.SetDuration(u)
+func (tc *TimetableCreate) SetDuration(i int) *TimetableCreate {
+	tc.mutation.SetDuration(i)
 	return tc
 }
 
 // SetNillableDuration sets the "duration" field if the given value is not nil.
-func (tc *TimetableCreate) SetNillableDuration(u *uint8) *TimetableCreate {
-	if u != nil {
-		tc.SetDuration(*u)
+func (tc *TimetableCreate) SetNillableDuration(i *int) *TimetableCreate {
+	if i != nil {
+		tc.SetDuration(*i)
 	}
 	return tc
 }
@@ -393,7 +393,7 @@ func (tc *TimetableCreate) createSpec() (*Timetable, *sqlgraph.CreateSpec) {
 		_node.DatetimeFrom = value
 	}
 	if value, ok := tc.mutation.Duration(); ok {
-		_spec.SetField(timetable.FieldDuration, field.TypeUint8, value)
+		_spec.SetField(timetable.FieldDuration, field.TypeInt, value)
 		_node.Duration = value
 	}
 	if value, ok := tc.mutation.DatetimeTo(); ok {

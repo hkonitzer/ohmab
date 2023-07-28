@@ -29,7 +29,7 @@ func EnsureDurationIsSet() ent.Hook {
 				tdur := time.Duration(dur) * time.Hour
 				m.SetDatetimeTo(fro.Add(tdur))
 			} else if texists { // duration is not set, but datetime_to is
-				m.SetDuration(uint8(to.Sub(fro).Hours()))
+				m.SetDuration(int(to.Sub(fro).Hours()))
 			} else {
 				return nil, errors.New("either datetime_to or duration field must be set")
 			}

@@ -43,93 +43,11 @@ func (r *queryResolver) Timetables(ctx context.Context, after *entgql.Cursor[uui
 	return r.client.Timetable.Query().WithAddress().Paginate(ctx, after, first, before, last, ent.WithTimetableOrder(orderBy), ent.WithTimetableFilter(where.Filter))
 }
 
-// Duration is the resolver for the duration field.
-func (r *timetableResolver) Duration(ctx context.Context, obj *ent.Timetable) (*int, error) {
-	i := int(obj.Duration)
-	return &i, nil
-}
-
-// Duration is the resolver for the duration field.
-func (r *createTimetableInputResolver) Duration(ctx context.Context, obj *ent.CreateTimetableInput, data *int) error {
-	ui := uint8(*data)
-	obj.Duration = &ui
-	return nil
-}
-
-// Duration is the resolver for the duration field.
-func (r *timetableWhereInputResolver) Duration(ctx context.Context, obj *ent.TimetableWhereInput, data *int) error {
-	panic(fmt.Errorf("not implemented: Duration - duration"))
-}
-
-// DurationNeq is the resolver for the durationNEQ field.
-func (r *timetableWhereInputResolver) DurationNeq(ctx context.Context, obj *ent.TimetableWhereInput, data *int) error {
-	panic(fmt.Errorf("not implemented: DurationNeq - durationNEQ"))
-}
-
-// DurationIn is the resolver for the durationIn field.
-func (r *timetableWhereInputResolver) DurationIn(ctx context.Context, obj *ent.TimetableWhereInput, data []int) error {
-	panic(fmt.Errorf("not implemented: DurationIn - durationIn"))
-}
-
-// DurationNotIn is the resolver for the durationNotIn field.
-func (r *timetableWhereInputResolver) DurationNotIn(ctx context.Context, obj *ent.TimetableWhereInput, data []int) error {
-	panic(fmt.Errorf("not implemented: DurationNotIn - durationNotIn"))
-}
-
-// DurationGt is the resolver for the durationGT field.
-func (r *timetableWhereInputResolver) DurationGt(ctx context.Context, obj *ent.TimetableWhereInput, data *int) error {
-	panic(fmt.Errorf("not implemented: DurationGt - durationGT"))
-}
-
-// DurationGte is the resolver for the durationGTE field.
-func (r *timetableWhereInputResolver) DurationGte(ctx context.Context, obj *ent.TimetableWhereInput, data *int) error {
-	panic(fmt.Errorf("not implemented: DurationGte - durationGTE"))
-}
-
-// DurationLt is the resolver for the durationLT field.
-func (r *timetableWhereInputResolver) DurationLt(ctx context.Context, obj *ent.TimetableWhereInput, data *int) error {
-	panic(fmt.Errorf("not implemented: DurationLt - durationLT"))
-}
-
-// DurationLte is the resolver for the durationLTE field.
-func (r *timetableWhereInputResolver) DurationLte(ctx context.Context, obj *ent.TimetableWhereInput, data *int) error {
-	panic(fmt.Errorf("not implemented: DurationLte - durationLTE"))
-}
-
-// Duration is the resolver for the duration field.
-func (r *updateTimetableInputResolver) Duration(ctx context.Context, obj *ent.UpdateTimetableInput, data *int) error {
-	var ui = uint8(*data)
-	obj.Duration = &ui
-	return nil
-}
-
 // AuditLog returns AuditLogResolver implementation.
 func (r *Resolver) AuditLog() AuditLogResolver { return &auditLogResolver{r} }
 
 // Query returns QueryResolver implementation.
 func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 
-// Timetable returns TimetableResolver implementation.
-func (r *Resolver) Timetable() TimetableResolver { return &timetableResolver{r} }
-
-// CreateTimetableInput returns CreateTimetableInputResolver implementation.
-func (r *Resolver) CreateTimetableInput() CreateTimetableInputResolver {
-	return &createTimetableInputResolver{r}
-}
-
-// TimetableWhereInput returns TimetableWhereInputResolver implementation.
-func (r *Resolver) TimetableWhereInput() TimetableWhereInputResolver {
-	return &timetableWhereInputResolver{r}
-}
-
-// UpdateTimetableInput returns UpdateTimetableInputResolver implementation.
-func (r *Resolver) UpdateTimetableInput() UpdateTimetableInputResolver {
-	return &updateTimetableInputResolver{r}
-}
-
 type auditLogResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
-type timetableResolver struct{ *Resolver }
-type createTimetableInputResolver struct{ *Resolver }
-type timetableWhereInputResolver struct{ *Resolver }
-type updateTimetableInputResolver struct{ *Resolver }

@@ -17,7 +17,7 @@ import (
 type newTimetableEntry struct {
 	BusinessAlias string
 	From          string
-	Duration      uint8
+	Duration      int
 	TTType        string
 }
 
@@ -103,6 +103,6 @@ func init() {
 	CmdAddTimetableEntry.Flags().StringVarP(&NewTimetableEntry.From, "from", "f", "", "Datetime-from which this entry is valid")
 	CmdAddTimetableEntry.MarkFlagRequired("from")
 	CmdAddTimetableEntry.Flags().StringVarP(&NewTimetableEntry.TTType, "type", "t", "EMERGENCYSERVICE", "Type of this Timetable entry, e.g. EMERGENCYSERVICE")
-	CmdAddTimetableEntry.Flags().Uint8VarP(&NewTimetableEntry.Duration, "duration", "d", 24, "Duration in hours, default=24h")
+	CmdAddTimetableEntry.Flags().IntVarP(&NewTimetableEntry.Duration, "duration", "d", 24, "Duration in hours, default=24h")
 
 }

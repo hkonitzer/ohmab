@@ -1794,7 +1794,7 @@ func (f TimetableOrderField) String() string {
 	var str string
 	switch f.column {
 	case TimetableOrderFieldDatetimeFrom.column:
-		str = "datetime_from"
+		str = "datetimeFrom"
 	}
 	return str
 }
@@ -1811,7 +1811,7 @@ func (f *TimetableOrderField) UnmarshalGQL(v interface{}) error {
 		return fmt.Errorf("TimetableOrderField %T must be a string", v)
 	}
 	switch str {
-	case "datetime_from":
+	case "datetimeFrom":
 		*f = *TimetableOrderFieldDatetimeFrom
 	default:
 		return fmt.Errorf("%s is not a valid TimetableOrderField", str)

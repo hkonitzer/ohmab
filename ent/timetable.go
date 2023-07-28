@@ -31,7 +31,7 @@ type Timetable struct {
 	// DatetimeFrom holds the value of the "datetime_from" field.
 	DatetimeFrom time.Time `json:"datetime_from,omitempty"`
 	// The duration of the timetable entry in hours, overwrites datetime_to
-	Duration uint8 `json:"duration,omitempty"`
+	Duration int `json:"duration,omitempty"`
 	// The end of the timetable entry, only used if duration is not set
 	DatetimeTo time.Time `json:"datetime_to,omitempty"`
 	// TimeWholeDay holds the value of the "time_whole_day" field.
@@ -162,7 +162,7 @@ func (t *Timetable) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field duration", values[i])
 			} else if value.Valid {
-				t.Duration = uint8(value.Int64)
+				t.Duration = int(value.Int64)
 			}
 		case timetable.FieldDatetimeTo:
 			if value, ok := values[i].(*sql.NullTime); !ok {

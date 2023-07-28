@@ -79,23 +79,23 @@ func (tu *TimetableUpdate) SetDatetimeFrom(t time.Time) *TimetableUpdate {
 }
 
 // SetDuration sets the "duration" field.
-func (tu *TimetableUpdate) SetDuration(u uint8) *TimetableUpdate {
+func (tu *TimetableUpdate) SetDuration(i int) *TimetableUpdate {
 	tu.mutation.ResetDuration()
-	tu.mutation.SetDuration(u)
+	tu.mutation.SetDuration(i)
 	return tu
 }
 
 // SetNillableDuration sets the "duration" field if the given value is not nil.
-func (tu *TimetableUpdate) SetNillableDuration(u *uint8) *TimetableUpdate {
-	if u != nil {
-		tu.SetDuration(*u)
+func (tu *TimetableUpdate) SetNillableDuration(i *int) *TimetableUpdate {
+	if i != nil {
+		tu.SetDuration(*i)
 	}
 	return tu
 }
 
-// AddDuration adds u to the "duration" field.
-func (tu *TimetableUpdate) AddDuration(u int8) *TimetableUpdate {
-	tu.mutation.AddDuration(u)
+// AddDuration adds i to the "duration" field.
+func (tu *TimetableUpdate) AddDuration(i int) *TimetableUpdate {
+	tu.mutation.AddDuration(i)
 	return tu
 }
 
@@ -385,13 +385,13 @@ func (tu *TimetableUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		_spec.SetField(timetable.FieldDatetimeFrom, field.TypeTime, value)
 	}
 	if value, ok := tu.mutation.Duration(); ok {
-		_spec.SetField(timetable.FieldDuration, field.TypeUint8, value)
+		_spec.SetField(timetable.FieldDuration, field.TypeInt, value)
 	}
 	if value, ok := tu.mutation.AddedDuration(); ok {
-		_spec.AddField(timetable.FieldDuration, field.TypeUint8, value)
+		_spec.AddField(timetable.FieldDuration, field.TypeInt, value)
 	}
 	if tu.mutation.DurationCleared() {
-		_spec.ClearField(timetable.FieldDuration, field.TypeUint8)
+		_spec.ClearField(timetable.FieldDuration, field.TypeInt)
 	}
 	if value, ok := tu.mutation.DatetimeTo(); ok {
 		_spec.SetField(timetable.FieldDatetimeTo, field.TypeTime, value)
@@ -573,23 +573,23 @@ func (tuo *TimetableUpdateOne) SetDatetimeFrom(t time.Time) *TimetableUpdateOne 
 }
 
 // SetDuration sets the "duration" field.
-func (tuo *TimetableUpdateOne) SetDuration(u uint8) *TimetableUpdateOne {
+func (tuo *TimetableUpdateOne) SetDuration(i int) *TimetableUpdateOne {
 	tuo.mutation.ResetDuration()
-	tuo.mutation.SetDuration(u)
+	tuo.mutation.SetDuration(i)
 	return tuo
 }
 
 // SetNillableDuration sets the "duration" field if the given value is not nil.
-func (tuo *TimetableUpdateOne) SetNillableDuration(u *uint8) *TimetableUpdateOne {
-	if u != nil {
-		tuo.SetDuration(*u)
+func (tuo *TimetableUpdateOne) SetNillableDuration(i *int) *TimetableUpdateOne {
+	if i != nil {
+		tuo.SetDuration(*i)
 	}
 	return tuo
 }
 
-// AddDuration adds u to the "duration" field.
-func (tuo *TimetableUpdateOne) AddDuration(u int8) *TimetableUpdateOne {
-	tuo.mutation.AddDuration(u)
+// AddDuration adds i to the "duration" field.
+func (tuo *TimetableUpdateOne) AddDuration(i int) *TimetableUpdateOne {
+	tuo.mutation.AddDuration(i)
 	return tuo
 }
 
@@ -909,13 +909,13 @@ func (tuo *TimetableUpdateOne) sqlSave(ctx context.Context) (_node *Timetable, e
 		_spec.SetField(timetable.FieldDatetimeFrom, field.TypeTime, value)
 	}
 	if value, ok := tuo.mutation.Duration(); ok {
-		_spec.SetField(timetable.FieldDuration, field.TypeUint8, value)
+		_spec.SetField(timetable.FieldDuration, field.TypeInt, value)
 	}
 	if value, ok := tuo.mutation.AddedDuration(); ok {
-		_spec.AddField(timetable.FieldDuration, field.TypeUint8, value)
+		_spec.AddField(timetable.FieldDuration, field.TypeInt, value)
 	}
 	if tuo.mutation.DurationCleared() {
-		_spec.ClearField(timetable.FieldDuration, field.TypeUint8)
+		_spec.ClearField(timetable.FieldDuration, field.TypeInt)
 	}
 	if value, ok := tuo.mutation.DatetimeTo(); ok {
 		_spec.SetField(timetable.FieldDatetimeTo, field.TypeTime, value)

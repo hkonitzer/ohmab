@@ -1018,7 +1018,7 @@ input TimetableOrder {
 }
 """Properties by which Timetable connections can be ordered."""
 enum TimetableOrderField {
-  datetime_from
+  datetimeFrom
 }
 """TimetableTimetableType is enum for the field timetable_type"""
 enum TimetableTimetableType @goModel(model: "github.com/hkonitzer/ohmab/ent/timetable.TimetableType") {

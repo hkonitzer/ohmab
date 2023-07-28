@@ -46,10 +46,6 @@ type ResolverRoot interface {
 	AuditLog() AuditLogResolver
 	Mutation() MutationResolver
 	Query() QueryResolver
-	Timetable() TimetableResolver
-	CreateTimetableInput() CreateTimetableInputResolver
-	TimetableWhereInput() TimetableWhereInputResolver
-	UpdateTimetableInput() UpdateTimetableInputResolver
 }
 
 type DirectiveRoot struct {
@@ -232,26 +228,6 @@ type QueryResolver interface {
 	Addresses(ctx context.Context, after *entgql.Cursor[uuid.UUID], first *int, before *entgql.Cursor[uuid.UUID], last *int, where *ent.AddressWhereInput) (*ent.AddressConnection, error)
 	Businesses(ctx context.Context, after *entgql.Cursor[uuid.UUID], first *int, before *entgql.Cursor[uuid.UUID], last *int, orderBy []*ent.BusinessOrder, where *ent.BusinessWhereInput) (*ent.BusinessConnection, error)
 	Timetables(ctx context.Context, after *entgql.Cursor[uuid.UUID], first *int, before *entgql.Cursor[uuid.UUID], last *int, orderBy []*ent.TimetableOrder, where *ent.TimetableWhereInput) (*ent.TimetableConnection, error)
-}
-type TimetableResolver interface {
-	Duration(ctx context.Context, obj *ent.Timetable) (*int, error)
-}
-
-type CreateTimetableInputResolver interface {
-	Duration(ctx context.Context, obj *ent.CreateTimetableInput, data *int) error
-}
-type TimetableWhereInputResolver interface {
-	Duration(ctx context.Context, obj *ent.TimetableWhereInput, data *int) error
-	DurationNeq(ctx context.Context, obj *ent.TimetableWhereInput, data *int) error
-	DurationIn(ctx context.Context, obj *ent.TimetableWhereInput, data []int) error
-	DurationNotIn(ctx context.Context, obj *ent.TimetableWhereInput, data []int) error
-	DurationGt(ctx context.Context, obj *ent.TimetableWhereInput, data *int) error
-	DurationGte(ctx context.Context, obj *ent.TimetableWhereInput, data *int) error
-	DurationLt(ctx context.Context, obj *ent.TimetableWhereInput, data *int) error
-	DurationLte(ctx context.Context, obj *ent.TimetableWhereInput, data *int) error
-}
-type UpdateTimetableInputResolver interface {
-	Duration(ctx context.Context, obj *ent.UpdateTimetableInput, data *int) error
 }
 
 type executableSchema struct {
@@ -5830,7 +5806,7 @@ func (ec *executionContext) _Timetable_duration(ctx context.Context, field graph
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Timetable().Duration(rctx, obj)
+		return obj.Duration, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -5839,17 +5815,17 @@ func (ec *executionContext) _Timetable_duration(ctx context.Context, field graph
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*int)
+	res := resTmp.(int)
 	fc.Result = res
-	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+	return ec.marshalOInt2int(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Timetable_duration(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Timetable",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Int does not have child fields")
 		},
@@ -13702,9 +13678,7 @@ func (ec *executionContext) unmarshalInputCreateTimetableInput(ctx context.Conte
 			if err != nil {
 				return it, err
 			}
-			if err = ec.resolvers.CreateTimetableInput().Duration(ctx, &it, data); err != nil {
-				return it, err
-			}
+			it.Duration = data
 		case "datetimeTo":
 			var err error
 
@@ -14980,9 +14954,7 @@ func (ec *executionContext) unmarshalInputTimetableWhereInput(ctx context.Contex
 			if err != nil {
 				return it, err
 			}
-			if err = ec.resolvers.TimetableWhereInput().Duration(ctx, &it, data); err != nil {
-				return it, err
-			}
+			it.Duration = data
 		case "durationNEQ":
 			var err error
 
@@ -14991,9 +14963,7 @@ func (ec *executionContext) unmarshalInputTimetableWhereInput(ctx context.Contex
 			if err != nil {
 				return it, err
 			}
-			if err = ec.resolvers.TimetableWhereInput().DurationNeq(ctx, &it, data); err != nil {
-				return it, err
-			}
+			it.DurationNEQ = data
 		case "durationIn":
 			var err error
 
@@ -15002,9 +14972,7 @@ func (ec *executionContext) unmarshalInputTimetableWhereInput(ctx context.Contex
 			if err != nil {
 				return it, err
 			}
-			if err = ec.resolvers.TimetableWhereInput().DurationIn(ctx, &it, data); err != nil {
-				return it, err
-			}
+			it.DurationIn = data
 		case "durationNotIn":
 			var err error
 
@@ -15013,9 +14981,7 @@ func (ec *executionContext) unmarshalInputTimetableWhereInput(ctx context.Contex
 			if err != nil {
 				return it, err
 			}
-			if err = ec.resolvers.TimetableWhereInput().DurationNotIn(ctx, &it, data); err != nil {
-				return it, err
-			}
+			it.DurationNotIn = data
 		case "durationGT":
 			var err error
 
@@ -15024,9 +14990,7 @@ func (ec *executionContext) unmarshalInputTimetableWhereInput(ctx context.Contex
 			if err != nil {
 				return it, err
 			}
-			if err = ec.resolvers.TimetableWhereInput().DurationGt(ctx, &it, data); err != nil {
-				return it, err
-			}
+			it.DurationGT = data
 		case "durationGTE":
 			var err error
 
@@ -15035,9 +14999,7 @@ func (ec *executionContext) unmarshalInputTimetableWhereInput(ctx context.Contex
 			if err != nil {
 				return it, err
 			}
-			if err = ec.resolvers.TimetableWhereInput().DurationGte(ctx, &it, data); err != nil {
-				return it, err
-			}
+			it.DurationGTE = data
 		case "durationLT":
 			var err error
 
@@ -15046,9 +15008,7 @@ func (ec *executionContext) unmarshalInputTimetableWhereInput(ctx context.Contex
 			if err != nil {
 				return it, err
 			}
-			if err = ec.resolvers.TimetableWhereInput().DurationLt(ctx, &it, data); err != nil {
-				return it, err
-			}
+			it.DurationLT = data
 		case "durationLTE":
 			var err error
 
@@ -15057,9 +15017,7 @@ func (ec *executionContext) unmarshalInputTimetableWhereInput(ctx context.Contex
 			if err != nil {
 				return it, err
 			}
-			if err = ec.resolvers.TimetableWhereInput().DurationLte(ctx, &it, data); err != nil {
-				return it, err
-			}
+			it.DurationLTE = data
 		case "durationIsNil":
 			var err error
 
@@ -15970,9 +15928,7 @@ func (ec *executionContext) unmarshalInputUpdateTimetableInput(ctx context.Conte
 			if err != nil {
 				return it, err
 			}
-			if err = ec.resolvers.UpdateTimetableInput().Duration(ctx, &it, data); err != nil {
-				return it, err
-			}
+			it.Duration = data
 		case "clearDuration":
 			var err error
 
@@ -18372,38 +18328,7 @@ func (ec *executionContext) _Timetable(ctx context.Context, sel ast.SelectionSet
 				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "duration":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Timetable_duration(ctx, field, obj)
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			out.Values[i] = ec._Timetable_duration(ctx, field, obj)
 		case "datetimeTo":
 			out.Values[i] = ec._Timetable_datetimeTo(ctx, field, obj)
 		case "timeWholeDay":
@@ -20565,6 +20490,16 @@ func (ec *executionContext) marshalOID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ct
 		return graphql.Null
 	}
 	res := uuidgql.MarshalUUID(*v)
+	return res
+}
+
+func (ec *executionContext) unmarshalOInt2int(ctx context.Context, v interface{}) (int, error) {
+	res, err := graphql.UnmarshalInt(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOInt2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
+	res := graphql.MarshalInt(v)
 	return res
 }
 

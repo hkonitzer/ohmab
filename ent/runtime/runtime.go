@@ -230,13 +230,13 @@ func init() {
 	// timetableDescDuration is the schema descriptor for duration field.
 	timetableDescDuration := timetableFields[2].Descriptor()
 	// timetable.DurationValidator is a validator for the "duration" field. It is called by the builders before save.
-	timetable.DurationValidator = func() func(uint8) error {
+	timetable.DurationValidator = func() func(int) error {
 		validators := timetableDescDuration.Validators
-		fns := [...]func(uint8) error{
-			validators[0].(func(uint8) error),
-			validators[1].(func(uint8) error),
+		fns := [...]func(int) error{
+			validators[0].(func(int) error),
+			validators[1].(func(int) error),
 		}
-		return func(duration uint8) error {
+		return func(duration int) error {
 			for _, fn := range fns {
 				if err := fn(duration); err != nil {
 					return err

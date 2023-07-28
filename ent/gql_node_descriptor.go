@@ -580,7 +580,7 @@ func (t *Timetable) Node(ctx context.Context) (node *Node, err error) {
 		return nil, err
 	}
 	node.Fields[5] = &Field{
-		Type:  "uint8",
+		Type:  "int",
 		Name:  "duration",
 		Value: string(buf),
 	}

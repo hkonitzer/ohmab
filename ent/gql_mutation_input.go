@@ -83,7 +83,7 @@ type CreateTimetableInput struct {
 	DeletedAt              *time.Time
 	TimetableType          *timetable.TimetableType
 	DatetimeFrom           time.Time
-	Duration               *uint8
+	Duration               *int
 	DatetimeTo             *time.Time
 	TimeWholeDay           *bool
 	Comment                *string
@@ -154,7 +154,7 @@ type UpdateTimetableInput struct {
 	TimetableType               *timetable.TimetableType
 	DatetimeFrom                *time.Time
 	ClearDuration               bool
-	Duration                    *uint8
+	Duration                    *int
 	ClearDatetimeTo             bool
 	DatetimeTo                  *time.Time
 	TimeWholeDay                *bool

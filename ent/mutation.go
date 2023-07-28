@@ -4873,8 +4873,8 @@ type TimetableMutation struct {
 	deleted_at               *time.Time
 	timetable_type           *timetable.TimetableType
 	datetime_from            *time.Time
-	duration                 *uint8
-	addduration              *int8
+	duration                 *int
+	addduration              *int
 	datetime_to              *time.Time
 	time_whole_day           *bool
 	comment                  *string
@@ -5191,13 +5191,13 @@ func (m *TimetableMutation) ResetDatetimeFrom() {
 }
 
 // SetDuration sets the "duration" field.
-func (m *TimetableMutation) SetDuration(u uint8) {
-	m.duration = &u
+func (m *TimetableMutation) SetDuration(i int) {
+	m.duration = &i
 	m.addduration = nil
 }
 
 // Duration returns the value of the "duration" field in the mutation.
-func (m *TimetableMutation) Duration() (r uint8, exists bool) {
+func (m *TimetableMutation) Duration() (r int, exists bool) {
 	v := m.duration
 	if v == nil {
 		return
@@ -5208,7 +5208,7 @@ func (m *TimetableMutation) Duration() (r uint8, exists bool) {
 // OldDuration returns the old "duration" field's value of the Timetable entity.
 // If the Timetable object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TimetableMutation) OldDuration(ctx context.Context) (v uint8, err error) {
+func (m *TimetableMutation) OldDuration(ctx context.Context) (v int, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldDuration is only allowed on UpdateOne operations")
 	}
@@ -5222,17 +5222,17 @@ func (m *TimetableMutation) OldDuration(ctx context.Context) (v uint8, err error
 	return oldValue.Duration, nil
 }
 
-// AddDuration adds u to the "duration" field.
-func (m *TimetableMutation) AddDuration(u int8) {
+// AddDuration adds i to the "duration" field.
+func (m *TimetableMutation) AddDuration(i int) {
 	if m.addduration != nil {
-		*m.addduration += u
+		*m.addduration += i
 	} else {
-		m.addduration = &u
+		m.addduration = &i
 	}
 }
 
 // AddedDuration returns the value that was added to the "duration" field in this mutation.
-func (m *TimetableMutation) AddedDuration() (r int8, exists bool) {
+func (m *TimetableMutation) AddedDuration() (r int, exists bool) {
 	v := m.addduration
 	if v == nil {
 		return
@@ -5871,7 +5871,7 @@ func (m *TimetableMutation) SetField(name string, value ent.Value) error {
 		m.SetDatetimeFrom(v)
 		return nil
 	case timetable.FieldDuration:
-		v, ok := value.(uint8)
+		v, ok := value.(int)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -5957,7 +5957,7 @@ func (m *TimetableMutation) AddedField(name string) (ent.Value, bool) {
 func (m *TimetableMutation) AddField(name string, value ent.Value) error {
 	switch name {
 	case timetable.FieldDuration:
-		v, ok := value.(int8)
+		v, ok := value.(int)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}

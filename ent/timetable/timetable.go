@@ -125,7 +125,7 @@ var (
 	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
 	UpdateDefaultUpdatedAt func() time.Time
 	// DurationValidator is a validator for the "duration" field. It is called by the builders before save.
-	DurationValidator func(uint8) error
+	DurationValidator func(int) error
 	// DefaultTimeWholeDay holds the default value on creation for the "time_whole_day" field.
 	DefaultTimeWholeDay bool
 	// DefaultID holds the default value on creation for the "id" field.

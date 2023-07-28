@@ -25,8 +25,8 @@ func (Timetable) Fields() []ent.Field {
 		field.UUID(constants.IDFieldName, uuid.UUID{}).
 			Immutable().Default(uuid.New),
 		field.Time("datetime_from").
-			Annotations(entgql.OrderField("datetime_from")),
-		field.Uint8("duration").
+			Annotations(entgql.OrderField("datetimeFrom")),
+		field.Int("duration").
 			Positive().Range(1, 24).Optional().
 			SchemaType(map[string]string{
 				dialect.MySQL:    "TINYINT",  // Override MySQL.

@@ -78,7 +78,7 @@ func DatetimeFrom(v time.Time) predicate.Timetable {
 }
 
 // Duration applies equality check predicate on the "duration" field. It's identical to DurationEQ.
-func Duration(v uint8) predicate.Timetable {
+func Duration(v int) predicate.Timetable {
 	return predicate.Timetable(sql.FieldEQ(FieldDuration, v))
 }
 
@@ -308,42 +308,42 @@ func DatetimeFromLTE(v time.Time) predicate.Timetable {
 }
 
 // DurationEQ applies the EQ predicate on the "duration" field.
-func DurationEQ(v uint8) predicate.Timetable {
+func DurationEQ(v int) predicate.Timetable {
 	return predicate.Timetable(sql.FieldEQ(FieldDuration, v))
 }
 
 // DurationNEQ applies the NEQ predicate on the "duration" field.
-func DurationNEQ(v uint8) predicate.Timetable {
+func DurationNEQ(v int) predicate.Timetable {
 	return predicate.Timetable(sql.FieldNEQ(FieldDuration, v))
 }
 
 // DurationIn applies the In predicate on the "duration" field.
-func DurationIn(vs ...uint8) predicate.Timetable {
+func DurationIn(vs ...int) predicate.Timetable {
 	return predicate.Timetable(sql.FieldIn(FieldDuration, vs...))
 }
 
 // DurationNotIn applies the NotIn predicate on the "duration" field.
-func DurationNotIn(vs ...uint8) predicate.Timetable {
+func DurationNotIn(vs ...int) predicate.Timetable {
 	return predicate.Timetable(sql.FieldNotIn(FieldDuration, vs...))
 }
 
 // DurationGT applies the GT predicate on the "duration" field.
-func DurationGT(v uint8) predicate.Timetable {
+func DurationGT(v int) predicate.Timetable {
 	return predicate.Timetable(sql.FieldGT(FieldDuration, v))
 }
 
 // DurationGTE applies the GTE predicate on the "duration" field.
-func DurationGTE(v uint8) predicate.Timetable {
+func DurationGTE(v int) predicate.Timetable {
 	return predicate.Timetable(sql.FieldGTE(FieldDuration, v))
 }
 
 // DurationLT applies the LT predicate on the "duration" field.
-func DurationLT(v uint8) predicate.Timetable {
+func DurationLT(v int) predicate.Timetable {
 	return predicate.Timetable(sql.FieldLT(FieldDuration, v))
 }
 
 // DurationLTE applies the LTE predicate on the "duration" field.
-func DurationLTE(v uint8) predicate.Timetable {
+func DurationLTE(v int) predicate.Timetable {
 	return predicate.Timetable(sql.FieldLTE(FieldDuration, v))
 }
 

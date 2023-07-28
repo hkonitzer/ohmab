@@ -2883,16 +2883,16 @@ type TimetableWhereInput struct {
 	DatetimeFromLTE   *time.Time  `json:"datetimeFromLTE,omitempty"`
 
 	// "duration" field predicates.
-	Duration       *uint8  `json:"duration,omitempty"`
-	DurationNEQ    *uint8  `json:"durationNEQ,omitempty"`
-	DurationIn     []uint8 `json:"durationIn,omitempty"`
-	DurationNotIn  []uint8 `json:"durationNotIn,omitempty"`
-	DurationGT     *uint8  `json:"durationGT,omitempty"`
-	DurationGTE    *uint8  `json:"durationGTE,omitempty"`
-	DurationLT     *uint8  `json:"durationLT,omitempty"`
-	DurationLTE    *uint8  `json:"durationLTE,omitempty"`
-	DurationIsNil  bool    `json:"durationIsNil,omitempty"`
-	DurationNotNil bool    `json:"durationNotNil,omitempty"`
+	Duration       *int  `json:"duration,omitempty"`
+	DurationNEQ    *int  `json:"durationNEQ,omitempty"`
+	DurationIn     []int `json:"durationIn,omitempty"`
+	DurationNotIn  []int `json:"durationNotIn,omitempty"`
+	DurationGT     *int  `json:"durationGT,omitempty"`
+	DurationGTE    *int  `json:"durationGTE,omitempty"`
+	DurationLT     *int  `json:"durationLT,omitempty"`
+	DurationLTE    *int  `json:"durationLTE,omitempty"`
+	DurationIsNil  bool  `json:"durationIsNil,omitempty"`
+	DurationNotNil bool  `json:"durationNotNil,omitempty"`
 
 	// "datetime_to" field predicates.
 	DatetimeTo       *time.Time  `json:"datetimeTo,omitempty"`

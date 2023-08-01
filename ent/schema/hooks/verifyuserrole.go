@@ -15,12 +15,15 @@ func VerifyUserRole() ent.Hook {
 			if !exists {
 				return nil, errors.New("user role is missing")
 			}
-			if r == privacy.AdminRoleAsString() || r == privacy.OwnerRoleAsString() || r == privacy.ViewerRoleAsString() {
+			if r == privacy.AdminRoleAsString() ||
+				r == privacy.OwnerRoleAsString() ||
+				r == privacy.EmployeeRoleAsString() ||
+				r == privacy.ViewerRoleAsString() {
 				return next.Mutate(ctx, m)
 			} else {
 				return nil, errors.New("user role '" + r + "' is invalid")
 			}
 		})
 	}
-	return hook.On(hk, ent.OpCreate|ent.OpUpdate|ent.OpUpdateOne)
+	return hook.On(hk, ent.OpCreate)
 }

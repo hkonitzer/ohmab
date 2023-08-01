@@ -12,20 +12,21 @@ import (
 
 // CreateBusinessInput represents a mutation input for creating businesses.
 type CreateBusinessInput struct {
-	CreatedAt  *time.Time
-	UpdatedAt  *time.Time
-	DeletedAt  *time.Time
-	Name1      string
-	Name2      *string
-	Alias      string
-	Telephone  *string
-	Email      *string
-	Website    *string
-	Comment    *string
-	Active     *bool
-	AddressIDs []uuid.UUID
-	TagIDs     []uuid.UUID
-	UserIDs    []uuid.UUID
+	CreatedAt     *time.Time
+	UpdatedAt     *time.Time
+	DeletedAt     *time.Time
+	Name1         string
+	Name2         *string
+	Alias         string
+	Telephone     *string
+	Email         *string
+	Website       *string
+	Comment       *string
+	Active        *bool
+	AddressIDs    []uuid.UUID
+	TagIDs        []uuid.UUID
+	UserIDs       []uuid.UUID
+	PublicUserIDs []uuid.UUID
 }
 
 // Mutate applies the CreateBusinessInput on the BusinessMutation builder.
@@ -67,6 +68,9 @@ func (i *CreateBusinessInput) Mutate(m *BusinessMutation) {
 	}
 	if v := i.UserIDs; len(v) > 0 {
 		m.AddUserIDs(v...)
+	}
+	if v := i.PublicUserIDs; len(v) > 0 {
+		m.AddPublicUserIDs(v...)
 	}
 }
 

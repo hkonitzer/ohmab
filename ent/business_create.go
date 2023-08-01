@@ -14,6 +14,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/hkonitzer/ohmab/ent/address"
 	"github.com/hkonitzer/ohmab/ent/business"
+	"github.com/hkonitzer/ohmab/ent/publicuser"
 	"github.com/hkonitzer/ohmab/ent/tag"
 	"github.com/hkonitzer/ohmab/ent/user"
 )
@@ -220,6 +221,21 @@ func (bc *BusinessCreate) AddUsers(u ...*User) *BusinessCreate {
 		ids[i] = u[i].ID
 	}
 	return bc.AddUserIDs(ids...)
+}
+
+// AddPublicUserIDs adds the "public_users" edge to the PublicUser entity by IDs.
+func (bc *BusinessCreate) AddPublicUserIDs(ids ...uuid.UUID) *BusinessCreate {
+	bc.mutation.AddPublicUserIDs(ids...)
+	return bc
+}
+
+// AddPublicUsers adds the "public_users" edges to the PublicUser entity.
+func (bc *BusinessCreate) AddPublicUsers(p ...*PublicUser) *BusinessCreate {
+	ids := make([]uuid.UUID, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return bc.AddPublicUserIDs(ids...)
 }
 
 // Mutation returns the BusinessMutation object of the builder.
@@ -434,6 +450,22 @@ func (bc *BusinessCreate) createSpec() (*Business, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := bc.mutation.PublicUsersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   business.PublicUsersTable,
+			Columns: business.PublicUsersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(publicuser.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

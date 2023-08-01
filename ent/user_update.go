@@ -16,7 +16,6 @@ import (
 	"github.com/hkonitzer/ohmab/ent/business"
 	"github.com/hkonitzer/ohmab/ent/predicate"
 	"github.com/hkonitzer/ohmab/ent/tag"
-	"github.com/hkonitzer/ohmab/ent/timetable"
 	"github.com/hkonitzer/ohmab/ent/user"
 )
 
@@ -215,21 +214,6 @@ func (uu *UserUpdate) AddTags(t ...*Tag) *UserUpdate {
 	return uu.AddTagIDs(ids...)
 }
 
-// AddTimetableIDs adds the "timetable" edge to the Timetable entity by IDs.
-func (uu *UserUpdate) AddTimetableIDs(ids ...uuid.UUID) *UserUpdate {
-	uu.mutation.AddTimetableIDs(ids...)
-	return uu
-}
-
-// AddTimetable adds the "timetable" edges to the Timetable entity.
-func (uu *UserUpdate) AddTimetable(t ...*Timetable) *UserUpdate {
-	ids := make([]uuid.UUID, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return uu.AddTimetableIDs(ids...)
-}
-
 // Mutation returns the UserMutation object of the builder.
 func (uu *UserUpdate) Mutation() *UserMutation {
 	return uu.mutation
@@ -275,27 +259,6 @@ func (uu *UserUpdate) RemoveTags(t ...*Tag) *UserUpdate {
 		ids[i] = t[i].ID
 	}
 	return uu.RemoveTagIDs(ids...)
-}
-
-// ClearTimetable clears all "timetable" edges to the Timetable entity.
-func (uu *UserUpdate) ClearTimetable() *UserUpdate {
-	uu.mutation.ClearTimetable()
-	return uu
-}
-
-// RemoveTimetableIDs removes the "timetable" edge to Timetable entities by IDs.
-func (uu *UserUpdate) RemoveTimetableIDs(ids ...uuid.UUID) *UserUpdate {
-	uu.mutation.RemoveTimetableIDs(ids...)
-	return uu
-}
-
-// RemoveTimetable removes "timetable" edges to Timetable entities.
-func (uu *UserUpdate) RemoveTimetable(t ...*Timetable) *UserUpdate {
-	ids := make([]uuid.UUID, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return uu.RemoveTimetableIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -505,51 +468,6 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if uu.mutation.TimetableCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   user.TimetableTable,
-			Columns: user.TimetablePrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(timetable.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := uu.mutation.RemovedTimetableIDs(); len(nodes) > 0 && !uu.mutation.TimetableCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   user.TimetableTable,
-			Columns: user.TimetablePrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(timetable.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := uu.mutation.TimetableIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   user.TimetableTable,
-			Columns: user.TimetablePrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(timetable.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if n, err = sqlgraph.UpdateNodes(ctx, uu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{user.Label}
@@ -752,21 +670,6 @@ func (uuo *UserUpdateOne) AddTags(t ...*Tag) *UserUpdateOne {
 	return uuo.AddTagIDs(ids...)
 }
 
-// AddTimetableIDs adds the "timetable" edge to the Timetable entity by IDs.
-func (uuo *UserUpdateOne) AddTimetableIDs(ids ...uuid.UUID) *UserUpdateOne {
-	uuo.mutation.AddTimetableIDs(ids...)
-	return uuo
-}
-
-// AddTimetable adds the "timetable" edges to the Timetable entity.
-func (uuo *UserUpdateOne) AddTimetable(t ...*Timetable) *UserUpdateOne {
-	ids := make([]uuid.UUID, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return uuo.AddTimetableIDs(ids...)
-}
-
 // Mutation returns the UserMutation object of the builder.
 func (uuo *UserUpdateOne) Mutation() *UserMutation {
 	return uuo.mutation
@@ -812,27 +715,6 @@ func (uuo *UserUpdateOne) RemoveTags(t ...*Tag) *UserUpdateOne {
 		ids[i] = t[i].ID
 	}
 	return uuo.RemoveTagIDs(ids...)
-}
-
-// ClearTimetable clears all "timetable" edges to the Timetable entity.
-func (uuo *UserUpdateOne) ClearTimetable() *UserUpdateOne {
-	uuo.mutation.ClearTimetable()
-	return uuo
-}
-
-// RemoveTimetableIDs removes the "timetable" edge to Timetable entities by IDs.
-func (uuo *UserUpdateOne) RemoveTimetableIDs(ids ...uuid.UUID) *UserUpdateOne {
-	uuo.mutation.RemoveTimetableIDs(ids...)
-	return uuo
-}
-
-// RemoveTimetable removes "timetable" edges to Timetable entities.
-func (uuo *UserUpdateOne) RemoveTimetable(t ...*Timetable) *UserUpdateOne {
-	ids := make([]uuid.UUID, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return uuo.RemoveTimetableIDs(ids...)
 }
 
 // Where appends a list predicates to the UserUpdate builder.
@@ -1065,51 +947,6 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(tag.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if uuo.mutation.TimetableCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   user.TimetableTable,
-			Columns: user.TimetablePrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(timetable.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := uuo.mutation.RemovedTimetableIDs(); len(nodes) > 0 && !uuo.mutation.TimetableCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   user.TimetableTable,
-			Columns: user.TimetablePrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(timetable.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := uuo.mutation.TimetableIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   user.TimetableTable,
-			Columns: user.TimetablePrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(timetable.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

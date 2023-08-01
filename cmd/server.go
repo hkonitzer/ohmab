@@ -4,9 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/99designs/gqlgen/graphql/handler"
-	"github.com/99designs/gqlgen/graphql/handler/extension"
-	"github.com/99designs/gqlgen/graphql/handler/lru"
-	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -53,7 +50,9 @@ func main() {
 	if clientError != nil {
 		logger.Fatal().Msgf("Error creating client: %v", clientError)
 	}
-	client.User.Intercept( // do not expose users on public api routes
+	// Do not expose users on public api routes unless other stated in database
+	// See Policy also in ent/schema/user.go
+	client.User.Intercept(
 		intercept.TraverseUser(func(ctx context.Context, q *ent.UserQuery) error {
 			uv := privacy.FromContext(ctx)
 			if uv != nil { // auth in context found, skip
@@ -63,8 +62,8 @@ func main() {
 			if !routes.HasPublicRoute(rc.RoutePatterns) {
 				return nil
 			}
-			q.Where(user.UsePublicapiEQ(schema.UsePublicApiValue), user.Active(true), user.RoleEQ(privacy.OwnerRoleAsString()))
-			// q.Select(user.FieldTitle, user.FieldFirstname, user.FieldSurname) doesn't work
+			q.Where(user.UsePublicapiEQ(schema.UsePublicApiValue), user.Active(true)).
+				Select(user.FieldTitle, user.FieldFirstname, user.FieldSurname)
 			return nil
 		}),
 	)
@@ -83,7 +82,7 @@ func main() {
 
 	httpErr := http.ListenAndServe(fmt.Sprintf(":%d", configurations.Server.Port), r)
 	if httpErr != nil {
-		logger.Fatal().Msgf("http Server terminated", httpErr)
+		logger.Fatal().Msgf("http Server terminated: %v", httpErr)
 	}
 
 }
@@ -117,17 +116,13 @@ func newRouter(srv *routes.Server) chi.Router {
 		r.Handle("/query", entServer)
 	})
 
-	// anonymous routes (GET only)
-	gqlsrv := handler.New(OHMAB.NewSchema(srv.Client))
-	gqlsrv.AddTransport(transport.Options{})
-	gqlsrv.AddTransport(transport.GET{})
-	gqlsrv.SetQueryCache(lru.New(1000))
-	gqlsrv.Use(extension.Introspection{})
-	gqlsrv.Use(extension.AutomaticPersistedQuery{
-		Cache: lru.New(100),
-	})
+	// anonymous routes, including playground
+	gqlPublicServer := handler.NewDefaultServer(OHMAB.NewSchema(srv.Client))
 	r.Route(routes.PublicAPIRoute, func(r chi.Router) {
-		r.Handle("/query", gqlsrv)
+		r.Handle("/query", gqlPublicServer)
+		r.Handle("/",
+			playground.Handler("OHMAB", "/query"),
+		)
 		// html exports
 		r.Get("/exports/timetables", srv.Timetables)
 	})

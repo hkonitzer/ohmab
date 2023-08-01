@@ -16,6 +16,7 @@ import (
 	"github.com/hkonitzer/ohmab/ent/address"
 	"github.com/hkonitzer/ohmab/ent/business"
 	"github.com/hkonitzer/ohmab/ent/predicate"
+	"github.com/hkonitzer/ohmab/ent/publicuser"
 	"github.com/hkonitzer/ohmab/ent/tag"
 	"github.com/hkonitzer/ohmab/ent/user"
 )
@@ -230,6 +231,21 @@ func (bu *BusinessUpdate) AddUsers(u ...*User) *BusinessUpdate {
 	return bu.AddUserIDs(ids...)
 }
 
+// AddPublicUserIDs adds the "public_users" edge to the PublicUser entity by IDs.
+func (bu *BusinessUpdate) AddPublicUserIDs(ids ...uuid.UUID) *BusinessUpdate {
+	bu.mutation.AddPublicUserIDs(ids...)
+	return bu
+}
+
+// AddPublicUsers adds the "public_users" edges to the PublicUser entity.
+func (bu *BusinessUpdate) AddPublicUsers(p ...*PublicUser) *BusinessUpdate {
+	ids := make([]uuid.UUID, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return bu.AddPublicUserIDs(ids...)
+}
+
 // Mutation returns the BusinessMutation object of the builder.
 func (bu *BusinessUpdate) Mutation() *BusinessMutation {
 	return bu.mutation
@@ -296,6 +312,27 @@ func (bu *BusinessUpdate) RemoveUsers(u ...*User) *BusinessUpdate {
 		ids[i] = u[i].ID
 	}
 	return bu.RemoveUserIDs(ids...)
+}
+
+// ClearPublicUsers clears all "public_users" edges to the PublicUser entity.
+func (bu *BusinessUpdate) ClearPublicUsers() *BusinessUpdate {
+	bu.mutation.ClearPublicUsers()
+	return bu
+}
+
+// RemovePublicUserIDs removes the "public_users" edge to PublicUser entities by IDs.
+func (bu *BusinessUpdate) RemovePublicUserIDs(ids ...uuid.UUID) *BusinessUpdate {
+	bu.mutation.RemovePublicUserIDs(ids...)
+	return bu
+}
+
+// RemovePublicUsers removes "public_users" edges to PublicUser entities.
+func (bu *BusinessUpdate) RemovePublicUsers(p ...*PublicUser) *BusinessUpdate {
+	ids := make([]uuid.UUID, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return bu.RemovePublicUserIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -550,6 +587,51 @@ func (bu *BusinessUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if bu.mutation.PublicUsersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   business.PublicUsersTable,
+			Columns: business.PublicUsersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(publicuser.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := bu.mutation.RemovedPublicUsersIDs(); len(nodes) > 0 && !bu.mutation.PublicUsersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   business.PublicUsersTable,
+			Columns: business.PublicUsersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(publicuser.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := bu.mutation.PublicUsersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   business.PublicUsersTable,
+			Columns: business.PublicUsersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(publicuser.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, bu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{business.Label}
@@ -767,6 +849,21 @@ func (buo *BusinessUpdateOne) AddUsers(u ...*User) *BusinessUpdateOne {
 	return buo.AddUserIDs(ids...)
 }
 
+// AddPublicUserIDs adds the "public_users" edge to the PublicUser entity by IDs.
+func (buo *BusinessUpdateOne) AddPublicUserIDs(ids ...uuid.UUID) *BusinessUpdateOne {
+	buo.mutation.AddPublicUserIDs(ids...)
+	return buo
+}
+
+// AddPublicUsers adds the "public_users" edges to the PublicUser entity.
+func (buo *BusinessUpdateOne) AddPublicUsers(p ...*PublicUser) *BusinessUpdateOne {
+	ids := make([]uuid.UUID, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return buo.AddPublicUserIDs(ids...)
+}
+
 // Mutation returns the BusinessMutation object of the builder.
 func (buo *BusinessUpdateOne) Mutation() *BusinessMutation {
 	return buo.mutation
@@ -833,6 +930,27 @@ func (buo *BusinessUpdateOne) RemoveUsers(u ...*User) *BusinessUpdateOne {
 		ids[i] = u[i].ID
 	}
 	return buo.RemoveUserIDs(ids...)
+}
+
+// ClearPublicUsers clears all "public_users" edges to the PublicUser entity.
+func (buo *BusinessUpdateOne) ClearPublicUsers() *BusinessUpdateOne {
+	buo.mutation.ClearPublicUsers()
+	return buo
+}
+
+// RemovePublicUserIDs removes the "public_users" edge to PublicUser entities by IDs.
+func (buo *BusinessUpdateOne) RemovePublicUserIDs(ids ...uuid.UUID) *BusinessUpdateOne {
+	buo.mutation.RemovePublicUserIDs(ids...)
+	return buo
+}
+
+// RemovePublicUsers removes "public_users" edges to PublicUser entities.
+func (buo *BusinessUpdateOne) RemovePublicUsers(p ...*PublicUser) *BusinessUpdateOne {
+	ids := make([]uuid.UUID, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return buo.RemovePublicUserIDs(ids...)
 }
 
 // Where appends a list predicates to the BusinessUpdate builder.
@@ -1110,6 +1228,51 @@ func (buo *BusinessUpdateOne) sqlSave(ctx context.Context) (_node *Business, err
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if buo.mutation.PublicUsersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   business.PublicUsersTable,
+			Columns: business.PublicUsersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(publicuser.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := buo.mutation.RemovedPublicUsersIDs(); len(nodes) > 0 && !buo.mutation.PublicUsersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   business.PublicUsersTable,
+			Columns: business.PublicUsersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(publicuser.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := buo.mutation.PublicUsersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   business.PublicUsersTable,
+			Columns: business.PublicUsersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(publicuser.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

@@ -20,6 +20,7 @@ import (
 	"github.com/hkonitzer/ohmab/ent/auditlog"
 	"github.com/hkonitzer/ohmab/ent/business"
 	"github.com/hkonitzer/ohmab/ent/content"
+	"github.com/hkonitzer/ohmab/ent/publicuser"
 	"github.com/hkonitzer/ohmab/ent/tag"
 	"github.com/hkonitzer/ohmab/ent/timetable"
 	"github.com/hkonitzer/ohmab/ent/user"
@@ -1235,6 +1236,299 @@ func (c *Content) ToEdge(order *ContentOrder) *ContentEdge {
 	return &ContentEdge{
 		Node:   c,
 		Cursor: order.Field.toCursor(c),
+	}
+}
+
+// PublicUserEdge is the edge representation of PublicUser.
+type PublicUserEdge struct {
+	Node   *PublicUser `json:"node"`
+	Cursor Cursor      `json:"cursor"`
+}
+
+// PublicUserConnection is the connection containing edges to PublicUser.
+type PublicUserConnection struct {
+	Edges      []*PublicUserEdge `json:"edges"`
+	PageInfo   PageInfo          `json:"pageInfo"`
+	TotalCount int               `json:"totalCount"`
+}
+
+func (c *PublicUserConnection) build(nodes []*PublicUser, pager *publicuserPager, after *Cursor, first *int, before *Cursor, last *int) {
+	c.PageInfo.HasNextPage = before != nil
+	c.PageInfo.HasPreviousPage = after != nil
+	if first != nil && *first+1 == len(nodes) {
+		c.PageInfo.HasNextPage = true
+		nodes = nodes[:len(nodes)-1]
+	} else if last != nil && *last+1 == len(nodes) {
+		c.PageInfo.HasPreviousPage = true
+		nodes = nodes[:len(nodes)-1]
+	}
+	var nodeAt func(int) *PublicUser
+	if last != nil {
+		n := len(nodes) - 1
+		nodeAt = func(i int) *PublicUser {
+			return nodes[n-i]
+		}
+	} else {
+		nodeAt = func(i int) *PublicUser {
+			return nodes[i]
+		}
+	}
+	c.Edges = make([]*PublicUserEdge, len(nodes))
+	for i := range nodes {
+		node := nodeAt(i)
+		c.Edges[i] = &PublicUserEdge{
+			Node:   node,
+			Cursor: pager.toCursor(node),
+		}
+	}
+	if l := len(c.Edges); l > 0 {
+		c.PageInfo.StartCursor = &c.Edges[0].Cursor
+		c.PageInfo.EndCursor = &c.Edges[l-1].Cursor
+	}
+	if c.TotalCount == 0 {
+		c.TotalCount = len(nodes)
+	}
+}
+
+// PublicUserPaginateOption enables pagination customization.
+type PublicUserPaginateOption func(*publicuserPager) error
+
+// WithPublicUserOrder configures pagination ordering.
+func WithPublicUserOrder(order *PublicUserOrder) PublicUserPaginateOption {
+	if order == nil {
+		order = DefaultPublicUserOrder
+	}
+	o := *order
+	return func(pager *publicuserPager) error {
+		if err := o.Direction.Validate(); err != nil {
+			return err
+		}
+		if o.Field == nil {
+			o.Field = DefaultPublicUserOrder.Field
+		}
+		pager.order = &o
+		return nil
+	}
+}
+
+// WithPublicUserFilter configures pagination filter.
+func WithPublicUserFilter(filter func(*PublicUserQuery) (*PublicUserQuery, error)) PublicUserPaginateOption {
+	return func(pager *publicuserPager) error {
+		if filter == nil {
+			return errors.New("PublicUserQuery filter cannot be nil")
+		}
+		pager.filter = filter
+		return nil
+	}
+}
+
+type publicuserPager struct {
+	reverse bool
+	order   *PublicUserOrder
+	filter  func(*PublicUserQuery) (*PublicUserQuery, error)
+}
+
+func newPublicUserPager(opts []PublicUserPaginateOption, reverse bool) (*publicuserPager, error) {
+	pager := &publicuserPager{reverse: reverse}
+	for _, opt := range opts {
+		if err := opt(pager); err != nil {
+			return nil, err
+		}
+	}
+	if pager.order == nil {
+		pager.order = DefaultPublicUserOrder
+	}
+	return pager, nil
+}
+
+func (p *publicuserPager) applyFilter(query *PublicUserQuery) (*PublicUserQuery, error) {
+	if p.filter != nil {
+		return p.filter(query)
+	}
+	return query, nil
+}
+
+func (p *publicuserPager) toCursor(pu *PublicUser) Cursor {
+	return p.order.Field.toCursor(pu)
+}
+
+func (p *publicuserPager) applyCursors(query *PublicUserQuery, after, before *Cursor) (*PublicUserQuery, error) {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	for _, predicate := range entgql.CursorsPredicate(after, before, DefaultPublicUserOrder.Field.column, p.order.Field.column, direction) {
+		query = query.Where(predicate)
+	}
+	return query, nil
+}
+
+func (p *publicuserPager) applyOrder(query *PublicUserQuery) *PublicUserQuery {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	query = query.Order(p.order.Field.toTerm(direction.OrderTermOption()))
+	if p.order.Field != DefaultPublicUserOrder.Field {
+		query = query.Order(DefaultPublicUserOrder.Field.toTerm(direction.OrderTermOption()))
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(p.order.Field.column)
+	}
+	return query
+}
+
+func (p *publicuserPager) orderExpr(query *PublicUserQuery) sql.Querier {
+	direction := p.order.Direction
+	if p.reverse {
+		direction = direction.Reverse()
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(p.order.Field.column)
+	}
+	return sql.ExprFunc(func(b *sql.Builder) {
+		b.Ident(p.order.Field.column).Pad().WriteString(string(direction))
+		if p.order.Field != DefaultPublicUserOrder.Field {
+			b.Comma().Ident(DefaultPublicUserOrder.Field.column).Pad().WriteString(string(direction))
+		}
+	})
+}
+
+// Paginate executes the query and returns a relay based cursor connection to PublicUser.
+func (pu *PublicUserQuery) Paginate(
+	ctx context.Context, after *Cursor, first *int,
+	before *Cursor, last *int, opts ...PublicUserPaginateOption,
+) (*PublicUserConnection, error) {
+	if err := validateFirstLast(first, last); err != nil {
+		return nil, err
+	}
+	pager, err := newPublicUserPager(opts, last != nil)
+	if err != nil {
+		return nil, err
+	}
+	if pu, err = pager.applyFilter(pu); err != nil {
+		return nil, err
+	}
+	conn := &PublicUserConnection{Edges: []*PublicUserEdge{}}
+	ignoredEdges := !hasCollectedField(ctx, edgesField)
+	if hasCollectedField(ctx, totalCountField) || hasCollectedField(ctx, pageInfoField) {
+		hasPagination := after != nil || first != nil || before != nil || last != nil
+		if hasPagination || ignoredEdges {
+			if conn.TotalCount, err = pu.Clone().Count(ctx); err != nil {
+				return nil, err
+			}
+			conn.PageInfo.HasNextPage = first != nil && conn.TotalCount > 0
+			conn.PageInfo.HasPreviousPage = last != nil && conn.TotalCount > 0
+		}
+	}
+	if ignoredEdges || (first != nil && *first == 0) || (last != nil && *last == 0) {
+		return conn, nil
+	}
+	if pu, err = pager.applyCursors(pu, after, before); err != nil {
+		return nil, err
+	}
+	if limit := paginateLimit(first, last); limit != 0 {
+		pu.Limit(limit)
+	}
+	if field := collectedField(ctx, edgesField, nodeField); field != nil {
+		if err := pu.collectField(ctx, graphql.GetOperationContext(ctx), *field, []string{edgesField, nodeField}); err != nil {
+			return nil, err
+		}
+	}
+	pu = pager.applyOrder(pu)
+	nodes, err := pu.All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	conn.build(nodes, pager, after, first, before, last)
+	return conn, nil
+}
+
+var (
+	// PublicUserOrderFieldSurname orders PublicUser by surname.
+	PublicUserOrderFieldSurname = &PublicUserOrderField{
+		Value: func(pu *PublicUser) (ent.Value, error) {
+			return pu.Surname, nil
+		},
+		column: publicuser.FieldSurname,
+		toTerm: publicuser.BySurname,
+		toCursor: func(pu *PublicUser) Cursor {
+			return Cursor{
+				ID:    pu.ID,
+				Value: pu.Surname,
+			}
+		},
+	}
+)
+
+// String implement fmt.Stringer interface.
+func (f PublicUserOrderField) String() string {
+	var str string
+	switch f.column {
+	case PublicUserOrderFieldSurname.column:
+		str = "SURNAME"
+	}
+	return str
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (f PublicUserOrderField) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(f.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (f *PublicUserOrderField) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("PublicUserOrderField %T must be a string", v)
+	}
+	switch str {
+	case "SURNAME":
+		*f = *PublicUserOrderFieldSurname
+	default:
+		return fmt.Errorf("%s is not a valid PublicUserOrderField", str)
+	}
+	return nil
+}
+
+// PublicUserOrderField defines the ordering field of PublicUser.
+type PublicUserOrderField struct {
+	// Value extracts the ordering value from the given PublicUser.
+	Value    func(*PublicUser) (ent.Value, error)
+	column   string // field or computed.
+	toTerm   func(...sql.OrderTermOption) publicuser.OrderOption
+	toCursor func(*PublicUser) Cursor
+}
+
+// PublicUserOrder defines the ordering of PublicUser.
+type PublicUserOrder struct {
+	Direction OrderDirection        `json:"direction"`
+	Field     *PublicUserOrderField `json:"field"`
+}
+
+// DefaultPublicUserOrder is the default ordering of PublicUser.
+var DefaultPublicUserOrder = &PublicUserOrder{
+	Direction: entgql.OrderDirectionAsc,
+	Field: &PublicUserOrderField{
+		Value: func(pu *PublicUser) (ent.Value, error) {
+			return pu.ID, nil
+		},
+		column: publicuser.FieldID,
+		toTerm: publicuser.ByID,
+		toCursor: func(pu *PublicUser) Cursor {
+			return Cursor{ID: pu.ID}
+		},
+	},
+}
+
+// ToEdge converts PublicUser into PublicUserEdge.
+func (pu *PublicUser) ToEdge(order *PublicUserOrder) *PublicUserEdge {
+	if order == nil {
+		order = DefaultPublicUserOrder
+	}
+	return &PublicUserEdge{
+		Node:   pu,
+		Cursor: order.Field.toCursor(pu),
 	}
 }
 

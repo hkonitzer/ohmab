@@ -65,6 +65,42 @@ func (b *Business) Users(ctx context.Context) (result []*User, err error) {
 	return result, err
 }
 
+func (b *Business) PublicUsers(ctx context.Context) (result []*PublicUser, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = b.NamedPublicUsers(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = b.Edges.PublicUsersOrErr()
+	}
+	if IsNotLoaded(err) {
+		result, err = b.QueryPublicUsers().All(ctx)
+	}
+	return result, err
+}
+
+func (pu *PublicUser) Businesses(ctx context.Context) (result []*Business, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = pu.NamedBusinesses(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = pu.Edges.BusinessesOrErr()
+	}
+	if IsNotLoaded(err) {
+		result, err = pu.QueryBusinesses().All(ctx)
+	}
+	return result, err
+}
+
+func (pu *PublicUser) Timetable(ctx context.Context) (result []*Timetable, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = pu.NamedTimetable(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = pu.Edges.TimetableOrErr()
+	}
+	if IsNotLoaded(err) {
+		result, err = pu.QueryTimetable().All(ctx)
+	}
+	return result, err
+}
+
 func (t *Tag) Business(ctx context.Context) (result []*Business, err error) {
 	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
 		result, err = t.NamedBusiness(graphql.GetFieldContext(ctx).Field.Alias)
@@ -97,7 +133,7 @@ func (t *Timetable) Address(ctx context.Context) (*Address, error) {
 	return result, err
 }
 
-func (t *Timetable) UsersOnDuty(ctx context.Context) (result []*User, err error) {
+func (t *Timetable) UsersOnDuty(ctx context.Context) (result []*PublicUser, err error) {
 	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
 		result, err = t.NamedUsersOnDuty(graphql.GetFieldContext(ctx).Field.Alias)
 	} else {
@@ -129,18 +165,6 @@ func (u *User) Tags(ctx context.Context) (result []*Tag, err error) {
 	}
 	if IsNotLoaded(err) {
 		result, err = u.QueryTags().All(ctx)
-	}
-	return result, err
-}
-
-func (u *User) Timetable(ctx context.Context) (result []*Timetable, err error) {
-	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
-		result, err = u.NamedTimetable(graphql.GetFieldContext(ctx).Field.Alias)
-	} else {
-		result, err = u.Edges.TimetableOrErr()
-	}
-	if IsNotLoaded(err) {
-		result, err = u.QueryTimetable().All(ctx)
 	}
 	return result, err
 }

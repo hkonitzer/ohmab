@@ -923,29 +923,6 @@ func HasTagsWith(preds ...predicate.Tag) predicate.User {
 	})
 }
 
-// HasTimetable applies the HasEdge predicate on the "timetable" edge.
-func HasTimetable() predicate.User {
-	return predicate.User(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, TimetableTable, TimetablePrimaryKey...),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasTimetableWith applies the HasEdge predicate on the "timetable" edge with a given conditions (other predicates).
-func HasTimetableWith(preds ...predicate.Timetable) predicate.User {
-	return predicate.User(func(s *sql.Selector) {
-		step := newTimetableStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.User) predicate.User {
 	return predicate.User(func(s *sql.Selector) {

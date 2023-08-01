@@ -64,6 +64,7 @@ func (Business) Edges() []ent.Edge {
 			Annotations(entsql.OnDelete(entsql.Cascade)),
 		edge.To("tags", Tag.Type),
 		edge.To("users", User.Type),
+		edge.To("public_users", PublicUser.Type),
 	}
 }
 

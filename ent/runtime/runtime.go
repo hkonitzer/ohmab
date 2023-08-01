@@ -12,6 +12,7 @@ import (
 	"github.com/hkonitzer/ohmab/ent/auditlog"
 	"github.com/hkonitzer/ohmab/ent/business"
 	"github.com/hkonitzer/ohmab/ent/content"
+	"github.com/hkonitzer/ohmab/ent/publicuser"
 	"github.com/hkonitzer/ohmab/ent/schema"
 	"github.com/hkonitzer/ohmab/ent/tag"
 	"github.com/hkonitzer/ohmab/ent/timetable"
@@ -183,6 +184,25 @@ func init() {
 	contentDescID := contentFields[0].Descriptor()
 	// content.DefaultID holds the default value on creation for the id field.
 	content.DefaultID = contentDescID.Default.(func() uuid.UUID)
+	publicuser.Policy = privacy.NewPolicies(schema.PublicUser{})
+	publicuser.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := publicuser.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	publicuserFields := schema.PublicUser{}.Fields()
+	_ = publicuserFields
+	// publicuserDescSurname is the schema descriptor for surname field.
+	publicuserDescSurname := publicuserFields[1].Descriptor()
+	// publicuser.SurnameValidator is a validator for the "surname" field. It is called by the builders before save.
+	publicuser.SurnameValidator = publicuserDescSurname.Validators[0].(func(string) error)
+	// publicuserDescID is the schema descriptor for id field.
+	publicuserDescID := publicuserFields[0].Descriptor()
+	// publicuser.DefaultID holds the default value on creation for the id field.
+	publicuser.DefaultID = publicuserDescID.Default.(func() uuid.UUID)
 	tagMixin := schema.Tag{}.Mixin()
 	tagMixinFields0 := tagMixin[0].Fields()
 	_ = tagMixinFields0
@@ -254,9 +274,22 @@ func init() {
 	// timetable.DefaultID holds the default value on creation for the id field.
 	timetable.DefaultID = timetableDescID.Default.(func() uuid.UUID)
 	userMixin := schema.User{}.Mixin()
+	user.Policy = privacy.NewPolicies(schema.User{})
+	user.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := user.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
 	userHooks := schema.User{}.Hooks()
-	user.Hooks[0] = userHooks[0]
-	user.Hooks[1] = userHooks[1]
+
+	user.Hooks[1] = userHooks[0]
+
+	user.Hooks[2] = userHooks[1]
+
+	user.Hooks[3] = userHooks[2]
 	userMixinFields0 := userMixin[0].Fields()
 	_ = userMixinFields0
 	userMixinFields1 := userMixin[1].Fields()

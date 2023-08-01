@@ -13,8 +13,8 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/hkonitzer/ohmab/ent/address"
+	"github.com/hkonitzer/ohmab/ent/publicuser"
 	"github.com/hkonitzer/ohmab/ent/timetable"
-	"github.com/hkonitzer/ohmab/ent/user"
 )
 
 // TimetableCreate is the builder for creating a Timetable entity.
@@ -223,17 +223,17 @@ func (tc *TimetableCreate) SetAddress(a *Address) *TimetableCreate {
 	return tc.SetAddressID(a.ID)
 }
 
-// AddUsersOnDutyIDs adds the "users_on_duty" edge to the User entity by IDs.
+// AddUsersOnDutyIDs adds the "users_on_duty" edge to the PublicUser entity by IDs.
 func (tc *TimetableCreate) AddUsersOnDutyIDs(ids ...uuid.UUID) *TimetableCreate {
 	tc.mutation.AddUsersOnDutyIDs(ids...)
 	return tc
 }
 
-// AddUsersOnDuty adds the "users_on_duty" edges to the User entity.
-func (tc *TimetableCreate) AddUsersOnDuty(u ...*User) *TimetableCreate {
-	ids := make([]uuid.UUID, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
+// AddUsersOnDuty adds the "users_on_duty" edges to the PublicUser entity.
+func (tc *TimetableCreate) AddUsersOnDuty(p ...*PublicUser) *TimetableCreate {
+	ids := make([]uuid.UUID, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
 	}
 	return tc.AddUsersOnDutyIDs(ids...)
 }
@@ -449,7 +449,7 @@ func (tc *TimetableCreate) createSpec() (*Timetable, *sqlgraph.CreateSpec) {
 			Columns: timetable.UsersOnDutyPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(publicuser.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

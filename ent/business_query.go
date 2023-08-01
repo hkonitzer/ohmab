@@ -17,6 +17,7 @@ import (
 	"github.com/hkonitzer/ohmab/ent/address"
 	"github.com/hkonitzer/ohmab/ent/business"
 	"github.com/hkonitzer/ohmab/ent/predicate"
+	"github.com/hkonitzer/ohmab/ent/publicuser"
 	"github.com/hkonitzer/ohmab/ent/tag"
 	"github.com/hkonitzer/ohmab/ent/user"
 )
@@ -24,18 +25,20 @@ import (
 // BusinessQuery is the builder for querying Business entities.
 type BusinessQuery struct {
 	config
-	ctx                *QueryContext
-	order              []business.OrderOption
-	inters             []Interceptor
-	predicates         []predicate.Business
-	withAddresses      *AddressQuery
-	withTags           *TagQuery
-	withUsers          *UserQuery
-	modifiers          []func(*sql.Selector)
-	loadTotal          []func(context.Context, []*Business) error
-	withNamedAddresses map[string]*AddressQuery
-	withNamedTags      map[string]*TagQuery
-	withNamedUsers     map[string]*UserQuery
+	ctx                  *QueryContext
+	order                []business.OrderOption
+	inters               []Interceptor
+	predicates           []predicate.Business
+	withAddresses        *AddressQuery
+	withTags             *TagQuery
+	withUsers            *UserQuery
+	withPublicUsers      *PublicUserQuery
+	modifiers            []func(*sql.Selector)
+	loadTotal            []func(context.Context, []*Business) error
+	withNamedAddresses   map[string]*AddressQuery
+	withNamedTags        map[string]*TagQuery
+	withNamedUsers       map[string]*UserQuery
+	withNamedPublicUsers map[string]*PublicUserQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -131,6 +134,28 @@ func (bq *BusinessQuery) QueryUsers() *UserQuery {
 			sqlgraph.From(business.Table, business.FieldID, selector),
 			sqlgraph.To(user.Table, user.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, business.UsersTable, business.UsersPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(bq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryPublicUsers chains the current query on the "public_users" edge.
+func (bq *BusinessQuery) QueryPublicUsers() *PublicUserQuery {
+	query := (&PublicUserClient{config: bq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := bq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := bq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(business.Table, business.FieldID, selector),
+			sqlgraph.To(publicuser.Table, publicuser.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, business.PublicUsersTable, business.PublicUsersPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(bq.driver.Dialect(), step)
 		return fromU, nil
@@ -325,14 +350,15 @@ func (bq *BusinessQuery) Clone() *BusinessQuery {
 		return nil
 	}
 	return &BusinessQuery{
-		config:        bq.config,
-		ctx:           bq.ctx.Clone(),
-		order:         append([]business.OrderOption{}, bq.order...),
-		inters:        append([]Interceptor{}, bq.inters...),
-		predicates:    append([]predicate.Business{}, bq.predicates...),
-		withAddresses: bq.withAddresses.Clone(),
-		withTags:      bq.withTags.Clone(),
-		withUsers:     bq.withUsers.Clone(),
+		config:          bq.config,
+		ctx:             bq.ctx.Clone(),
+		order:           append([]business.OrderOption{}, bq.order...),
+		inters:          append([]Interceptor{}, bq.inters...),
+		predicates:      append([]predicate.Business{}, bq.predicates...),
+		withAddresses:   bq.withAddresses.Clone(),
+		withTags:        bq.withTags.Clone(),
+		withUsers:       bq.withUsers.Clone(),
+		withPublicUsers: bq.withPublicUsers.Clone(),
 		// clone intermediate query.
 		sql:  bq.sql.Clone(),
 		path: bq.path,
@@ -369,6 +395,17 @@ func (bq *BusinessQuery) WithUsers(opts ...func(*UserQuery)) *BusinessQuery {
 		opt(query)
 	}
 	bq.withUsers = query
+	return bq
+}
+
+// WithPublicUsers tells the query-builder to eager-load the nodes that are connected to
+// the "public_users" edge. The optional arguments are used to configure the query builder of the edge.
+func (bq *BusinessQuery) WithPublicUsers(opts ...func(*PublicUserQuery)) *BusinessQuery {
+	query := (&PublicUserClient{config: bq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	bq.withPublicUsers = query
 	return bq
 }
 
@@ -456,10 +493,11 @@ func (bq *BusinessQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Bus
 	var (
 		nodes       = []*Business{}
 		_spec       = bq.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [4]bool{
 			bq.withAddresses != nil,
 			bq.withTags != nil,
 			bq.withUsers != nil,
+			bq.withPublicUsers != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -504,6 +542,13 @@ func (bq *BusinessQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Bus
 			return nil, err
 		}
 	}
+	if query := bq.withPublicUsers; query != nil {
+		if err := bq.loadPublicUsers(ctx, query, nodes,
+			func(n *Business) { n.Edges.PublicUsers = []*PublicUser{} },
+			func(n *Business, e *PublicUser) { n.Edges.PublicUsers = append(n.Edges.PublicUsers, e) }); err != nil {
+			return nil, err
+		}
+	}
 	for name, query := range bq.withNamedAddresses {
 		if err := bq.loadAddresses(ctx, query, nodes,
 			func(n *Business) { n.appendNamedAddresses(name) },
@@ -522,6 +567,13 @@ func (bq *BusinessQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Bus
 		if err := bq.loadUsers(ctx, query, nodes,
 			func(n *Business) { n.appendNamedUsers(name) },
 			func(n *Business, e *User) { n.appendNamedUsers(name, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range bq.withNamedPublicUsers {
+		if err := bq.loadPublicUsers(ctx, query, nodes,
+			func(n *Business) { n.appendNamedPublicUsers(name) },
+			func(n *Business, e *PublicUser) { n.appendNamedPublicUsers(name, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -686,6 +738,67 @@ func (bq *BusinessQuery) loadUsers(ctx context.Context, query *UserQuery, nodes 
 	}
 	return nil
 }
+func (bq *BusinessQuery) loadPublicUsers(ctx context.Context, query *PublicUserQuery, nodes []*Business, init func(*Business), assign func(*Business, *PublicUser)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[uuid.UUID]*Business)
+	nids := make(map[uuid.UUID]map[*Business]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(business.PublicUsersTable)
+		s.Join(joinT).On(s.C(publicuser.FieldID), joinT.C(business.PublicUsersPrimaryKey[1]))
+		s.Where(sql.InValues(joinT.C(business.PublicUsersPrimaryKey[0]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(business.PublicUsersPrimaryKey[0]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(uuid.UUID)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := *values[0].(*uuid.UUID)
+				inValue := *values[1].(*uuid.UUID)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Business]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*PublicUser](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "public_users" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
+	}
+	return nil
+}
 
 func (bq *BusinessQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := bq.querySpec()
@@ -810,6 +923,20 @@ func (bq *BusinessQuery) WithNamedUsers(name string, opts ...func(*UserQuery)) *
 		bq.withNamedUsers = make(map[string]*UserQuery)
 	}
 	bq.withNamedUsers[name] = query
+	return bq
+}
+
+// WithNamedPublicUsers tells the query-builder to eager-load the nodes that are connected to the "public_users"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (bq *BusinessQuery) WithNamedPublicUsers(name string, opts ...func(*PublicUserQuery)) *BusinessQuery {
+	query := (&PublicUserClient{config: bq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	if bq.withNamedPublicUsers == nil {
+		bq.withNamedPublicUsers = make(map[string]*PublicUserQuery)
+	}
+	bq.withNamedPublicUsers[name] = query
 	return bq
 }
 

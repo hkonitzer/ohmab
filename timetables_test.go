@@ -41,8 +41,8 @@ func TestCreateTimeTable(t *testing.T) {
 		SetComment("TESTDATA").
 		SetRole(privacy.AdminRoleAsString()).
 		SetLogin("TESTADMIN").
-		SetSurname("Erika").
-		SetFirstname("Musterfrau").
+		SetSurname("Musterfrau").
+		SetFirstname("Erika").
 		SetEmail("admin@localhost").
 		Save(adminCtx)
 	if err != nil {

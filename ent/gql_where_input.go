@@ -14,6 +14,7 @@ import (
 	"github.com/hkonitzer/ohmab/ent/business"
 	"github.com/hkonitzer/ohmab/ent/content"
 	"github.com/hkonitzer/ohmab/ent/predicate"
+	"github.com/hkonitzer/ohmab/ent/publicuser"
 	"github.com/hkonitzer/ohmab/ent/tag"
 	"github.com/hkonitzer/ohmab/ent/timetable"
 	"github.com/hkonitzer/ohmab/ent/user"
@@ -1418,6 +1419,10 @@ type BusinessWhereInput struct {
 	// "users" edge predicates.
 	HasUsers     *bool             `json:"hasUsers,omitempty"`
 	HasUsersWith []*UserWhereInput `json:"hasUsersWith,omitempty"`
+
+	// "public_users" edge predicates.
+	HasPublicUsers     *bool                   `json:"hasPublicUsers,omitempty"`
+	HasPublicUsersWith []*PublicUserWhereInput `json:"hasPublicUsersWith,omitempty"`
 }
 
 // AddPredicates adds custom predicates to the where input to be used during the filtering phase.
@@ -1957,6 +1962,24 @@ func (i *BusinessWhereInput) P() (predicate.Business, error) {
 		}
 		predicates = append(predicates, business.HasUsersWith(with...))
 	}
+	if i.HasPublicUsers != nil {
+		p := business.HasPublicUsers()
+		if !*i.HasPublicUsers {
+			p = business.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasPublicUsersWith) > 0 {
+		with := make([]predicate.PublicUser, 0, len(i.HasPublicUsersWith))
+		for _, w := range i.HasPublicUsersWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasPublicUsersWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, business.HasPublicUsersWith(with...))
+	}
 	switch len(predicates) {
 	case 0:
 		return nil, ErrEmptyBusinessWhereInput
@@ -2420,6 +2443,398 @@ func (i *ContentWhereInput) P() (predicate.Content, error) {
 		return predicates[0], nil
 	default:
 		return content.And(predicates...), nil
+	}
+}
+
+// PublicUserWhereInput represents a where input for filtering PublicUser queries.
+type PublicUserWhereInput struct {
+	Predicates []predicate.PublicUser  `json:"-"`
+	Not        *PublicUserWhereInput   `json:"not,omitempty"`
+	Or         []*PublicUserWhereInput `json:"or,omitempty"`
+	And        []*PublicUserWhereInput `json:"and,omitempty"`
+
+	// "id" field predicates.
+	ID      *uuid.UUID  `json:"id,omitempty"`
+	IDNEQ   *uuid.UUID  `json:"idNEQ,omitempty"`
+	IDIn    []uuid.UUID `json:"idIn,omitempty"`
+	IDNotIn []uuid.UUID `json:"idNotIn,omitempty"`
+	IDGT    *uuid.UUID  `json:"idGT,omitempty"`
+	IDGTE   *uuid.UUID  `json:"idGTE,omitempty"`
+	IDLT    *uuid.UUID  `json:"idLT,omitempty"`
+	IDLTE   *uuid.UUID  `json:"idLTE,omitempty"`
+
+	// "surname" field predicates.
+	Surname             *string  `json:"surname,omitempty"`
+	SurnameNEQ          *string  `json:"surnameNEQ,omitempty"`
+	SurnameIn           []string `json:"surnameIn,omitempty"`
+	SurnameNotIn        []string `json:"surnameNotIn,omitempty"`
+	SurnameGT           *string  `json:"surnameGT,omitempty"`
+	SurnameGTE          *string  `json:"surnameGTE,omitempty"`
+	SurnameLT           *string  `json:"surnameLT,omitempty"`
+	SurnameLTE          *string  `json:"surnameLTE,omitempty"`
+	SurnameContains     *string  `json:"surnameContains,omitempty"`
+	SurnameHasPrefix    *string  `json:"surnameHasPrefix,omitempty"`
+	SurnameHasSuffix    *string  `json:"surnameHasSuffix,omitempty"`
+	SurnameEqualFold    *string  `json:"surnameEqualFold,omitempty"`
+	SurnameContainsFold *string  `json:"surnameContainsFold,omitempty"`
+
+	// "firstname" field predicates.
+	Firstname             *string  `json:"firstname,omitempty"`
+	FirstnameNEQ          *string  `json:"firstnameNEQ,omitempty"`
+	FirstnameIn           []string `json:"firstnameIn,omitempty"`
+	FirstnameNotIn        []string `json:"firstnameNotIn,omitempty"`
+	FirstnameGT           *string  `json:"firstnameGT,omitempty"`
+	FirstnameGTE          *string  `json:"firstnameGTE,omitempty"`
+	FirstnameLT           *string  `json:"firstnameLT,omitempty"`
+	FirstnameLTE          *string  `json:"firstnameLTE,omitempty"`
+	FirstnameContains     *string  `json:"firstnameContains,omitempty"`
+	FirstnameHasPrefix    *string  `json:"firstnameHasPrefix,omitempty"`
+	FirstnameHasSuffix    *string  `json:"firstnameHasSuffix,omitempty"`
+	FirstnameEqualFold    *string  `json:"firstnameEqualFold,omitempty"`
+	FirstnameContainsFold *string  `json:"firstnameContainsFold,omitempty"`
+
+	// "title" field predicates.
+	Title             *string  `json:"title,omitempty"`
+	TitleNEQ          *string  `json:"titleNEQ,omitempty"`
+	TitleIn           []string `json:"titleIn,omitempty"`
+	TitleNotIn        []string `json:"titleNotIn,omitempty"`
+	TitleGT           *string  `json:"titleGT,omitempty"`
+	TitleGTE          *string  `json:"titleGTE,omitempty"`
+	TitleLT           *string  `json:"titleLT,omitempty"`
+	TitleLTE          *string  `json:"titleLTE,omitempty"`
+	TitleContains     *string  `json:"titleContains,omitempty"`
+	TitleHasPrefix    *string  `json:"titleHasPrefix,omitempty"`
+	TitleHasSuffix    *string  `json:"titleHasSuffix,omitempty"`
+	TitleIsNil        bool     `json:"titleIsNil,omitempty"`
+	TitleNotNil       bool     `json:"titleNotNil,omitempty"`
+	TitleEqualFold    *string  `json:"titleEqualFold,omitempty"`
+	TitleContainsFold *string  `json:"titleContainsFold,omitempty"`
+
+	// "email" field predicates.
+	Email             *string  `json:"email,omitempty"`
+	EmailNEQ          *string  `json:"emailNEQ,omitempty"`
+	EmailIn           []string `json:"emailIn,omitempty"`
+	EmailNotIn        []string `json:"emailNotIn,omitempty"`
+	EmailGT           *string  `json:"emailGT,omitempty"`
+	EmailGTE          *string  `json:"emailGTE,omitempty"`
+	EmailLT           *string  `json:"emailLT,omitempty"`
+	EmailLTE          *string  `json:"emailLTE,omitempty"`
+	EmailContains     *string  `json:"emailContains,omitempty"`
+	EmailHasPrefix    *string  `json:"emailHasPrefix,omitempty"`
+	EmailHasSuffix    *string  `json:"emailHasSuffix,omitempty"`
+	EmailEqualFold    *string  `json:"emailEqualFold,omitempty"`
+	EmailContainsFold *string  `json:"emailContainsFold,omitempty"`
+
+	// "businesses" edge predicates.
+	HasBusinesses     *bool                 `json:"hasBusinesses,omitempty"`
+	HasBusinessesWith []*BusinessWhereInput `json:"hasBusinessesWith,omitempty"`
+
+	// "timetable" edge predicates.
+	HasTimetable     *bool                  `json:"hasTimetable,omitempty"`
+	HasTimetableWith []*TimetableWhereInput `json:"hasTimetableWith,omitempty"`
+}
+
+// AddPredicates adds custom predicates to the where input to be used during the filtering phase.
+func (i *PublicUserWhereInput) AddPredicates(predicates ...predicate.PublicUser) {
+	i.Predicates = append(i.Predicates, predicates...)
+}
+
+// Filter applies the PublicUserWhereInput filter on the PublicUserQuery builder.
+func (i *PublicUserWhereInput) Filter(q *PublicUserQuery) (*PublicUserQuery, error) {
+	if i == nil {
+		return q, nil
+	}
+	p, err := i.P()
+	if err != nil {
+		if err == ErrEmptyPublicUserWhereInput {
+			return q, nil
+		}
+		return nil, err
+	}
+	return q.Where(p), nil
+}
+
+// ErrEmptyPublicUserWhereInput is returned in case the PublicUserWhereInput is empty.
+var ErrEmptyPublicUserWhereInput = errors.New("ent: empty predicate PublicUserWhereInput")
+
+// P returns a predicate for filtering publicusers.
+// An error is returned if the input is empty or invalid.
+func (i *PublicUserWhereInput) P() (predicate.PublicUser, error) {
+	var predicates []predicate.PublicUser
+	if i.Not != nil {
+		p, err := i.Not.P()
+		if err != nil {
+			return nil, fmt.Errorf("%w: field 'not'", err)
+		}
+		predicates = append(predicates, publicuser.Not(p))
+	}
+	switch n := len(i.Or); {
+	case n == 1:
+		p, err := i.Or[0].P()
+		if err != nil {
+			return nil, fmt.Errorf("%w: field 'or'", err)
+		}
+		predicates = append(predicates, p)
+	case n > 1:
+		or := make([]predicate.PublicUser, 0, n)
+		for _, w := range i.Or {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'or'", err)
+			}
+			or = append(or, p)
+		}
+		predicates = append(predicates, publicuser.Or(or...))
+	}
+	switch n := len(i.And); {
+	case n == 1:
+		p, err := i.And[0].P()
+		if err != nil {
+			return nil, fmt.Errorf("%w: field 'and'", err)
+		}
+		predicates = append(predicates, p)
+	case n > 1:
+		and := make([]predicate.PublicUser, 0, n)
+		for _, w := range i.And {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'and'", err)
+			}
+			and = append(and, p)
+		}
+		predicates = append(predicates, publicuser.And(and...))
+	}
+	predicates = append(predicates, i.Predicates...)
+	if i.ID != nil {
+		predicates = append(predicates, publicuser.IDEQ(*i.ID))
+	}
+	if i.IDNEQ != nil {
+		predicates = append(predicates, publicuser.IDNEQ(*i.IDNEQ))
+	}
+	if len(i.IDIn) > 0 {
+		predicates = append(predicates, publicuser.IDIn(i.IDIn...))
+	}
+	if len(i.IDNotIn) > 0 {
+		predicates = append(predicates, publicuser.IDNotIn(i.IDNotIn...))
+	}
+	if i.IDGT != nil {
+		predicates = append(predicates, publicuser.IDGT(*i.IDGT))
+	}
+	if i.IDGTE != nil {
+		predicates = append(predicates, publicuser.IDGTE(*i.IDGTE))
+	}
+	if i.IDLT != nil {
+		predicates = append(predicates, publicuser.IDLT(*i.IDLT))
+	}
+	if i.IDLTE != nil {
+		predicates = append(predicates, publicuser.IDLTE(*i.IDLTE))
+	}
+	if i.Surname != nil {
+		predicates = append(predicates, publicuser.SurnameEQ(*i.Surname))
+	}
+	if i.SurnameNEQ != nil {
+		predicates = append(predicates, publicuser.SurnameNEQ(*i.SurnameNEQ))
+	}
+	if len(i.SurnameIn) > 0 {
+		predicates = append(predicates, publicuser.SurnameIn(i.SurnameIn...))
+	}
+	if len(i.SurnameNotIn) > 0 {
+		predicates = append(predicates, publicuser.SurnameNotIn(i.SurnameNotIn...))
+	}
+	if i.SurnameGT != nil {
+		predicates = append(predicates, publicuser.SurnameGT(*i.SurnameGT))
+	}
+	if i.SurnameGTE != nil {
+		predicates = append(predicates, publicuser.SurnameGTE(*i.SurnameGTE))
+	}
+	if i.SurnameLT != nil {
+		predicates = append(predicates, publicuser.SurnameLT(*i.SurnameLT))
+	}
+	if i.SurnameLTE != nil {
+		predicates = append(predicates, publicuser.SurnameLTE(*i.SurnameLTE))
+	}
+	if i.SurnameContains != nil {
+		predicates = append(predicates, publicuser.SurnameContains(*i.SurnameContains))
+	}
+	if i.SurnameHasPrefix != nil {
+		predicates = append(predicates, publicuser.SurnameHasPrefix(*i.SurnameHasPrefix))
+	}
+	if i.SurnameHasSuffix != nil {
+		predicates = append(predicates, publicuser.SurnameHasSuffix(*i.SurnameHasSuffix))
+	}
+	if i.SurnameEqualFold != nil {
+		predicates = append(predicates, publicuser.SurnameEqualFold(*i.SurnameEqualFold))
+	}
+	if i.SurnameContainsFold != nil {
+		predicates = append(predicates, publicuser.SurnameContainsFold(*i.SurnameContainsFold))
+	}
+	if i.Firstname != nil {
+		predicates = append(predicates, publicuser.FirstnameEQ(*i.Firstname))
+	}
+	if i.FirstnameNEQ != nil {
+		predicates = append(predicates, publicuser.FirstnameNEQ(*i.FirstnameNEQ))
+	}
+	if len(i.FirstnameIn) > 0 {
+		predicates = append(predicates, publicuser.FirstnameIn(i.FirstnameIn...))
+	}
+	if len(i.FirstnameNotIn) > 0 {
+		predicates = append(predicates, publicuser.FirstnameNotIn(i.FirstnameNotIn...))
+	}
+	if i.FirstnameGT != nil {
+		predicates = append(predicates, publicuser.FirstnameGT(*i.FirstnameGT))
+	}
+	if i.FirstnameGTE != nil {
+		predicates = append(predicates, publicuser.FirstnameGTE(*i.FirstnameGTE))
+	}
+	if i.FirstnameLT != nil {
+		predicates = append(predicates, publicuser.FirstnameLT(*i.FirstnameLT))
+	}
+	if i.FirstnameLTE != nil {
+		predicates = append(predicates, publicuser.FirstnameLTE(*i.FirstnameLTE))
+	}
+	if i.FirstnameContains != nil {
+		predicates = append(predicates, publicuser.FirstnameContains(*i.FirstnameContains))
+	}
+	if i.FirstnameHasPrefix != nil {
+		predicates = append(predicates, publicuser.FirstnameHasPrefix(*i.FirstnameHasPrefix))
+	}
+	if i.FirstnameHasSuffix != nil {
+		predicates = append(predicates, publicuser.FirstnameHasSuffix(*i.FirstnameHasSuffix))
+	}
+	if i.FirstnameEqualFold != nil {
+		predicates = append(predicates, publicuser.FirstnameEqualFold(*i.FirstnameEqualFold))
+	}
+	if i.FirstnameContainsFold != nil {
+		predicates = append(predicates, publicuser.FirstnameContainsFold(*i.FirstnameContainsFold))
+	}
+	if i.Title != nil {
+		predicates = append(predicates, publicuser.TitleEQ(*i.Title))
+	}
+	if i.TitleNEQ != nil {
+		predicates = append(predicates, publicuser.TitleNEQ(*i.TitleNEQ))
+	}
+	if len(i.TitleIn) > 0 {
+		predicates = append(predicates, publicuser.TitleIn(i.TitleIn...))
+	}
+	if len(i.TitleNotIn) > 0 {
+		predicates = append(predicates, publicuser.TitleNotIn(i.TitleNotIn...))
+	}
+	if i.TitleGT != nil {
+		predicates = append(predicates, publicuser.TitleGT(*i.TitleGT))
+	}
+	if i.TitleGTE != nil {
+		predicates = append(predicates, publicuser.TitleGTE(*i.TitleGTE))
+	}
+	if i.TitleLT != nil {
+		predicates = append(predicates, publicuser.TitleLT(*i.TitleLT))
+	}
+	if i.TitleLTE != nil {
+		predicates = append(predicates, publicuser.TitleLTE(*i.TitleLTE))
+	}
+	if i.TitleContains != nil {
+		predicates = append(predicates, publicuser.TitleContains(*i.TitleContains))
+	}
+	if i.TitleHasPrefix != nil {
+		predicates = append(predicates, publicuser.TitleHasPrefix(*i.TitleHasPrefix))
+	}
+	if i.TitleHasSuffix != nil {
+		predicates = append(predicates, publicuser.TitleHasSuffix(*i.TitleHasSuffix))
+	}
+	if i.TitleIsNil {
+		predicates = append(predicates, publicuser.TitleIsNil())
+	}
+	if i.TitleNotNil {
+		predicates = append(predicates, publicuser.TitleNotNil())
+	}
+	if i.TitleEqualFold != nil {
+		predicates = append(predicates, publicuser.TitleEqualFold(*i.TitleEqualFold))
+	}
+	if i.TitleContainsFold != nil {
+		predicates = append(predicates, publicuser.TitleContainsFold(*i.TitleContainsFold))
+	}
+	if i.Email != nil {
+		predicates = append(predicates, publicuser.EmailEQ(*i.Email))
+	}
+	if i.EmailNEQ != nil {
+		predicates = append(predicates, publicuser.EmailNEQ(*i.EmailNEQ))
+	}
+	if len(i.EmailIn) > 0 {
+		predicates = append(predicates, publicuser.EmailIn(i.EmailIn...))
+	}
+	if len(i.EmailNotIn) > 0 {
+		predicates = append(predicates, publicuser.EmailNotIn(i.EmailNotIn...))
+	}
+	if i.EmailGT != nil {
+		predicates = append(predicates, publicuser.EmailGT(*i.EmailGT))
+	}
+	if i.EmailGTE != nil {
+		predicates = append(predicates, publicuser.EmailGTE(*i.EmailGTE))
+	}
+	if i.EmailLT != nil {
+		predicates = append(predicates, publicuser.EmailLT(*i.EmailLT))
+	}
+	if i.EmailLTE != nil {
+		predicates = append(predicates, publicuser.EmailLTE(*i.EmailLTE))
+	}
+	if i.EmailContains != nil {
+		predicates = append(predicates, publicuser.EmailContains(*i.EmailContains))
+	}
+	if i.EmailHasPrefix != nil {
+		predicates = append(predicates, publicuser.EmailHasPrefix(*i.EmailHasPrefix))
+	}
+	if i.EmailHasSuffix != nil {
+		predicates = append(predicates, publicuser.EmailHasSuffix(*i.EmailHasSuffix))
+	}
+	if i.EmailEqualFold != nil {
+		predicates = append(predicates, publicuser.EmailEqualFold(*i.EmailEqualFold))
+	}
+	if i.EmailContainsFold != nil {
+		predicates = append(predicates, publicuser.EmailContainsFold(*i.EmailContainsFold))
+	}
+
+	if i.HasBusinesses != nil {
+		p := publicuser.HasBusinesses()
+		if !*i.HasBusinesses {
+			p = publicuser.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasBusinessesWith) > 0 {
+		with := make([]predicate.Business, 0, len(i.HasBusinessesWith))
+		for _, w := range i.HasBusinessesWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasBusinessesWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, publicuser.HasBusinessesWith(with...))
+	}
+	if i.HasTimetable != nil {
+		p := publicuser.HasTimetable()
+		if !*i.HasTimetable {
+			p = publicuser.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasTimetableWith) > 0 {
+		with := make([]predicate.Timetable, 0, len(i.HasTimetableWith))
+		for _, w := range i.HasTimetableWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasTimetableWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, publicuser.HasTimetableWith(with...))
+	}
+	switch len(predicates) {
+	case 0:
+		return nil, ErrEmptyPublicUserWhereInput
+	case 1:
+		return predicates[0], nil
+	default:
+		return publicuser.And(predicates...), nil
 	}
 }
 
@@ -3000,8 +3415,8 @@ type TimetableWhereInput struct {
 	HasAddressWith []*AddressWhereInput `json:"hasAddressWith,omitempty"`
 
 	// "users_on_duty" edge predicates.
-	HasUsersOnDuty     *bool             `json:"hasUsersOnDuty,omitempty"`
-	HasUsersOnDutyWith []*UserWhereInput `json:"hasUsersOnDutyWith,omitempty"`
+	HasUsersOnDuty     *bool                   `json:"hasUsersOnDuty,omitempty"`
+	HasUsersOnDutyWith []*PublicUserWhereInput `json:"hasUsersOnDutyWith,omitempty"`
 }
 
 // AddPredicates adds custom predicates to the where input to be used during the filtering phase.
@@ -3531,7 +3946,7 @@ func (i *TimetableWhereInput) P() (predicate.Timetable, error) {
 		predicates = append(predicates, p)
 	}
 	if len(i.HasUsersOnDutyWith) > 0 {
-		with := make([]predicate.User, 0, len(i.HasUsersOnDutyWith))
+		with := make([]predicate.PublicUser, 0, len(i.HasUsersOnDutyWith))
 		for _, w := range i.HasUsersOnDutyWith {
 			p, err := w.P()
 			if err != nil {
@@ -3752,10 +4167,6 @@ type UserWhereInput struct {
 	// "tags" edge predicates.
 	HasTags     *bool            `json:"hasTags,omitempty"`
 	HasTagsWith []*TagWhereInput `json:"hasTagsWith,omitempty"`
-
-	// "timetable" edge predicates.
-	HasTimetable     *bool                  `json:"hasTimetable,omitempty"`
-	HasTimetableWith []*TimetableWhereInput `json:"hasTimetableWith,omitempty"`
 }
 
 // AddPredicates adds custom predicates to the where input to be used during the filtering phase.
@@ -4342,24 +4753,6 @@ func (i *UserWhereInput) P() (predicate.User, error) {
 			with = append(with, p)
 		}
 		predicates = append(predicates, user.HasTagsWith(with...))
-	}
-	if i.HasTimetable != nil {
-		p := user.HasTimetable()
-		if !*i.HasTimetable {
-			p = user.Not(p)
-		}
-		predicates = append(predicates, p)
-	}
-	if len(i.HasTimetableWith) > 0 {
-		with := make([]predicate.Timetable, 0, len(i.HasTimetableWith))
-		for _, w := range i.HasTimetableWith {
-			p, err := w.P()
-			if err != nil {
-				return nil, fmt.Errorf("%w: field 'HasTimetableWith'", err)
-			}
-			with = append(with, p)
-		}
-		predicates = append(predicates, user.HasTimetableWith(with...))
 	}
 	switch len(predicates) {
 	case 0:

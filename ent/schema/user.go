@@ -7,9 +7,11 @@ import (
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
 	"github.com/google/uuid"
+	"github.com/hkonitzer/ohmab/ent/privacy"
 	"github.com/hkonitzer/ohmab/ent/schema/constants"
 	"github.com/hkonitzer/ohmab/ent/schema/hooks"
-	"github.com/hkonitzer/ohmab/internal/pkg/privacy"
+	ohmabprivacy "github.com/hkonitzer/ohmab/internal/pkg/privacy"
+	"github.com/hkonitzer/ohmab/internal/pkg/privacy/rule"
 )
 
 // User holds the schema definition for the User entity.
@@ -39,7 +41,7 @@ func (User) Fields() []ent.Field {
 			Optional().Comment("A comment for this user"),
 		field.Bool(constants.ActiveFieldName).Default(true).Comment("Is the user active?"),
 		field.String("role").
-			Sensitive().Default(privacy.ViewerRoleAsString()).Comment("The role of the user"),
+			Sensitive().Default(ohmabprivacy.ViewerRoleAsString()).Comment("The role of the user"),
 	}
 }
 
@@ -54,7 +56,6 @@ func (User) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("businesses", Business.Type).Ref("users").Comment("The businesses this user is associated with"),
 		edge.To("tags", Tag.Type),
-		edge.From("timetable", Timetable.Type).Ref("users_on_duty").Comment("The persons on duty for this timetable entry"),
 	}
 }
 
@@ -66,7 +67,20 @@ func (User) Indexes() []ent.Index {
 
 func (u User) Hooks() []ent.Hook {
 	return []ent.Hook{
-		u.AuditLogForUser(),
 		hooks.VerifyUserRole(),
+		hooks.UpdatePublicUser(),
+		u.AuditLogForUser(),
+	}
+}
+func (User) Policy() ent.Policy {
+	return privacy.Policy{
+		Mutation: privacy.MutationPolicy{
+			rule.DenyIfNoViewer(),
+			rule.AllowIfAdmin(),
+			privacy.AlwaysDenyRule(),
+		},
+		Query: privacy.QueryPolicy{
+			rule.DenyIfNoViewer(),
+		},
 	}
 }

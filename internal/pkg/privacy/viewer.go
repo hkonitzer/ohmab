@@ -18,6 +18,7 @@ const ( // see also verifyuserrole.go
 	_ Role = 1 << iota
 	Admin
 	Owner
+	Employee
 	View
 )
 
@@ -25,6 +26,7 @@ const ( // see also verifyuserrole.go
 type Viewer interface {
 	Admin() bool // If viewer is admin.
 	Owner() bool
+	Employee() bool
 	HasScopes() bool
 	HasScope(scope string) bool
 	GetUserID() string
@@ -45,6 +47,10 @@ func OwnerRoleAsString() string {
 	return fmt.Sprint(Owner)
 }
 
+func EmployeeRoleAsString() string {
+	return fmt.Sprint(Employee)
+}
+
 func ViewerRoleAsString() string {
 	return fmt.Sprint(View)
 }
@@ -59,6 +65,10 @@ func (v *UserViewer) Admin() bool {
 
 func (v *UserViewer) Owner() bool {
 	return v.Role&Owner != 0
+}
+
+func (v *UserViewer) Employee() bool {
+	return v.Role&Employee != 0
 }
 
 func (v *UserViewer) HasScopes() bool {

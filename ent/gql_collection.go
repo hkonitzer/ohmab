@@ -13,6 +13,7 @@ import (
 	"github.com/hkonitzer/ohmab/ent/auditlog"
 	"github.com/hkonitzer/ohmab/ent/business"
 	"github.com/hkonitzer/ohmab/ent/content"
+	"github.com/hkonitzer/ohmab/ent/publicuser"
 	"github.com/hkonitzer/ohmab/ent/tag"
 	"github.com/hkonitzer/ohmab/ent/timetable"
 	"github.com/hkonitzer/ohmab/ent/user"
@@ -316,6 +317,18 @@ func (b *BusinessQuery) collectField(ctx context.Context, opCtx *graphql.Operati
 			b.WithNamedUsers(alias, func(wq *UserQuery) {
 				*wq = *query
 			})
+		case "publicUsers":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&PublicUserClient{config: b.config}).Query()
+			)
+			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
+				return err
+			}
+			b.WithNamedPublicUsers(alias, func(wq *PublicUserQuery) {
+				*wq = *query
+			})
 		case "createdAt":
 			if _, ok := fieldSeen[business.FieldCreatedAt]; !ok {
 				selectedFields = append(selectedFields, business.FieldCreatedAt)
@@ -575,6 +588,129 @@ func newContentPaginateArgs(rv map[string]any) *contentPaginateArgs {
 }
 
 // CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (pu *PublicUserQuery) CollectFields(ctx context.Context, satisfies ...string) (*PublicUserQuery, error) {
+	fc := graphql.GetFieldContext(ctx)
+	if fc == nil {
+		return pu, nil
+	}
+	if err := pu.collectField(ctx, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
+		return nil, err
+	}
+	return pu, nil
+}
+
+func (pu *PublicUserQuery) collectField(ctx context.Context, opCtx *graphql.OperationContext, collected graphql.CollectedField, path []string, satisfies ...string) error {
+	path = append([]string(nil), path...)
+	var (
+		unknownSeen    bool
+		fieldSeen      = make(map[string]struct{}, len(publicuser.Columns))
+		selectedFields = []string{publicuser.FieldID}
+	)
+	for _, field := range graphql.CollectFields(opCtx, collected.Selections, satisfies) {
+		switch field.Name {
+		case "businesses":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&BusinessClient{config: pu.config}).Query()
+			)
+			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
+				return err
+			}
+			pu.WithNamedBusinesses(alias, func(wq *BusinessQuery) {
+				*wq = *query
+			})
+		case "timetable":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&TimetableClient{config: pu.config}).Query()
+			)
+			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
+				return err
+			}
+			pu.WithNamedTimetable(alias, func(wq *TimetableQuery) {
+				*wq = *query
+			})
+		case "surname":
+			if _, ok := fieldSeen[publicuser.FieldSurname]; !ok {
+				selectedFields = append(selectedFields, publicuser.FieldSurname)
+				fieldSeen[publicuser.FieldSurname] = struct{}{}
+			}
+		case "firstname":
+			if _, ok := fieldSeen[publicuser.FieldFirstname]; !ok {
+				selectedFields = append(selectedFields, publicuser.FieldFirstname)
+				fieldSeen[publicuser.FieldFirstname] = struct{}{}
+			}
+		case "title":
+			if _, ok := fieldSeen[publicuser.FieldTitle]; !ok {
+				selectedFields = append(selectedFields, publicuser.FieldTitle)
+				fieldSeen[publicuser.FieldTitle] = struct{}{}
+			}
+		case "id":
+		case "__typename":
+		default:
+			unknownSeen = true
+		}
+	}
+	if !unknownSeen {
+		pu.Select(selectedFields...)
+	}
+	return nil
+}
+
+type publicuserPaginateArgs struct {
+	first, last   *int
+	after, before *Cursor
+	opts          []PublicUserPaginateOption
+}
+
+func newPublicUserPaginateArgs(rv map[string]any) *publicuserPaginateArgs {
+	args := &publicuserPaginateArgs{}
+	if rv == nil {
+		return args
+	}
+	if v := rv[firstField]; v != nil {
+		args.first = v.(*int)
+	}
+	if v := rv[lastField]; v != nil {
+		args.last = v.(*int)
+	}
+	if v := rv[afterField]; v != nil {
+		args.after = v.(*Cursor)
+	}
+	if v := rv[beforeField]; v != nil {
+		args.before = v.(*Cursor)
+	}
+	if v, ok := rv[orderByField]; ok {
+		switch v := v.(type) {
+		case map[string]any:
+			var (
+				err1, err2 error
+				order      = &PublicUserOrder{Field: &PublicUserOrderField{}, Direction: entgql.OrderDirectionAsc}
+			)
+			if d, ok := v[directionField]; ok {
+				err1 = order.Direction.UnmarshalGQL(d)
+			}
+			if f, ok := v[fieldField]; ok {
+				err2 = order.Field.UnmarshalGQL(f)
+			}
+			if err1 == nil && err2 == nil {
+				args.opts = append(args.opts, WithPublicUserOrder(order))
+			}
+		case *PublicUserOrder:
+			if v != nil {
+				args.opts = append(args.opts, WithPublicUserOrder(v))
+			}
+		}
+	}
+	if v, ok := rv[whereField].(*PublicUserWhereInput); ok {
+		args.opts = append(args.opts, WithPublicUserFilter(v.Filter))
+	}
+	return args
+}
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
 func (t *TagQuery) CollectFields(ctx context.Context, satisfies ...string) (*TagQuery, error) {
 	fc := graphql.GetFieldContext(ctx)
 	if fc == nil {
@@ -742,12 +878,12 @@ func (t *TimetableQuery) collectField(ctx context.Context, opCtx *graphql.Operat
 			var (
 				alias = field.Alias
 				path  = append(path, alias)
-				query = (&UserClient{config: t.config}).Query()
+				query = (&PublicUserClient{config: t.config}).Query()
 			)
 			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
 				return err
 			}
-			t.WithNamedUsersOnDuty(alias, func(wq *UserQuery) {
+			t.WithNamedUsersOnDuty(alias, func(wq *PublicUserQuery) {
 				*wq = *query
 			})
 		case "createdAt":
@@ -927,18 +1063,6 @@ func (u *UserQuery) collectField(ctx context.Context, opCtx *graphql.OperationCo
 				return err
 			}
 			u.WithNamedTags(alias, func(wq *TagQuery) {
-				*wq = *query
-			})
-		case "timetable":
-			var (
-				alias = field.Alias
-				path  = append(path, alias)
-				query = (&TimetableClient{config: u.config}).Query()
-			)
-			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
-				return err
-			}
-			u.WithNamedTimetable(alias, func(wq *TimetableQuery) {
 				*wq = *query
 			})
 		case "createdAt":

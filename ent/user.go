@@ -57,17 +57,14 @@ type UserEdges struct {
 	Businesses []*Business `json:"businesses,omitempty"`
 	// Tags holds the value of the tags edge.
 	Tags []*Tag `json:"tags,omitempty"`
-	// The persons on duty for this timetable entry
-	Timetable []*Timetable `json:"timetable,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [2]bool
 	// totalCount holds the count of the edges above.
-	totalCount [3]map[string]int
+	totalCount [2]map[string]int
 
 	namedBusinesses map[string][]*Business
 	namedTags       map[string][]*Tag
-	namedTimetable  map[string][]*Timetable
 }
 
 // BusinessesOrErr returns the Businesses value or an error if the edge
@@ -86,15 +83,6 @@ func (e UserEdges) TagsOrErr() ([]*Tag, error) {
 		return e.Tags, nil
 	}
 	return nil, &NotLoadedError{edge: "tags"}
-}
-
-// TimetableOrErr returns the Timetable value or an error if the edge
-// was not loaded in eager-loading.
-func (e UserEdges) TimetableOrErr() ([]*Timetable, error) {
-	if e.loadedTypes[2] {
-		return e.Timetable, nil
-	}
-	return nil, &NotLoadedError{edge: "timetable"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -232,11 +220,6 @@ func (u *User) QueryTags() *TagQuery {
 	return NewUserClient(u.config).QueryTags(u)
 }
 
-// QueryTimetable queries the "timetable" edge of the User entity.
-func (u *User) QueryTimetable() *TimetableQuery {
-	return NewUserClient(u.config).QueryTimetable(u)
-}
-
 // Update returns a builder for updating this User.
 // Note that you need to call User.Unwrap() before calling this method if this User
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -343,30 +326,6 @@ func (u *User) appendNamedTags(name string, edges ...*Tag) {
 		u.Edges.namedTags[name] = []*Tag{}
 	} else {
 		u.Edges.namedTags[name] = append(u.Edges.namedTags[name], edges...)
-	}
-}
-
-// NamedTimetable returns the Timetable named value or an error if the edge was not
-// loaded in eager-loading with this name.
-func (u *User) NamedTimetable(name string) ([]*Timetable, error) {
-	if u.Edges.namedTimetable == nil {
-		return nil, &NotLoadedError{edge: name}
-	}
-	nodes, ok := u.Edges.namedTimetable[name]
-	if !ok {
-		return nil, &NotLoadedError{edge: name}
-	}
-	return nodes, nil
-}
-
-func (u *User) appendNamedTimetable(name string, edges ...*Timetable) {
-	if u.Edges.namedTimetable == nil {
-		u.Edges.namedTimetable = make(map[string][]*Timetable)
-	}
-	if len(edges) == 0 {
-		u.Edges.namedTimetable[name] = []*Timetable{}
-	} else {
-		u.Edges.namedTimetable[name] = append(u.Edges.namedTimetable[name], edges...)
 	}
 }
 

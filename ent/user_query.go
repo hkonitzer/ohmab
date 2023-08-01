@@ -6,6 +6,7 @@ package ent
 import (
 	"context"
 	"database/sql/driver"
+	"errors"
 	"fmt"
 	"math"
 
@@ -16,7 +17,6 @@ import (
 	"github.com/hkonitzer/ohmab/ent/business"
 	"github.com/hkonitzer/ohmab/ent/predicate"
 	"github.com/hkonitzer/ohmab/ent/tag"
-	"github.com/hkonitzer/ohmab/ent/timetable"
 	"github.com/hkonitzer/ohmab/ent/user"
 )
 
@@ -29,12 +29,10 @@ type UserQuery struct {
 	predicates          []predicate.User
 	withBusinesses      *BusinessQuery
 	withTags            *TagQuery
-	withTimetable       *TimetableQuery
 	modifiers           []func(*sql.Selector)
 	loadTotal           []func(context.Context, []*User) error
 	withNamedBusinesses map[string]*BusinessQuery
 	withNamedTags       map[string]*TagQuery
-	withNamedTimetable  map[string]*TimetableQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -108,28 +106,6 @@ func (uq *UserQuery) QueryTags() *TagQuery {
 			sqlgraph.From(user.Table, user.FieldID, selector),
 			sqlgraph.To(tag.Table, tag.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, user.TagsTable, user.TagsPrimaryKey...),
-		)
-		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryTimetable chains the current query on the "timetable" edge.
-func (uq *UserQuery) QueryTimetable() *TimetableQuery {
-	query := (&TimetableClient{config: uq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := uq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := uq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, selector),
-			sqlgraph.To(timetable.Table, timetable.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, user.TimetableTable, user.TimetablePrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
 		return fromU, nil
@@ -331,7 +307,6 @@ func (uq *UserQuery) Clone() *UserQuery {
 		predicates:     append([]predicate.User{}, uq.predicates...),
 		withBusinesses: uq.withBusinesses.Clone(),
 		withTags:       uq.withTags.Clone(),
-		withTimetable:  uq.withTimetable.Clone(),
 		// clone intermediate query.
 		sql:  uq.sql.Clone(),
 		path: uq.path,
@@ -357,17 +332,6 @@ func (uq *UserQuery) WithTags(opts ...func(*TagQuery)) *UserQuery {
 		opt(query)
 	}
 	uq.withTags = query
-	return uq
-}
-
-// WithTimetable tells the query-builder to eager-load the nodes that are connected to
-// the "timetable" edge. The optional arguments are used to configure the query builder of the edge.
-func (uq *UserQuery) WithTimetable(opts ...func(*TimetableQuery)) *UserQuery {
-	query := (&TimetableClient{config: uq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	uq.withTimetable = query
 	return uq
 }
 
@@ -442,6 +406,12 @@ func (uq *UserQuery) prepareQuery(ctx context.Context) error {
 		}
 		uq.sql = prev
 	}
+	if user.Policy == nil {
+		return errors.New("ent: uninitialized user.Policy (forgotten import ent/runtime?)")
+	}
+	if err := user.Policy.EvalQuery(ctx, uq); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -449,10 +419,9 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	var (
 		nodes       = []*User{}
 		_spec       = uq.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [2]bool{
 			uq.withBusinesses != nil,
 			uq.withTags != nil,
-			uq.withTimetable != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -490,13 +459,6 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 			return nil, err
 		}
 	}
-	if query := uq.withTimetable; query != nil {
-		if err := uq.loadTimetable(ctx, query, nodes,
-			func(n *User) { n.Edges.Timetable = []*Timetable{} },
-			func(n *User, e *Timetable) { n.Edges.Timetable = append(n.Edges.Timetable, e) }); err != nil {
-			return nil, err
-		}
-	}
 	for name, query := range uq.withNamedBusinesses {
 		if err := uq.loadBusinesses(ctx, query, nodes,
 			func(n *User) { n.appendNamedBusinesses(name) },
@@ -508,13 +470,6 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 		if err := uq.loadTags(ctx, query, nodes,
 			func(n *User) { n.appendNamedTags(name) },
 			func(n *User, e *Tag) { n.appendNamedTags(name, e) }); err != nil {
-			return nil, err
-		}
-	}
-	for name, query := range uq.withNamedTimetable {
-		if err := uq.loadTimetable(ctx, query, nodes,
-			func(n *User) { n.appendNamedTimetable(name) },
-			func(n *User, e *Timetable) { n.appendNamedTimetable(name, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -648,67 +603,6 @@ func (uq *UserQuery) loadTags(ctx context.Context, query *TagQuery, nodes []*Use
 	}
 	return nil
 }
-func (uq *UserQuery) loadTimetable(ctx context.Context, query *TimetableQuery, nodes []*User, init func(*User), assign func(*User, *Timetable)) error {
-	edgeIDs := make([]driver.Value, len(nodes))
-	byID := make(map[uuid.UUID]*User)
-	nids := make(map[uuid.UUID]map[*User]struct{})
-	for i, node := range nodes {
-		edgeIDs[i] = node.ID
-		byID[node.ID] = node
-		if init != nil {
-			init(node)
-		}
-	}
-	query.Where(func(s *sql.Selector) {
-		joinT := sql.Table(user.TimetableTable)
-		s.Join(joinT).On(s.C(timetable.FieldID), joinT.C(user.TimetablePrimaryKey[0]))
-		s.Where(sql.InValues(joinT.C(user.TimetablePrimaryKey[1]), edgeIDs...))
-		columns := s.SelectedColumns()
-		s.Select(joinT.C(user.TimetablePrimaryKey[1]))
-		s.AppendSelect(columns...)
-		s.SetDistinct(false)
-	})
-	if err := query.prepareQuery(ctx); err != nil {
-		return err
-	}
-	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
-		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
-			assign := spec.Assign
-			values := spec.ScanValues
-			spec.ScanValues = func(columns []string) ([]any, error) {
-				values, err := values(columns[1:])
-				if err != nil {
-					return nil, err
-				}
-				return append([]any{new(uuid.UUID)}, values...), nil
-			}
-			spec.Assign = func(columns []string, values []any) error {
-				outValue := *values[0].(*uuid.UUID)
-				inValue := *values[1].(*uuid.UUID)
-				if nids[inValue] == nil {
-					nids[inValue] = map[*User]struct{}{byID[outValue]: {}}
-					return assign(columns[1:], values[1:])
-				}
-				nids[inValue][byID[outValue]] = struct{}{}
-				return nil
-			}
-		})
-	})
-	neighbors, err := withInterceptors[[]*Timetable](ctx, query, qr, query.inters)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected "timetable" node returned %v`, n.ID)
-		}
-		for kn := range nodes {
-			assign(kn, n)
-		}
-	}
-	return nil
-}
 
 func (uq *UserQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := uq.querySpec()
@@ -819,20 +713,6 @@ func (uq *UserQuery) WithNamedTags(name string, opts ...func(*TagQuery)) *UserQu
 		uq.withNamedTags = make(map[string]*TagQuery)
 	}
 	uq.withNamedTags[name] = query
-	return uq
-}
-
-// WithNamedTimetable tells the query-builder to eager-load the nodes that are connected to the "timetable"
-// edge with the given name. The optional arguments are used to configure the query builder of the edge.
-func (uq *UserQuery) WithNamedTimetable(name string, opts ...func(*TimetableQuery)) *UserQuery {
-	query := (&TimetableClient{config: uq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	if uq.withNamedTimetable == nil {
-		uq.withNamedTimetable = make(map[string]*TimetableQuery)
-	}
-	uq.withNamedTimetable[name] = query
 	return uq
 }
 

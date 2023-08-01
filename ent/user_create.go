@@ -14,7 +14,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/hkonitzer/ohmab/ent/business"
 	"github.com/hkonitzer/ohmab/ent/tag"
-	"github.com/hkonitzer/ohmab/ent/timetable"
 	"github.com/hkonitzer/ohmab/ent/user"
 )
 
@@ -217,21 +216,6 @@ func (uc *UserCreate) AddTags(t ...*Tag) *UserCreate {
 		ids[i] = t[i].ID
 	}
 	return uc.AddTagIDs(ids...)
-}
-
-// AddTimetableIDs adds the "timetable" edge to the Timetable entity by IDs.
-func (uc *UserCreate) AddTimetableIDs(ids ...uuid.UUID) *UserCreate {
-	uc.mutation.AddTimetableIDs(ids...)
-	return uc
-}
-
-// AddTimetable adds the "timetable" edges to the Timetable entity.
-func (uc *UserCreate) AddTimetable(t ...*Timetable) *UserCreate {
-	ids := make([]uuid.UUID, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return uc.AddTimetableIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -458,22 +442,6 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(tag.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := uc.mutation.TimetableIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   user.TimetableTable,
-			Columns: user.TimetablePrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(timetable.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

@@ -58,6 +58,18 @@ func (f ContentFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, err
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ContentMutation", m)
 }
 
+// The PublicUserFunc type is an adapter to allow the use of ordinary
+// function as PublicUser mutator.
+type PublicUserFunc func(context.Context, *ent.PublicUserMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f PublicUserFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.PublicUserMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.PublicUserMutation", m)
+}
+
 // The TagFunc type is an adapter to allow the use of ordinary
 // function as Tag mutator.
 type TagFunc func(context.Context, *ent.TagMutation) (ent.Value, error)

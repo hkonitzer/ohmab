@@ -45,6 +45,8 @@ const (
 	EdgeTags = "tags"
 	// EdgeUsers holds the string denoting the users edge name in mutations.
 	EdgeUsers = "users"
+	// EdgePublicUsers holds the string denoting the public_users edge name in mutations.
+	EdgePublicUsers = "public_users"
 	// Table holds the table name of the business in the database.
 	Table = "businesses"
 	// AddressesTable is the table that holds the addresses relation/edge.
@@ -64,6 +66,11 @@ const (
 	// UsersInverseTable is the table name for the User entity.
 	// It exists in this package in order to avoid circular dependency with the "user" package.
 	UsersInverseTable = "users"
+	// PublicUsersTable is the table that holds the public_users relation/edge. The primary key declared below.
+	PublicUsersTable = "business_public_users"
+	// PublicUsersInverseTable is the table name for the PublicUser entity.
+	// It exists in this package in order to avoid circular dependency with the "publicuser" package.
+	PublicUsersInverseTable = "public_users"
 )
 
 // Columns holds all SQL columns for business fields.
@@ -89,6 +96,9 @@ var (
 	// UsersPrimaryKey and UsersColumn2 are the table columns denoting the
 	// primary key for the users relation (M2M).
 	UsersPrimaryKey = []string{"business_id", "user_id"}
+	// PublicUsersPrimaryKey and PublicUsersColumn2 are the table columns denoting the
+	// primary key for the public_users relation (M2M).
+	PublicUsersPrimaryKey = []string{"business_id", "public_user_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -229,6 +239,20 @@ func ByUsers(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newUsersStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByPublicUsersCount orders the results by public_users count.
+func ByPublicUsersCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newPublicUsersStep(), opts...)
+	}
+}
+
+// ByPublicUsers orders the results by public_users terms.
+func ByPublicUsers(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newPublicUsersStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newAddressesStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -248,5 +272,12 @@ func newUsersStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(UsersInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2M, false, UsersTable, UsersPrimaryKey...),
+	)
+}
+func newPublicUsersStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(PublicUsersInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, false, PublicUsersTable, PublicUsersPrimaryKey...),
 	)
 }

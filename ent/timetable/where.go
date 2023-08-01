@@ -827,7 +827,7 @@ func HasUsersOnDuty() predicate.Timetable {
 }
 
 // HasUsersOnDutyWith applies the HasEdge predicate on the "users_on_duty" edge with a given conditions (other predicates).
-func HasUsersOnDutyWith(preds ...predicate.User) predicate.Timetable {
+func HasUsersOnDutyWith(preds ...predicate.PublicUser) predicate.Timetable {
 	return predicate.Timetable(func(s *sql.Selector) {
 		step := newUsersOnDutyStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {

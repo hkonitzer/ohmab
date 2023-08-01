@@ -61,9 +61,9 @@ const (
 	AddressColumn = "address_timetables"
 	// UsersOnDutyTable is the table that holds the users_on_duty relation/edge. The primary key declared below.
 	UsersOnDutyTable = "timetable_users_on_duty"
-	// UsersOnDutyInverseTable is the table name for the User entity.
-	// It exists in this package in order to avoid circular dependency with the "user" package.
-	UsersOnDutyInverseTable = "users"
+	// UsersOnDutyInverseTable is the table name for the PublicUser entity.
+	// It exists in this package in order to avoid circular dependency with the "publicuser" package.
+	UsersOnDutyInverseTable = "public_users"
 )
 
 // Columns holds all SQL columns for timetable fields.
@@ -93,7 +93,7 @@ var ForeignKeys = []string{
 var (
 	// UsersOnDutyPrimaryKey and UsersOnDutyColumn2 are the table columns denoting the
 	// primary key for the users_on_duty relation (M2M).
-	UsersOnDutyPrimaryKey = []string{"timetable_id", "user_id"}
+	UsersOnDutyPrimaryKey = []string{"timetable_id", "public_user_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).

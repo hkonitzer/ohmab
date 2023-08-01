@@ -58,14 +58,14 @@ type TimetableEdges struct {
 	// Address holds the value of the address edge.
 	Address *Address `json:"address,omitempty"`
 	// UsersOnDuty holds the value of the users_on_duty edge.
-	UsersOnDuty []*User `json:"users_on_duty,omitempty"`
+	UsersOnDuty []*PublicUser `json:"users_on_duty,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [2]bool
 	// totalCount holds the count of the edges above.
 	totalCount [2]map[string]int
 
-	namedUsersOnDuty map[string][]*User
+	namedUsersOnDuty map[string][]*PublicUser
 }
 
 // AddressOrErr returns the Address value or an error if the edge
@@ -83,7 +83,7 @@ func (e TimetableEdges) AddressOrErr() (*Address, error) {
 
 // UsersOnDutyOrErr returns the UsersOnDuty value or an error if the edge
 // was not loaded in eager-loading.
-func (e TimetableEdges) UsersOnDutyOrErr() ([]*User, error) {
+func (e TimetableEdges) UsersOnDutyOrErr() ([]*PublicUser, error) {
 	if e.loadedTypes[1] {
 		return e.UsersOnDuty, nil
 	}
@@ -232,7 +232,7 @@ func (t *Timetable) QueryAddress() *AddressQuery {
 }
 
 // QueryUsersOnDuty queries the "users_on_duty" edge of the Timetable entity.
-func (t *Timetable) QueryUsersOnDuty() *UserQuery {
+func (t *Timetable) QueryUsersOnDuty() *PublicUserQuery {
 	return NewTimetableClient(t.config).QueryUsersOnDuty(t)
 }
 
@@ -303,7 +303,7 @@ func (t *Timetable) String() string {
 
 // NamedUsersOnDuty returns the UsersOnDuty named value or an error if the edge was not
 // loaded in eager-loading with this name.
-func (t *Timetable) NamedUsersOnDuty(name string) ([]*User, error) {
+func (t *Timetable) NamedUsersOnDuty(name string) ([]*PublicUser, error) {
 	if t.Edges.namedUsersOnDuty == nil {
 		return nil, &NotLoadedError{edge: name}
 	}
@@ -314,12 +314,12 @@ func (t *Timetable) NamedUsersOnDuty(name string) ([]*User, error) {
 	return nodes, nil
 }
 
-func (t *Timetable) appendNamedUsersOnDuty(name string, edges ...*User) {
+func (t *Timetable) appendNamedUsersOnDuty(name string, edges ...*PublicUser) {
 	if t.Edges.namedUsersOnDuty == nil {
-		t.Edges.namedUsersOnDuty = make(map[string][]*User)
+		t.Edges.namedUsersOnDuty = make(map[string][]*PublicUser)
 	}
 	if len(edges) == 0 {
-		t.Edges.namedUsersOnDuty[name] = []*User{}
+		t.Edges.namedUsersOnDuty[name] = []*PublicUser{}
 	} else {
 		t.Edges.namedUsersOnDuty[name] = append(t.Edges.namedUsersOnDuty[name], edges...)
 	}

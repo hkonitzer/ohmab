@@ -15,6 +15,7 @@ import (
 	"github.com/hkonitzer/ohmab/ent/auditlog"
 	"github.com/hkonitzer/ohmab/ent/business"
 	"github.com/hkonitzer/ohmab/ent/content"
+	"github.com/hkonitzer/ohmab/ent/publicuser"
 	"github.com/hkonitzer/ohmab/ent/tag"
 	"github.com/hkonitzer/ohmab/ent/timetable"
 	"github.com/hkonitzer/ohmab/ent/user"
@@ -37,6 +38,9 @@ func (n *Business) IsNode() {}
 
 // IsNode implements the Node interface check for GQLGen.
 func (n *Content) IsNode() {}
+
+// IsNode implements the Node interface check for GQLGen.
+func (n *PublicUser) IsNode() {}
 
 // IsNode implements the Node interface check for GQLGen.
 func (n *Tag) IsNode() {}
@@ -145,6 +149,18 @@ func (c *Client) noder(ctx context.Context, table string, id uuid.UUID) (Noder, 
 		query := c.Content.Query().
 			Where(content.ID(id))
 		query, err := query.CollectFields(ctx, "Content")
+		if err != nil {
+			return nil, err
+		}
+		n, err := query.Only(ctx)
+		if err != nil {
+			return nil, err
+		}
+		return n, nil
+	case publicuser.Table:
+		query := c.PublicUser.Query().
+			Where(publicuser.ID(id))
+		query, err := query.CollectFields(ctx, "PublicUser")
 		if err != nil {
 			return nil, err
 		}
@@ -314,6 +330,22 @@ func (c *Client) noders(ctx context.Context, table string, ids []uuid.UUID) ([]N
 		query := c.Content.Query().
 			Where(content.IDIn(ids...))
 		query, err := query.CollectFields(ctx, "Content")
+		if err != nil {
+			return nil, err
+		}
+		nodes, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, node := range nodes {
+			for _, noder := range idmap[node.ID] {
+				*noder = node
+			}
+		}
+	case publicuser.Table:
+		query := c.PublicUser.Query().
+			Where(publicuser.IDIn(ids...))
+		query, err := query.CollectFields(ctx, "PublicUser")
 		if err != nil {
 			return nil, err
 		}

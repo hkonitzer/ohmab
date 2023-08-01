@@ -47,8 +47,6 @@ const (
 	EdgeBusinesses = "businesses"
 	// EdgeTags holds the string denoting the tags edge name in mutations.
 	EdgeTags = "tags"
-	// EdgeTimetable holds the string denoting the timetable edge name in mutations.
-	EdgeTimetable = "timetable"
 	// Table holds the table name of the user in the database.
 	Table = "users"
 	// BusinessesTable is the table that holds the businesses relation/edge. The primary key declared below.
@@ -61,11 +59,6 @@ const (
 	// TagsInverseTable is the table name for the Tag entity.
 	// It exists in this package in order to avoid circular dependency with the "tag" package.
 	TagsInverseTable = "tags"
-	// TimetableTable is the table that holds the timetable relation/edge. The primary key declared below.
-	TimetableTable = "timetable_users_on_duty"
-	// TimetableInverseTable is the table name for the Timetable entity.
-	// It exists in this package in order to avoid circular dependency with the "timetable" package.
-	TimetableInverseTable = "timetables"
 )
 
 // Columns holds all SQL columns for user fields.
@@ -93,9 +86,6 @@ var (
 	// TagsPrimaryKey and TagsColumn2 are the table columns denoting the
 	// primary key for the tags relation (M2M).
 	TagsPrimaryKey = []string{"user_id", "tag_id"}
-	// TimetablePrimaryKey and TimetableColumn2 are the table columns denoting the
-	// primary key for the timetable relation (M2M).
-	TimetablePrimaryKey = []string{"timetable_id", "user_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -114,7 +104,8 @@ func ValidColumn(column string) bool {
 //
 //	import _ "github.com/hkonitzer/ohmab/ent/runtime"
 var (
-	Hooks [2]ent.Hook
+	Hooks  [4]ent.Hook
+	Policy ent.Policy
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
@@ -235,20 +226,6 @@ func ByTags(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newTagsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
-
-// ByTimetableCount orders the results by timetable count.
-func ByTimetableCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newTimetableStep(), opts...)
-	}
-}
-
-// ByTimetable orders the results by timetable terms.
-func ByTimetable(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newTimetableStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
 func newBusinessesStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -261,12 +238,5 @@ func newTagsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(TagsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2M, false, TagsTable, TagsPrimaryKey...),
-	)
-}
-func newTimetableStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(TimetableInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2M, true, TimetableTable, TimetablePrimaryKey...),
 	)
 }

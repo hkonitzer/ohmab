@@ -20,6 +20,7 @@ import (
 	"github.com/hkonitzer/ohmab/ent/auditlog"
 	"github.com/hkonitzer/ohmab/ent/business"
 	"github.com/hkonitzer/ohmab/ent/content"
+	"github.com/hkonitzer/ohmab/ent/publicuser"
 	"github.com/hkonitzer/ohmab/ent/tag"
 	"github.com/hkonitzer/ohmab/ent/timetable"
 	"github.com/hkonitzer/ohmab/ent/user"
@@ -38,6 +39,8 @@ type Client struct {
 	Business *BusinessClient
 	// Content is the client for interacting with the Content builders.
 	Content *ContentClient
+	// PublicUser is the client for interacting with the PublicUser builders.
+	PublicUser *PublicUserClient
 	// Tag is the client for interacting with the Tag builders.
 	Tag *TagClient
 	// Timetable is the client for interacting with the Timetable builders.
@@ -61,6 +64,7 @@ func (c *Client) init() {
 	c.AuditLog = NewAuditLogClient(c.config)
 	c.Business = NewBusinessClient(c.config)
 	c.Content = NewContentClient(c.config)
+	c.PublicUser = NewPublicUserClient(c.config)
 	c.Tag = NewTagClient(c.config)
 	c.Timetable = NewTimetableClient(c.config)
 	c.User = NewUserClient(c.config)
@@ -144,15 +148,16 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:       ctx,
-		config:    cfg,
-		Address:   NewAddressClient(cfg),
-		AuditLog:  NewAuditLogClient(cfg),
-		Business:  NewBusinessClient(cfg),
-		Content:   NewContentClient(cfg),
-		Tag:       NewTagClient(cfg),
-		Timetable: NewTimetableClient(cfg),
-		User:      NewUserClient(cfg),
+		ctx:        ctx,
+		config:     cfg,
+		Address:    NewAddressClient(cfg),
+		AuditLog:   NewAuditLogClient(cfg),
+		Business:   NewBusinessClient(cfg),
+		Content:    NewContentClient(cfg),
+		PublicUser: NewPublicUserClient(cfg),
+		Tag:        NewTagClient(cfg),
+		Timetable:  NewTimetableClient(cfg),
+		User:       NewUserClient(cfg),
 	}, nil
 }
 
@@ -170,15 +175,16 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:       ctx,
-		config:    cfg,
-		Address:   NewAddressClient(cfg),
-		AuditLog:  NewAuditLogClient(cfg),
-		Business:  NewBusinessClient(cfg),
-		Content:   NewContentClient(cfg),
-		Tag:       NewTagClient(cfg),
-		Timetable: NewTimetableClient(cfg),
-		User:      NewUserClient(cfg),
+		ctx:        ctx,
+		config:     cfg,
+		Address:    NewAddressClient(cfg),
+		AuditLog:   NewAuditLogClient(cfg),
+		Business:   NewBusinessClient(cfg),
+		Content:    NewContentClient(cfg),
+		PublicUser: NewPublicUserClient(cfg),
+		Tag:        NewTagClient(cfg),
+		Timetable:  NewTimetableClient(cfg),
+		User:       NewUserClient(cfg),
 	}, nil
 }
 
@@ -208,7 +214,8 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Address, c.AuditLog, c.Business, c.Content, c.Tag, c.Timetable, c.User,
+		c.Address, c.AuditLog, c.Business, c.Content, c.PublicUser, c.Tag, c.Timetable,
+		c.User,
 	} {
 		n.Use(hooks...)
 	}
@@ -218,7 +225,8 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Address, c.AuditLog, c.Business, c.Content, c.Tag, c.Timetable, c.User,
+		c.Address, c.AuditLog, c.Business, c.Content, c.PublicUser, c.Tag, c.Timetable,
+		c.User,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -235,6 +243,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Business.mutate(ctx, m)
 	case *ContentMutation:
 		return c.Content.mutate(ctx, m)
+	case *PublicUserMutation:
+		return c.PublicUser.mutate(ctx, m)
 	case *TagMutation:
 		return c.Tag.mutate(ctx, m)
 	case *TimetableMutation:
@@ -656,6 +666,22 @@ func (c *BusinessClient) QueryUsers(b *Business) *UserQuery {
 	return query
 }
 
+// QueryPublicUsers queries the public_users edge of a Business.
+func (c *BusinessClient) QueryPublicUsers(b *Business) *PublicUserQuery {
+	query := (&PublicUserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := b.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(business.Table, business.FieldID, id),
+			sqlgraph.To(publicuser.Table, publicuser.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, business.PublicUsersTable, business.PublicUsersPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(b.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *BusinessClient) Hooks() []Hook {
 	hooks := c.hooks.Business
@@ -798,6 +824,157 @@ func (c *ContentClient) mutate(ctx context.Context, m *ContentMutation) (Value, 
 		return (&ContentDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Content mutation op: %q", m.Op())
+	}
+}
+
+// PublicUserClient is a client for the PublicUser schema.
+type PublicUserClient struct {
+	config
+}
+
+// NewPublicUserClient returns a client for the PublicUser from the given config.
+func NewPublicUserClient(c config) *PublicUserClient {
+	return &PublicUserClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `publicuser.Hooks(f(g(h())))`.
+func (c *PublicUserClient) Use(hooks ...Hook) {
+	c.hooks.PublicUser = append(c.hooks.PublicUser, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `publicuser.Intercept(f(g(h())))`.
+func (c *PublicUserClient) Intercept(interceptors ...Interceptor) {
+	c.inters.PublicUser = append(c.inters.PublicUser, interceptors...)
+}
+
+// Create returns a builder for creating a PublicUser entity.
+func (c *PublicUserClient) Create() *PublicUserCreate {
+	mutation := newPublicUserMutation(c.config, OpCreate)
+	return &PublicUserCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of PublicUser entities.
+func (c *PublicUserClient) CreateBulk(builders ...*PublicUserCreate) *PublicUserCreateBulk {
+	return &PublicUserCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for PublicUser.
+func (c *PublicUserClient) Update() *PublicUserUpdate {
+	mutation := newPublicUserMutation(c.config, OpUpdate)
+	return &PublicUserUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *PublicUserClient) UpdateOne(pu *PublicUser) *PublicUserUpdateOne {
+	mutation := newPublicUserMutation(c.config, OpUpdateOne, withPublicUser(pu))
+	return &PublicUserUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *PublicUserClient) UpdateOneID(id uuid.UUID) *PublicUserUpdateOne {
+	mutation := newPublicUserMutation(c.config, OpUpdateOne, withPublicUserID(id))
+	return &PublicUserUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for PublicUser.
+func (c *PublicUserClient) Delete() *PublicUserDelete {
+	mutation := newPublicUserMutation(c.config, OpDelete)
+	return &PublicUserDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *PublicUserClient) DeleteOne(pu *PublicUser) *PublicUserDeleteOne {
+	return c.DeleteOneID(pu.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *PublicUserClient) DeleteOneID(id uuid.UUID) *PublicUserDeleteOne {
+	builder := c.Delete().Where(publicuser.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &PublicUserDeleteOne{builder}
+}
+
+// Query returns a query builder for PublicUser.
+func (c *PublicUserClient) Query() *PublicUserQuery {
+	return &PublicUserQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypePublicUser},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a PublicUser entity by its id.
+func (c *PublicUserClient) Get(ctx context.Context, id uuid.UUID) (*PublicUser, error) {
+	return c.Query().Where(publicuser.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *PublicUserClient) GetX(ctx context.Context, id uuid.UUID) *PublicUser {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryBusinesses queries the businesses edge of a PublicUser.
+func (c *PublicUserClient) QueryBusinesses(pu *PublicUser) *BusinessQuery {
+	query := (&BusinessClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := pu.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(publicuser.Table, publicuser.FieldID, id),
+			sqlgraph.To(business.Table, business.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, publicuser.BusinessesTable, publicuser.BusinessesPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(pu.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryTimetable queries the timetable edge of a PublicUser.
+func (c *PublicUserClient) QueryTimetable(pu *PublicUser) *TimetableQuery {
+	query := (&TimetableClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := pu.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(publicuser.Table, publicuser.FieldID, id),
+			sqlgraph.To(timetable.Table, timetable.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, publicuser.TimetableTable, publicuser.TimetablePrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(pu.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *PublicUserClient) Hooks() []Hook {
+	hooks := c.hooks.PublicUser
+	return append(hooks[:len(hooks):len(hooks)], publicuser.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *PublicUserClient) Interceptors() []Interceptor {
+	return c.inters.PublicUser
+}
+
+func (c *PublicUserClient) mutate(ctx context.Context, m *PublicUserMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&PublicUserCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&PublicUserUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&PublicUserUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&PublicUserDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown PublicUser mutation op: %q", m.Op())
 	}
 }
 
@@ -1061,13 +1238,13 @@ func (c *TimetableClient) QueryAddress(t *Timetable) *AddressQuery {
 }
 
 // QueryUsersOnDuty queries the users_on_duty edge of a Timetable.
-func (c *TimetableClient) QueryUsersOnDuty(t *Timetable) *UserQuery {
-	query := (&UserClient{config: c.config}).Query()
+func (c *TimetableClient) QueryUsersOnDuty(t *Timetable) *PublicUserQuery {
+	query := (&PublicUserClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := t.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(timetable.Table, timetable.FieldID, id),
-			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.To(publicuser.Table, publicuser.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, timetable.UsersOnDutyTable, timetable.UsersOnDutyPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(t.driver.Dialect(), step)
@@ -1227,22 +1404,6 @@ func (c *UserClient) QueryTags(u *User) *TagQuery {
 	return query
 }
 
-// QueryTimetable queries the timetable edge of a User.
-func (c *UserClient) QueryTimetable(u *User) *TimetableQuery {
-	query := (&TimetableClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := u.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, id),
-			sqlgraph.To(timetable.Table, timetable.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, user.TimetableTable, user.TimetablePrimaryKey...),
-		)
-		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // Hooks returns the client hooks.
 func (c *UserClient) Hooks() []Hook {
 	hooks := c.hooks.User
@@ -1272,9 +1433,11 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Address, AuditLog, Business, Content, Tag, Timetable, User []ent.Hook
+		Address, AuditLog, Business, Content, PublicUser, Tag, Timetable,
+		User []ent.Hook
 	}
 	inters struct {
-		Address, AuditLog, Business, Content, Tag, Timetable, User []ent.Interceptor
+		Address, AuditLog, Business, Content, PublicUser, Tag, Timetable,
+		User []ent.Interceptor
 	}
 )

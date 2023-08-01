@@ -10,6 +10,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/hkonitzer/ohmab/ent/address"
 	"github.com/hkonitzer/ohmab/ent/business"
+	"github.com/hkonitzer/ohmab/ent/publicuser"
 	"github.com/hkonitzer/ohmab/ent/tag"
 	"github.com/hkonitzer/ohmab/ent/timetable"
 	"github.com/hkonitzer/ohmab/ent/user"
@@ -239,7 +240,7 @@ func (b *Business) Node(ctx context.Context) (node *Node, err error) {
 		ID:     b.ID,
 		Type:   "Business",
 		Fields: make([]*Field, 11),
-		Edges:  make([]*Edge, 3),
+		Edges:  make([]*Edge, 4),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(b.CreatedAt); err != nil {
@@ -360,6 +361,16 @@ func (b *Business) Node(ctx context.Context) (node *Node, err error) {
 	if err != nil {
 		return nil, err
 	}
+	node.Edges[3] = &Edge{
+		Type: "PublicUser",
+		Name: "public_users",
+	}
+	err = b.QueryPublicUsers().
+		Select(publicuser.FieldID).
+		Scan(ctx, &node.Edges[3].IDs)
+	if err != nil {
+		return nil, err
+	}
 	return node, nil
 }
 
@@ -451,6 +462,70 @@ func (c *Content) Node(ctx context.Context) (node *Node, err error) {
 		Type:  "time.Time",
 		Name:  "published_at",
 		Value: string(buf),
+	}
+	return node, nil
+}
+
+// Node implements Noder interface
+func (pu *PublicUser) Node(ctx context.Context) (node *Node, err error) {
+	node = &Node{
+		ID:     pu.ID,
+		Type:   "PublicUser",
+		Fields: make([]*Field, 4),
+		Edges:  make([]*Edge, 2),
+	}
+	var buf []byte
+	if buf, err = json.Marshal(pu.Surname); err != nil {
+		return nil, err
+	}
+	node.Fields[0] = &Field{
+		Type:  "string",
+		Name:  "surname",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(pu.Firstname); err != nil {
+		return nil, err
+	}
+	node.Fields[1] = &Field{
+		Type:  "string",
+		Name:  "firstname",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(pu.Title); err != nil {
+		return nil, err
+	}
+	node.Fields[2] = &Field{
+		Type:  "string",
+		Name:  "title",
+		Value: string(buf),
+	}
+	if buf, err = json.Marshal(pu.Email); err != nil {
+		return nil, err
+	}
+	node.Fields[3] = &Field{
+		Type:  "string",
+		Name:  "email",
+		Value: string(buf),
+	}
+	node.Edges[0] = &Edge{
+		Type: "Business",
+		Name: "businesses",
+	}
+	err = pu.QueryBusinesses().
+		Select(business.FieldID).
+		Scan(ctx, &node.Edges[0].IDs)
+	if err != nil {
+		return nil, err
+	}
+	node.Edges[1] = &Edge{
+		Type: "Timetable",
+		Name: "timetable",
+	}
+	err = pu.QueryTimetable().
+		Select(timetable.FieldID).
+		Scan(ctx, &node.Edges[1].IDs)
+	if err != nil {
+		return nil, err
 	}
 	return node, nil
 }
@@ -651,11 +726,11 @@ func (t *Timetable) Node(ctx context.Context) (node *Node, err error) {
 		return nil, err
 	}
 	node.Edges[1] = &Edge{
-		Type: "User",
+		Type: "PublicUser",
 		Name: "users_on_duty",
 	}
 	err = t.QueryUsersOnDuty().
-		Select(user.FieldID).
+		Select(publicuser.FieldID).
 		Scan(ctx, &node.Edges[1].IDs)
 	if err != nil {
 		return nil, err
@@ -669,7 +744,7 @@ func (u *User) Node(ctx context.Context) (node *Node, err error) {
 		ID:     u.ID,
 		Type:   "User",
 		Fields: make([]*Field, 13),
-		Edges:  make([]*Edge, 3),
+		Edges:  make([]*Edge, 2),
 	}
 	var buf []byte
 	if buf, err = json.Marshal(u.CreatedAt); err != nil {
@@ -793,16 +868,6 @@ func (u *User) Node(ctx context.Context) (node *Node, err error) {
 	err = u.QueryTags().
 		Select(tag.FieldID).
 		Scan(ctx, &node.Edges[1].IDs)
-	if err != nil {
-		return nil, err
-	}
-	node.Edges[2] = &Edge{
-		Type: "Timetable",
-		Name: "timetable",
-	}
-	err = u.QueryTimetable().
-		Select(timetable.FieldID).
-		Scan(ctx, &node.Edges[2].IDs)
 	if err != nil {
 		return nil, err
 	}

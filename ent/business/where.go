@@ -826,6 +826,29 @@ func HasUsersWith(preds ...predicate.User) predicate.Business {
 	})
 }
 
+// HasPublicUsers applies the HasEdge predicate on the "public_users" edge.
+func HasPublicUsers() predicate.Business {
+	return predicate.Business(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, PublicUsersTable, PublicUsersPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasPublicUsersWith applies the HasEdge predicate on the "public_users" edge with a given conditions (other predicates).
+func HasPublicUsersWith(preds ...predicate.PublicUser) predicate.Business {
+	return predicate.Business(func(s *sql.Selector) {
+		step := newPublicUsersStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Business) predicate.Business {
 	return predicate.Business(func(s *sql.Selector) {

@@ -17,8 +17,8 @@ import (
 	"github.com/hkonitzer/ohmab/ent/auditlog"
 	"github.com/hkonitzer/ohmab/ent/business"
 	"github.com/hkonitzer/ohmab/ent/content"
+	"github.com/hkonitzer/ohmab/ent/operator"
 	"github.com/hkonitzer/ohmab/ent/predicate"
-	"github.com/hkonitzer/ohmab/ent/publicuser"
 	"github.com/hkonitzer/ohmab/ent/tag"
 	"github.com/hkonitzer/ohmab/ent/timetable"
 	"github.com/hkonitzer/ohmab/ent/user"
@@ -33,14 +33,14 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
-	TypeAddress    = "Address"
-	TypeAuditLog   = "AuditLog"
-	TypeBusiness   = "Business"
-	TypeContent    = "Content"
-	TypePublicUser = "PublicUser"
-	TypeTag        = "Tag"
-	TypeTimetable  = "Timetable"
-	TypeUser       = "User"
+	TypeAddress   = "Address"
+	TypeAuditLog  = "AuditLog"
+	TypeBusiness  = "Business"
+	TypeContent   = "Content"
+	TypeOperator  = "Operator"
+	TypeTag       = "Tag"
+	TypeTimetable = "Timetable"
+	TypeUser      = "User"
 )
 
 // AddressMutation represents an operation that mutates the Address nodes in the graph.
@@ -1995,36 +1995,36 @@ func (m *AuditLogMutation) ResetEdge(name string) error {
 // BusinessMutation represents an operation that mutates the Business nodes in the graph.
 type BusinessMutation struct {
 	config
-	op                  Op
-	typ                 string
-	id                  *uuid.UUID
-	created_at          *time.Time
-	updated_at          *time.Time
-	deleted_at          *time.Time
-	name1               *string
-	name2               *string
-	alias               *string
-	telephone           *string
-	email               *string
-	website             *string
-	comment             *string
-	active              *bool
-	clearedFields       map[string]struct{}
-	addresses           map[uuid.UUID]struct{}
-	removedaddresses    map[uuid.UUID]struct{}
-	clearedaddresses    bool
-	tags                map[uuid.UUID]struct{}
-	removedtags         map[uuid.UUID]struct{}
-	clearedtags         bool
-	users               map[uuid.UUID]struct{}
-	removedusers        map[uuid.UUID]struct{}
-	clearedusers        bool
-	public_users        map[uuid.UUID]struct{}
-	removedpublic_users map[uuid.UUID]struct{}
-	clearedpublic_users bool
-	done                bool
-	oldValue            func(context.Context) (*Business, error)
-	predicates          []predicate.Business
+	op               Op
+	typ              string
+	id               *uuid.UUID
+	created_at       *time.Time
+	updated_at       *time.Time
+	deleted_at       *time.Time
+	name1            *string
+	name2            *string
+	alias            *string
+	telephone        *string
+	email            *string
+	website          *string
+	comment          *string
+	active           *bool
+	clearedFields    map[string]struct{}
+	addresses        map[uuid.UUID]struct{}
+	removedaddresses map[uuid.UUID]struct{}
+	clearedaddresses bool
+	tags             map[uuid.UUID]struct{}
+	removedtags      map[uuid.UUID]struct{}
+	clearedtags      bool
+	users            map[uuid.UUID]struct{}
+	removedusers     map[uuid.UUID]struct{}
+	clearedusers     bool
+	operators        map[uuid.UUID]struct{}
+	removedoperators map[uuid.UUID]struct{}
+	clearedoperators bool
+	done             bool
+	oldValue         func(context.Context) (*Business, error)
+	predicates       []predicate.Business
 }
 
 var _ ent.Mutation = (*BusinessMutation)(nil)
@@ -2767,58 +2767,58 @@ func (m *BusinessMutation) ResetUsers() {
 	m.removedusers = nil
 }
 
-// AddPublicUserIDs adds the "public_users" edge to the PublicUser entity by ids.
-func (m *BusinessMutation) AddPublicUserIDs(ids ...uuid.UUID) {
-	if m.public_users == nil {
-		m.public_users = make(map[uuid.UUID]struct{})
+// AddOperatorIDs adds the "operators" edge to the Operator entity by ids.
+func (m *BusinessMutation) AddOperatorIDs(ids ...uuid.UUID) {
+	if m.operators == nil {
+		m.operators = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
-		m.public_users[ids[i]] = struct{}{}
+		m.operators[ids[i]] = struct{}{}
 	}
 }
 
-// ClearPublicUsers clears the "public_users" edge to the PublicUser entity.
-func (m *BusinessMutation) ClearPublicUsers() {
-	m.clearedpublic_users = true
+// ClearOperators clears the "operators" edge to the Operator entity.
+func (m *BusinessMutation) ClearOperators() {
+	m.clearedoperators = true
 }
 
-// PublicUsersCleared reports if the "public_users" edge to the PublicUser entity was cleared.
-func (m *BusinessMutation) PublicUsersCleared() bool {
-	return m.clearedpublic_users
+// OperatorsCleared reports if the "operators" edge to the Operator entity was cleared.
+func (m *BusinessMutation) OperatorsCleared() bool {
+	return m.clearedoperators
 }
 
-// RemovePublicUserIDs removes the "public_users" edge to the PublicUser entity by IDs.
-func (m *BusinessMutation) RemovePublicUserIDs(ids ...uuid.UUID) {
-	if m.removedpublic_users == nil {
-		m.removedpublic_users = make(map[uuid.UUID]struct{})
+// RemoveOperatorIDs removes the "operators" edge to the Operator entity by IDs.
+func (m *BusinessMutation) RemoveOperatorIDs(ids ...uuid.UUID) {
+	if m.removedoperators == nil {
+		m.removedoperators = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
-		delete(m.public_users, ids[i])
-		m.removedpublic_users[ids[i]] = struct{}{}
+		delete(m.operators, ids[i])
+		m.removedoperators[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedPublicUsers returns the removed IDs of the "public_users" edge to the PublicUser entity.
-func (m *BusinessMutation) RemovedPublicUsersIDs() (ids []uuid.UUID) {
-	for id := range m.removedpublic_users {
+// RemovedOperators returns the removed IDs of the "operators" edge to the Operator entity.
+func (m *BusinessMutation) RemovedOperatorsIDs() (ids []uuid.UUID) {
+	for id := range m.removedoperators {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// PublicUsersIDs returns the "public_users" edge IDs in the mutation.
-func (m *BusinessMutation) PublicUsersIDs() (ids []uuid.UUID) {
-	for id := range m.public_users {
+// OperatorsIDs returns the "operators" edge IDs in the mutation.
+func (m *BusinessMutation) OperatorsIDs() (ids []uuid.UUID) {
+	for id := range m.operators {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetPublicUsers resets all changes to the "public_users" edge.
-func (m *BusinessMutation) ResetPublicUsers() {
-	m.public_users = nil
-	m.clearedpublic_users = false
-	m.removedpublic_users = nil
+// ResetOperators resets all changes to the "operators" edge.
+func (m *BusinessMutation) ResetOperators() {
+	m.operators = nil
+	m.clearedoperators = false
+	m.removedoperators = nil
 }
 
 // Where appends a list predicates to the BusinessMutation builder.
@@ -3173,8 +3173,8 @@ func (m *BusinessMutation) AddedEdges() []string {
 	if m.users != nil {
 		edges = append(edges, business.EdgeUsers)
 	}
-	if m.public_users != nil {
-		edges = append(edges, business.EdgePublicUsers)
+	if m.operators != nil {
+		edges = append(edges, business.EdgeOperators)
 	}
 	return edges
 }
@@ -3201,9 +3201,9 @@ func (m *BusinessMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case business.EdgePublicUsers:
-		ids := make([]ent.Value, 0, len(m.public_users))
-		for id := range m.public_users {
+	case business.EdgeOperators:
+		ids := make([]ent.Value, 0, len(m.operators))
+		for id := range m.operators {
 			ids = append(ids, id)
 		}
 		return ids
@@ -3223,8 +3223,8 @@ func (m *BusinessMutation) RemovedEdges() []string {
 	if m.removedusers != nil {
 		edges = append(edges, business.EdgeUsers)
 	}
-	if m.removedpublic_users != nil {
-		edges = append(edges, business.EdgePublicUsers)
+	if m.removedoperators != nil {
+		edges = append(edges, business.EdgeOperators)
 	}
 	return edges
 }
@@ -3251,9 +3251,9 @@ func (m *BusinessMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case business.EdgePublicUsers:
-		ids := make([]ent.Value, 0, len(m.removedpublic_users))
-		for id := range m.removedpublic_users {
+	case business.EdgeOperators:
+		ids := make([]ent.Value, 0, len(m.removedoperators))
+		for id := range m.removedoperators {
 			ids = append(ids, id)
 		}
 		return ids
@@ -3273,8 +3273,8 @@ func (m *BusinessMutation) ClearedEdges() []string {
 	if m.clearedusers {
 		edges = append(edges, business.EdgeUsers)
 	}
-	if m.clearedpublic_users {
-		edges = append(edges, business.EdgePublicUsers)
+	if m.clearedoperators {
+		edges = append(edges, business.EdgeOperators)
 	}
 	return edges
 }
@@ -3289,8 +3289,8 @@ func (m *BusinessMutation) EdgeCleared(name string) bool {
 		return m.clearedtags
 	case business.EdgeUsers:
 		return m.clearedusers
-	case business.EdgePublicUsers:
-		return m.clearedpublic_users
+	case business.EdgeOperators:
+		return m.clearedoperators
 	}
 	return false
 }
@@ -3316,8 +3316,8 @@ func (m *BusinessMutation) ResetEdge(name string) error {
 	case business.EdgeUsers:
 		m.ResetUsers()
 		return nil
-	case business.EdgePublicUsers:
-		m.ResetPublicUsers()
+	case business.EdgeOperators:
+		m.ResetOperators()
 		return nil
 	}
 	return fmt.Errorf("unknown Business edge %s", name)
@@ -4182,8 +4182,8 @@ func (m *ContentMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown Content edge %s", name)
 }
 
-// PublicUserMutation represents an operation that mutates the PublicUser nodes in the graph.
-type PublicUserMutation struct {
+// OperatorMutation represents an operation that mutates the Operator nodes in the graph.
+type OperatorMutation struct {
 	config
 	op                Op
 	typ               string
@@ -4200,21 +4200,21 @@ type PublicUserMutation struct {
 	removedtimetable  map[uuid.UUID]struct{}
 	clearedtimetable  bool
 	done              bool
-	oldValue          func(context.Context) (*PublicUser, error)
-	predicates        []predicate.PublicUser
+	oldValue          func(context.Context) (*Operator, error)
+	predicates        []predicate.Operator
 }
 
-var _ ent.Mutation = (*PublicUserMutation)(nil)
+var _ ent.Mutation = (*OperatorMutation)(nil)
 
-// publicuserOption allows management of the mutation configuration using functional options.
-type publicuserOption func(*PublicUserMutation)
+// operatorOption allows management of the mutation configuration using functional options.
+type operatorOption func(*OperatorMutation)
 
-// newPublicUserMutation creates new mutation for the PublicUser entity.
-func newPublicUserMutation(c config, op Op, opts ...publicuserOption) *PublicUserMutation {
-	m := &PublicUserMutation{
+// newOperatorMutation creates new mutation for the Operator entity.
+func newOperatorMutation(c config, op Op, opts ...operatorOption) *OperatorMutation {
+	m := &OperatorMutation{
 		config:        c,
 		op:            op,
-		typ:           TypePublicUser,
+		typ:           TypeOperator,
 		clearedFields: make(map[string]struct{}),
 	}
 	for _, opt := range opts {
@@ -4223,20 +4223,20 @@ func newPublicUserMutation(c config, op Op, opts ...publicuserOption) *PublicUse
 	return m
 }
 
-// withPublicUserID sets the ID field of the mutation.
-func withPublicUserID(id uuid.UUID) publicuserOption {
-	return func(m *PublicUserMutation) {
+// withOperatorID sets the ID field of the mutation.
+func withOperatorID(id uuid.UUID) operatorOption {
+	return func(m *OperatorMutation) {
 		var (
 			err   error
 			once  sync.Once
-			value *PublicUser
+			value *Operator
 		)
-		m.oldValue = func(ctx context.Context) (*PublicUser, error) {
+		m.oldValue = func(ctx context.Context) (*Operator, error) {
 			once.Do(func() {
 				if m.done {
 					err = errors.New("querying old values post mutation is not allowed")
 				} else {
-					value, err = m.Client().PublicUser.Get(ctx, id)
+					value, err = m.Client().Operator.Get(ctx, id)
 				}
 			})
 			return value, err
@@ -4245,10 +4245,10 @@ func withPublicUserID(id uuid.UUID) publicuserOption {
 	}
 }
 
-// withPublicUser sets the old PublicUser of the mutation.
-func withPublicUser(node *PublicUser) publicuserOption {
-	return func(m *PublicUserMutation) {
-		m.oldValue = func(context.Context) (*PublicUser, error) {
+// withOperator sets the old Operator of the mutation.
+func withOperator(node *Operator) operatorOption {
+	return func(m *OperatorMutation) {
+		m.oldValue = func(context.Context) (*Operator, error) {
 			return node, nil
 		}
 		m.id = &node.ID
@@ -4257,7 +4257,7 @@ func withPublicUser(node *PublicUser) publicuserOption {
 
 // Client returns a new `ent.Client` from the mutation. If the mutation was
 // executed in a transaction (ent.Tx), a transactional client is returned.
-func (m PublicUserMutation) Client() *Client {
+func (m OperatorMutation) Client() *Client {
 	client := &Client{config: m.config}
 	client.init()
 	return client
@@ -4265,7 +4265,7 @@ func (m PublicUserMutation) Client() *Client {
 
 // Tx returns an `ent.Tx` for mutations that were executed in transactions;
 // it returns an error otherwise.
-func (m PublicUserMutation) Tx() (*Tx, error) {
+func (m OperatorMutation) Tx() (*Tx, error) {
 	if _, ok := m.driver.(*txDriver); !ok {
 		return nil, errors.New("ent: mutation is not running in a transaction")
 	}
@@ -4275,14 +4275,14 @@ func (m PublicUserMutation) Tx() (*Tx, error) {
 }
 
 // SetID sets the value of the id field. Note that this
-// operation is only accepted on creation of PublicUser entities.
-func (m *PublicUserMutation) SetID(id uuid.UUID) {
+// operation is only accepted on creation of Operator entities.
+func (m *OperatorMutation) SetID(id uuid.UUID) {
 	m.id = &id
 }
 
 // ID returns the ID value in the mutation. Note that the ID is only available
 // if it was provided to the builder or after it was returned from the database.
-func (m *PublicUserMutation) ID() (id uuid.UUID, exists bool) {
+func (m *OperatorMutation) ID() (id uuid.UUID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -4293,7 +4293,7 @@ func (m *PublicUserMutation) ID() (id uuid.UUID, exists bool) {
 // That means, if the mutation is applied within a transaction with an isolation level such
 // as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
 // or updated by the mutation.
-func (m *PublicUserMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+func (m *OperatorMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 	switch {
 	case m.op.Is(OpUpdateOne | OpDeleteOne):
 		id, exists := m.ID()
@@ -4302,19 +4302,19 @@ func (m *PublicUserMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 		}
 		fallthrough
 	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().PublicUser.Query().Where(m.predicates...).IDs(ctx)
+		return m.Client().Operator.Query().Where(m.predicates...).IDs(ctx)
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
 }
 
 // SetSurname sets the "surname" field.
-func (m *PublicUserMutation) SetSurname(s string) {
+func (m *OperatorMutation) SetSurname(s string) {
 	m.surname = &s
 }
 
 // Surname returns the value of the "surname" field in the mutation.
-func (m *PublicUserMutation) Surname() (r string, exists bool) {
+func (m *OperatorMutation) Surname() (r string, exists bool) {
 	v := m.surname
 	if v == nil {
 		return
@@ -4322,10 +4322,10 @@ func (m *PublicUserMutation) Surname() (r string, exists bool) {
 	return *v, true
 }
 
-// OldSurname returns the old "surname" field's value of the PublicUser entity.
-// If the PublicUser object wasn't provided to the builder, the object is fetched from the database.
+// OldSurname returns the old "surname" field's value of the Operator entity.
+// If the Operator object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PublicUserMutation) OldSurname(ctx context.Context) (v string, err error) {
+func (m *OperatorMutation) OldSurname(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldSurname is only allowed on UpdateOne operations")
 	}
@@ -4340,17 +4340,17 @@ func (m *PublicUserMutation) OldSurname(ctx context.Context) (v string, err erro
 }
 
 // ResetSurname resets all changes to the "surname" field.
-func (m *PublicUserMutation) ResetSurname() {
+func (m *OperatorMutation) ResetSurname() {
 	m.surname = nil
 }
 
 // SetFirstname sets the "firstname" field.
-func (m *PublicUserMutation) SetFirstname(s string) {
+func (m *OperatorMutation) SetFirstname(s string) {
 	m.firstname = &s
 }
 
 // Firstname returns the value of the "firstname" field in the mutation.
-func (m *PublicUserMutation) Firstname() (r string, exists bool) {
+func (m *OperatorMutation) Firstname() (r string, exists bool) {
 	v := m.firstname
 	if v == nil {
 		return
@@ -4358,10 +4358,10 @@ func (m *PublicUserMutation) Firstname() (r string, exists bool) {
 	return *v, true
 }
 
-// OldFirstname returns the old "firstname" field's value of the PublicUser entity.
-// If the PublicUser object wasn't provided to the builder, the object is fetched from the database.
+// OldFirstname returns the old "firstname" field's value of the Operator entity.
+// If the Operator object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PublicUserMutation) OldFirstname(ctx context.Context) (v string, err error) {
+func (m *OperatorMutation) OldFirstname(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldFirstname is only allowed on UpdateOne operations")
 	}
@@ -4376,17 +4376,17 @@ func (m *PublicUserMutation) OldFirstname(ctx context.Context) (v string, err er
 }
 
 // ResetFirstname resets all changes to the "firstname" field.
-func (m *PublicUserMutation) ResetFirstname() {
+func (m *OperatorMutation) ResetFirstname() {
 	m.firstname = nil
 }
 
 // SetTitle sets the "title" field.
-func (m *PublicUserMutation) SetTitle(s string) {
+func (m *OperatorMutation) SetTitle(s string) {
 	m.title = &s
 }
 
 // Title returns the value of the "title" field in the mutation.
-func (m *PublicUserMutation) Title() (r string, exists bool) {
+func (m *OperatorMutation) Title() (r string, exists bool) {
 	v := m.title
 	if v == nil {
 		return
@@ -4394,10 +4394,10 @@ func (m *PublicUserMutation) Title() (r string, exists bool) {
 	return *v, true
 }
 
-// OldTitle returns the old "title" field's value of the PublicUser entity.
-// If the PublicUser object wasn't provided to the builder, the object is fetched from the database.
+// OldTitle returns the old "title" field's value of the Operator entity.
+// If the Operator object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PublicUserMutation) OldTitle(ctx context.Context) (v string, err error) {
+func (m *OperatorMutation) OldTitle(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldTitle is only allowed on UpdateOne operations")
 	}
@@ -4412,30 +4412,30 @@ func (m *PublicUserMutation) OldTitle(ctx context.Context) (v string, err error)
 }
 
 // ClearTitle clears the value of the "title" field.
-func (m *PublicUserMutation) ClearTitle() {
+func (m *OperatorMutation) ClearTitle() {
 	m.title = nil
-	m.clearedFields[publicuser.FieldTitle] = struct{}{}
+	m.clearedFields[operator.FieldTitle] = struct{}{}
 }
 
 // TitleCleared returns if the "title" field was cleared in this mutation.
-func (m *PublicUserMutation) TitleCleared() bool {
-	_, ok := m.clearedFields[publicuser.FieldTitle]
+func (m *OperatorMutation) TitleCleared() bool {
+	_, ok := m.clearedFields[operator.FieldTitle]
 	return ok
 }
 
 // ResetTitle resets all changes to the "title" field.
-func (m *PublicUserMutation) ResetTitle() {
+func (m *OperatorMutation) ResetTitle() {
 	m.title = nil
-	delete(m.clearedFields, publicuser.FieldTitle)
+	delete(m.clearedFields, operator.FieldTitle)
 }
 
 // SetEmail sets the "email" field.
-func (m *PublicUserMutation) SetEmail(s string) {
+func (m *OperatorMutation) SetEmail(s string) {
 	m.email = &s
 }
 
 // Email returns the value of the "email" field in the mutation.
-func (m *PublicUserMutation) Email() (r string, exists bool) {
+func (m *OperatorMutation) Email() (r string, exists bool) {
 	v := m.email
 	if v == nil {
 		return
@@ -4443,10 +4443,10 @@ func (m *PublicUserMutation) Email() (r string, exists bool) {
 	return *v, true
 }
 
-// OldEmail returns the old "email" field's value of the PublicUser entity.
-// If the PublicUser object wasn't provided to the builder, the object is fetched from the database.
+// OldEmail returns the old "email" field's value of the Operator entity.
+// If the Operator object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *PublicUserMutation) OldEmail(ctx context.Context) (v string, err error) {
+func (m *OperatorMutation) OldEmail(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldEmail is only allowed on UpdateOne operations")
 	}
@@ -4461,12 +4461,12 @@ func (m *PublicUserMutation) OldEmail(ctx context.Context) (v string, err error)
 }
 
 // ResetEmail resets all changes to the "email" field.
-func (m *PublicUserMutation) ResetEmail() {
+func (m *OperatorMutation) ResetEmail() {
 	m.email = nil
 }
 
 // AddBusinessIDs adds the "businesses" edge to the Business entity by ids.
-func (m *PublicUserMutation) AddBusinessIDs(ids ...uuid.UUID) {
+func (m *OperatorMutation) AddBusinessIDs(ids ...uuid.UUID) {
 	if m.businesses == nil {
 		m.businesses = make(map[uuid.UUID]struct{})
 	}
@@ -4476,17 +4476,17 @@ func (m *PublicUserMutation) AddBusinessIDs(ids ...uuid.UUID) {
 }
 
 // ClearBusinesses clears the "businesses" edge to the Business entity.
-func (m *PublicUserMutation) ClearBusinesses() {
+func (m *OperatorMutation) ClearBusinesses() {
 	m.clearedbusinesses = true
 }
 
 // BusinessesCleared reports if the "businesses" edge to the Business entity was cleared.
-func (m *PublicUserMutation) BusinessesCleared() bool {
+func (m *OperatorMutation) BusinessesCleared() bool {
 	return m.clearedbusinesses
 }
 
 // RemoveBusinessIDs removes the "businesses" edge to the Business entity by IDs.
-func (m *PublicUserMutation) RemoveBusinessIDs(ids ...uuid.UUID) {
+func (m *OperatorMutation) RemoveBusinessIDs(ids ...uuid.UUID) {
 	if m.removedbusinesses == nil {
 		m.removedbusinesses = make(map[uuid.UUID]struct{})
 	}
@@ -4497,7 +4497,7 @@ func (m *PublicUserMutation) RemoveBusinessIDs(ids ...uuid.UUID) {
 }
 
 // RemovedBusinesses returns the removed IDs of the "businesses" edge to the Business entity.
-func (m *PublicUserMutation) RemovedBusinessesIDs() (ids []uuid.UUID) {
+func (m *OperatorMutation) RemovedBusinessesIDs() (ids []uuid.UUID) {
 	for id := range m.removedbusinesses {
 		ids = append(ids, id)
 	}
@@ -4505,7 +4505,7 @@ func (m *PublicUserMutation) RemovedBusinessesIDs() (ids []uuid.UUID) {
 }
 
 // BusinessesIDs returns the "businesses" edge IDs in the mutation.
-func (m *PublicUserMutation) BusinessesIDs() (ids []uuid.UUID) {
+func (m *OperatorMutation) BusinessesIDs() (ids []uuid.UUID) {
 	for id := range m.businesses {
 		ids = append(ids, id)
 	}
@@ -4513,14 +4513,14 @@ func (m *PublicUserMutation) BusinessesIDs() (ids []uuid.UUID) {
 }
 
 // ResetBusinesses resets all changes to the "businesses" edge.
-func (m *PublicUserMutation) ResetBusinesses() {
+func (m *OperatorMutation) ResetBusinesses() {
 	m.businesses = nil
 	m.clearedbusinesses = false
 	m.removedbusinesses = nil
 }
 
 // AddTimetableIDs adds the "timetable" edge to the Timetable entity by ids.
-func (m *PublicUserMutation) AddTimetableIDs(ids ...uuid.UUID) {
+func (m *OperatorMutation) AddTimetableIDs(ids ...uuid.UUID) {
 	if m.timetable == nil {
 		m.timetable = make(map[uuid.UUID]struct{})
 	}
@@ -4530,17 +4530,17 @@ func (m *PublicUserMutation) AddTimetableIDs(ids ...uuid.UUID) {
 }
 
 // ClearTimetable clears the "timetable" edge to the Timetable entity.
-func (m *PublicUserMutation) ClearTimetable() {
+func (m *OperatorMutation) ClearTimetable() {
 	m.clearedtimetable = true
 }
 
 // TimetableCleared reports if the "timetable" edge to the Timetable entity was cleared.
-func (m *PublicUserMutation) TimetableCleared() bool {
+func (m *OperatorMutation) TimetableCleared() bool {
 	return m.clearedtimetable
 }
 
 // RemoveTimetableIDs removes the "timetable" edge to the Timetable entity by IDs.
-func (m *PublicUserMutation) RemoveTimetableIDs(ids ...uuid.UUID) {
+func (m *OperatorMutation) RemoveTimetableIDs(ids ...uuid.UUID) {
 	if m.removedtimetable == nil {
 		m.removedtimetable = make(map[uuid.UUID]struct{})
 	}
@@ -4551,7 +4551,7 @@ func (m *PublicUserMutation) RemoveTimetableIDs(ids ...uuid.UUID) {
 }
 
 // RemovedTimetable returns the removed IDs of the "timetable" edge to the Timetable entity.
-func (m *PublicUserMutation) RemovedTimetableIDs() (ids []uuid.UUID) {
+func (m *OperatorMutation) RemovedTimetableIDs() (ids []uuid.UUID) {
 	for id := range m.removedtimetable {
 		ids = append(ids, id)
 	}
@@ -4559,7 +4559,7 @@ func (m *PublicUserMutation) RemovedTimetableIDs() (ids []uuid.UUID) {
 }
 
 // TimetableIDs returns the "timetable" edge IDs in the mutation.
-func (m *PublicUserMutation) TimetableIDs() (ids []uuid.UUID) {
+func (m *OperatorMutation) TimetableIDs() (ids []uuid.UUID) {
 	for id := range m.timetable {
 		ids = append(ids, id)
 	}
@@ -4567,21 +4567,21 @@ func (m *PublicUserMutation) TimetableIDs() (ids []uuid.UUID) {
 }
 
 // ResetTimetable resets all changes to the "timetable" edge.
-func (m *PublicUserMutation) ResetTimetable() {
+func (m *OperatorMutation) ResetTimetable() {
 	m.timetable = nil
 	m.clearedtimetable = false
 	m.removedtimetable = nil
 }
 
-// Where appends a list predicates to the PublicUserMutation builder.
-func (m *PublicUserMutation) Where(ps ...predicate.PublicUser) {
+// Where appends a list predicates to the OperatorMutation builder.
+func (m *OperatorMutation) Where(ps ...predicate.Operator) {
 	m.predicates = append(m.predicates, ps...)
 }
 
-// WhereP appends storage-level predicates to the PublicUserMutation builder. Using this method,
+// WhereP appends storage-level predicates to the OperatorMutation builder. Using this method,
 // users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *PublicUserMutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.PublicUser, len(ps))
+func (m *OperatorMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.Operator, len(ps))
 	for i := range ps {
 		p[i] = ps[i]
 	}
@@ -4589,36 +4589,36 @@ func (m *PublicUserMutation) WhereP(ps ...func(*sql.Selector)) {
 }
 
 // Op returns the operation name.
-func (m *PublicUserMutation) Op() Op {
+func (m *OperatorMutation) Op() Op {
 	return m.op
 }
 
 // SetOp allows setting the mutation operation.
-func (m *PublicUserMutation) SetOp(op Op) {
+func (m *OperatorMutation) SetOp(op Op) {
 	m.op = op
 }
 
-// Type returns the node type of this mutation (PublicUser).
-func (m *PublicUserMutation) Type() string {
+// Type returns the node type of this mutation (Operator).
+func (m *OperatorMutation) Type() string {
 	return m.typ
 }
 
 // Fields returns all fields that were changed during this mutation. Note that in
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
-func (m *PublicUserMutation) Fields() []string {
+func (m *OperatorMutation) Fields() []string {
 	fields := make([]string, 0, 4)
 	if m.surname != nil {
-		fields = append(fields, publicuser.FieldSurname)
+		fields = append(fields, operator.FieldSurname)
 	}
 	if m.firstname != nil {
-		fields = append(fields, publicuser.FieldFirstname)
+		fields = append(fields, operator.FieldFirstname)
 	}
 	if m.title != nil {
-		fields = append(fields, publicuser.FieldTitle)
+		fields = append(fields, operator.FieldTitle)
 	}
 	if m.email != nil {
-		fields = append(fields, publicuser.FieldEmail)
+		fields = append(fields, operator.FieldEmail)
 	}
 	return fields
 }
@@ -4626,15 +4626,15 @@ func (m *PublicUserMutation) Fields() []string {
 // Field returns the value of a field with the given name. The second boolean
 // return value indicates that this field was not set, or was not defined in the
 // schema.
-func (m *PublicUserMutation) Field(name string) (ent.Value, bool) {
+func (m *OperatorMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case publicuser.FieldSurname:
+	case operator.FieldSurname:
 		return m.Surname()
-	case publicuser.FieldFirstname:
+	case operator.FieldFirstname:
 		return m.Firstname()
-	case publicuser.FieldTitle:
+	case operator.FieldTitle:
 		return m.Title()
-	case publicuser.FieldEmail:
+	case operator.FieldEmail:
 		return m.Email()
 	}
 	return nil, false
@@ -4643,47 +4643,47 @@ func (m *PublicUserMutation) Field(name string) (ent.Value, bool) {
 // OldField returns the old value of the field from the database. An error is
 // returned if the mutation operation is not UpdateOne, or the query to the
 // database failed.
-func (m *PublicUserMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+func (m *OperatorMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case publicuser.FieldSurname:
+	case operator.FieldSurname:
 		return m.OldSurname(ctx)
-	case publicuser.FieldFirstname:
+	case operator.FieldFirstname:
 		return m.OldFirstname(ctx)
-	case publicuser.FieldTitle:
+	case operator.FieldTitle:
 		return m.OldTitle(ctx)
-	case publicuser.FieldEmail:
+	case operator.FieldEmail:
 		return m.OldEmail(ctx)
 	}
-	return nil, fmt.Errorf("unknown PublicUser field %s", name)
+	return nil, fmt.Errorf("unknown Operator field %s", name)
 }
 
 // SetField sets the value of a field with the given name. It returns an error if
 // the field is not defined in the schema, or if the type mismatched the field
 // type.
-func (m *PublicUserMutation) SetField(name string, value ent.Value) error {
+func (m *OperatorMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case publicuser.FieldSurname:
+	case operator.FieldSurname:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetSurname(v)
 		return nil
-	case publicuser.FieldFirstname:
+	case operator.FieldFirstname:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetFirstname(v)
 		return nil
-	case publicuser.FieldTitle:
+	case operator.FieldTitle:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetTitle(v)
 		return nil
-	case publicuser.FieldEmail:
+	case operator.FieldEmail:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
@@ -4691,102 +4691,102 @@ func (m *PublicUserMutation) SetField(name string, value ent.Value) error {
 		m.SetEmail(v)
 		return nil
 	}
-	return fmt.Errorf("unknown PublicUser field %s", name)
+	return fmt.Errorf("unknown Operator field %s", name)
 }
 
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
-func (m *PublicUserMutation) AddedFields() []string {
+func (m *OperatorMutation) AddedFields() []string {
 	return nil
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
-func (m *PublicUserMutation) AddedField(name string) (ent.Value, bool) {
+func (m *OperatorMutation) AddedField(name string) (ent.Value, bool) {
 	return nil, false
 }
 
 // AddField adds the value to the field with the given name. It returns an error if
 // the field is not defined in the schema, or if the type mismatched the field
 // type.
-func (m *PublicUserMutation) AddField(name string, value ent.Value) error {
+func (m *OperatorMutation) AddField(name string, value ent.Value) error {
 	switch name {
 	}
-	return fmt.Errorf("unknown PublicUser numeric field %s", name)
+	return fmt.Errorf("unknown Operator numeric field %s", name)
 }
 
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
-func (m *PublicUserMutation) ClearedFields() []string {
+func (m *OperatorMutation) ClearedFields() []string {
 	var fields []string
-	if m.FieldCleared(publicuser.FieldTitle) {
-		fields = append(fields, publicuser.FieldTitle)
+	if m.FieldCleared(operator.FieldTitle) {
+		fields = append(fields, operator.FieldTitle)
 	}
 	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
 // cleared in this mutation.
-func (m *PublicUserMutation) FieldCleared(name string) bool {
+func (m *OperatorMutation) FieldCleared(name string) bool {
 	_, ok := m.clearedFields[name]
 	return ok
 }
 
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
-func (m *PublicUserMutation) ClearField(name string) error {
+func (m *OperatorMutation) ClearField(name string) error {
 	switch name {
-	case publicuser.FieldTitle:
+	case operator.FieldTitle:
 		m.ClearTitle()
 		return nil
 	}
-	return fmt.Errorf("unknown PublicUser nullable field %s", name)
+	return fmt.Errorf("unknown Operator nullable field %s", name)
 }
 
 // ResetField resets all changes in the mutation for the field with the given name.
 // It returns an error if the field is not defined in the schema.
-func (m *PublicUserMutation) ResetField(name string) error {
+func (m *OperatorMutation) ResetField(name string) error {
 	switch name {
-	case publicuser.FieldSurname:
+	case operator.FieldSurname:
 		m.ResetSurname()
 		return nil
-	case publicuser.FieldFirstname:
+	case operator.FieldFirstname:
 		m.ResetFirstname()
 		return nil
-	case publicuser.FieldTitle:
+	case operator.FieldTitle:
 		m.ResetTitle()
 		return nil
-	case publicuser.FieldEmail:
+	case operator.FieldEmail:
 		m.ResetEmail()
 		return nil
 	}
-	return fmt.Errorf("unknown PublicUser field %s", name)
+	return fmt.Errorf("unknown Operator field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
-func (m *PublicUserMutation) AddedEdges() []string {
+func (m *OperatorMutation) AddedEdges() []string {
 	edges := make([]string, 0, 2)
 	if m.businesses != nil {
-		edges = append(edges, publicuser.EdgeBusinesses)
+		edges = append(edges, operator.EdgeBusinesses)
 	}
 	if m.timetable != nil {
-		edges = append(edges, publicuser.EdgeTimetable)
+		edges = append(edges, operator.EdgeTimetable)
 	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
-func (m *PublicUserMutation) AddedIDs(name string) []ent.Value {
+func (m *OperatorMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case publicuser.EdgeBusinesses:
+	case operator.EdgeBusinesses:
 		ids := make([]ent.Value, 0, len(m.businesses))
 		for id := range m.businesses {
 			ids = append(ids, id)
 		}
 		return ids
-	case publicuser.EdgeTimetable:
+	case operator.EdgeTimetable:
 		ids := make([]ent.Value, 0, len(m.timetable))
 		for id := range m.timetable {
 			ids = append(ids, id)
@@ -4797,28 +4797,28 @@ func (m *PublicUserMutation) AddedIDs(name string) []ent.Value {
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
-func (m *PublicUserMutation) RemovedEdges() []string {
+func (m *OperatorMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 2)
 	if m.removedbusinesses != nil {
-		edges = append(edges, publicuser.EdgeBusinesses)
+		edges = append(edges, operator.EdgeBusinesses)
 	}
 	if m.removedtimetable != nil {
-		edges = append(edges, publicuser.EdgeTimetable)
+		edges = append(edges, operator.EdgeTimetable)
 	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
-func (m *PublicUserMutation) RemovedIDs(name string) []ent.Value {
+func (m *OperatorMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case publicuser.EdgeBusinesses:
+	case operator.EdgeBusinesses:
 		ids := make([]ent.Value, 0, len(m.removedbusinesses))
 		for id := range m.removedbusinesses {
 			ids = append(ids, id)
 		}
 		return ids
-	case publicuser.EdgeTimetable:
+	case operator.EdgeTimetable:
 		ids := make([]ent.Value, 0, len(m.removedtimetable))
 		for id := range m.removedtimetable {
 			ids = append(ids, id)
@@ -4829,24 +4829,24 @@ func (m *PublicUserMutation) RemovedIDs(name string) []ent.Value {
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *PublicUserMutation) ClearedEdges() []string {
+func (m *OperatorMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 2)
 	if m.clearedbusinesses {
-		edges = append(edges, publicuser.EdgeBusinesses)
+		edges = append(edges, operator.EdgeBusinesses)
 	}
 	if m.clearedtimetable {
-		edges = append(edges, publicuser.EdgeTimetable)
+		edges = append(edges, operator.EdgeTimetable)
 	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
-func (m *PublicUserMutation) EdgeCleared(name string) bool {
+func (m *OperatorMutation) EdgeCleared(name string) bool {
 	switch name {
-	case publicuser.EdgeBusinesses:
+	case operator.EdgeBusinesses:
 		return m.clearedbusinesses
-	case publicuser.EdgeTimetable:
+	case operator.EdgeTimetable:
 		return m.clearedtimetable
 	}
 	return false
@@ -4854,24 +4854,24 @@ func (m *PublicUserMutation) EdgeCleared(name string) bool {
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
-func (m *PublicUserMutation) ClearEdge(name string) error {
+func (m *OperatorMutation) ClearEdge(name string) error {
 	switch name {
 	}
-	return fmt.Errorf("unknown PublicUser unique edge %s", name)
+	return fmt.Errorf("unknown Operator unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
-func (m *PublicUserMutation) ResetEdge(name string) error {
+func (m *OperatorMutation) ResetEdge(name string) error {
 	switch name {
-	case publicuser.EdgeBusinesses:
+	case operator.EdgeBusinesses:
 		m.ResetBusinesses()
 		return nil
-	case publicuser.EdgeTimetable:
+	case operator.EdgeTimetable:
 		m.ResetTimetable()
 		return nil
 	}
-	return fmt.Errorf("unknown PublicUser edge %s", name)
+	return fmt.Errorf("unknown Operator edge %s", name)
 }
 
 // TagMutation represents an operation that mutates the Tag nodes in the graph.
@@ -5662,9 +5662,9 @@ type TimetableMutation struct {
 	clearedFields            map[string]struct{}
 	address                  *uuid.UUID
 	clearedaddress           bool
-	users_on_duty            map[uuid.UUID]struct{}
-	removedusers_on_duty     map[uuid.UUID]struct{}
-	clearedusers_on_duty     bool
+	operators_on_duty        map[uuid.UUID]struct{}
+	removedoperators_on_duty map[uuid.UUID]struct{}
+	clearedoperators_on_duty bool
 	done                     bool
 	oldValue                 func(context.Context) (*Timetable, error)
 	predicates               []predicate.Timetable
@@ -6406,58 +6406,58 @@ func (m *TimetableMutation) ResetAddress() {
 	m.clearedaddress = false
 }
 
-// AddUsersOnDutyIDs adds the "users_on_duty" edge to the PublicUser entity by ids.
-func (m *TimetableMutation) AddUsersOnDutyIDs(ids ...uuid.UUID) {
-	if m.users_on_duty == nil {
-		m.users_on_duty = make(map[uuid.UUID]struct{})
+// AddOperatorsOnDutyIDs adds the "operators_on_duty" edge to the Operator entity by ids.
+func (m *TimetableMutation) AddOperatorsOnDutyIDs(ids ...uuid.UUID) {
+	if m.operators_on_duty == nil {
+		m.operators_on_duty = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
-		m.users_on_duty[ids[i]] = struct{}{}
+		m.operators_on_duty[ids[i]] = struct{}{}
 	}
 }
 
-// ClearUsersOnDuty clears the "users_on_duty" edge to the PublicUser entity.
-func (m *TimetableMutation) ClearUsersOnDuty() {
-	m.clearedusers_on_duty = true
+// ClearOperatorsOnDuty clears the "operators_on_duty" edge to the Operator entity.
+func (m *TimetableMutation) ClearOperatorsOnDuty() {
+	m.clearedoperators_on_duty = true
 }
 
-// UsersOnDutyCleared reports if the "users_on_duty" edge to the PublicUser entity was cleared.
-func (m *TimetableMutation) UsersOnDutyCleared() bool {
-	return m.clearedusers_on_duty
+// OperatorsOnDutyCleared reports if the "operators_on_duty" edge to the Operator entity was cleared.
+func (m *TimetableMutation) OperatorsOnDutyCleared() bool {
+	return m.clearedoperators_on_duty
 }
 
-// RemoveUsersOnDutyIDs removes the "users_on_duty" edge to the PublicUser entity by IDs.
-func (m *TimetableMutation) RemoveUsersOnDutyIDs(ids ...uuid.UUID) {
-	if m.removedusers_on_duty == nil {
-		m.removedusers_on_duty = make(map[uuid.UUID]struct{})
+// RemoveOperatorsOnDutyIDs removes the "operators_on_duty" edge to the Operator entity by IDs.
+func (m *TimetableMutation) RemoveOperatorsOnDutyIDs(ids ...uuid.UUID) {
+	if m.removedoperators_on_duty == nil {
+		m.removedoperators_on_duty = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
-		delete(m.users_on_duty, ids[i])
-		m.removedusers_on_duty[ids[i]] = struct{}{}
+		delete(m.operators_on_duty, ids[i])
+		m.removedoperators_on_duty[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedUsersOnDuty returns the removed IDs of the "users_on_duty" edge to the PublicUser entity.
-func (m *TimetableMutation) RemovedUsersOnDutyIDs() (ids []uuid.UUID) {
-	for id := range m.removedusers_on_duty {
+// RemovedOperatorsOnDuty returns the removed IDs of the "operators_on_duty" edge to the Operator entity.
+func (m *TimetableMutation) RemovedOperatorsOnDutyIDs() (ids []uuid.UUID) {
+	for id := range m.removedoperators_on_duty {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// UsersOnDutyIDs returns the "users_on_duty" edge IDs in the mutation.
-func (m *TimetableMutation) UsersOnDutyIDs() (ids []uuid.UUID) {
-	for id := range m.users_on_duty {
+// OperatorsOnDutyIDs returns the "operators_on_duty" edge IDs in the mutation.
+func (m *TimetableMutation) OperatorsOnDutyIDs() (ids []uuid.UUID) {
+	for id := range m.operators_on_duty {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetUsersOnDuty resets all changes to the "users_on_duty" edge.
-func (m *TimetableMutation) ResetUsersOnDuty() {
-	m.users_on_duty = nil
-	m.clearedusers_on_duty = false
-	m.removedusers_on_duty = nil
+// ResetOperatorsOnDuty resets all changes to the "operators_on_duty" edge.
+func (m *TimetableMutation) ResetOperatorsOnDuty() {
+	m.operators_on_duty = nil
+	m.clearedoperators_on_duty = false
+	m.removedoperators_on_duty = nil
 }
 
 // Where appends a list predicates to the TimetableMutation builder.
@@ -6867,8 +6867,8 @@ func (m *TimetableMutation) AddedEdges() []string {
 	if m.address != nil {
 		edges = append(edges, timetable.EdgeAddress)
 	}
-	if m.users_on_duty != nil {
-		edges = append(edges, timetable.EdgeUsersOnDuty)
+	if m.operators_on_duty != nil {
+		edges = append(edges, timetable.EdgeOperatorsOnDuty)
 	}
 	return edges
 }
@@ -6881,9 +6881,9 @@ func (m *TimetableMutation) AddedIDs(name string) []ent.Value {
 		if id := m.address; id != nil {
 			return []ent.Value{*id}
 		}
-	case timetable.EdgeUsersOnDuty:
-		ids := make([]ent.Value, 0, len(m.users_on_duty))
-		for id := range m.users_on_duty {
+	case timetable.EdgeOperatorsOnDuty:
+		ids := make([]ent.Value, 0, len(m.operators_on_duty))
+		for id := range m.operators_on_duty {
 			ids = append(ids, id)
 		}
 		return ids
@@ -6894,8 +6894,8 @@ func (m *TimetableMutation) AddedIDs(name string) []ent.Value {
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *TimetableMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 2)
-	if m.removedusers_on_duty != nil {
-		edges = append(edges, timetable.EdgeUsersOnDuty)
+	if m.removedoperators_on_duty != nil {
+		edges = append(edges, timetable.EdgeOperatorsOnDuty)
 	}
 	return edges
 }
@@ -6904,9 +6904,9 @@ func (m *TimetableMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *TimetableMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case timetable.EdgeUsersOnDuty:
-		ids := make([]ent.Value, 0, len(m.removedusers_on_duty))
-		for id := range m.removedusers_on_duty {
+	case timetable.EdgeOperatorsOnDuty:
+		ids := make([]ent.Value, 0, len(m.removedoperators_on_duty))
+		for id := range m.removedoperators_on_duty {
 			ids = append(ids, id)
 		}
 		return ids
@@ -6920,8 +6920,8 @@ func (m *TimetableMutation) ClearedEdges() []string {
 	if m.clearedaddress {
 		edges = append(edges, timetable.EdgeAddress)
 	}
-	if m.clearedusers_on_duty {
-		edges = append(edges, timetable.EdgeUsersOnDuty)
+	if m.clearedoperators_on_duty {
+		edges = append(edges, timetable.EdgeOperatorsOnDuty)
 	}
 	return edges
 }
@@ -6932,8 +6932,8 @@ func (m *TimetableMutation) EdgeCleared(name string) bool {
 	switch name {
 	case timetable.EdgeAddress:
 		return m.clearedaddress
-	case timetable.EdgeUsersOnDuty:
-		return m.clearedusers_on_duty
+	case timetable.EdgeOperatorsOnDuty:
+		return m.clearedoperators_on_duty
 	}
 	return false
 }
@@ -6956,8 +6956,8 @@ func (m *TimetableMutation) ResetEdge(name string) error {
 	case timetable.EdgeAddress:
 		m.ResetAddress()
 		return nil
-	case timetable.EdgeUsersOnDuty:
-		m.ResetUsersOnDuty()
+	case timetable.EdgeOperatorsOnDuty:
+		m.ResetOperatorsOnDuty()
 		return nil
 	}
 	return fmt.Errorf("unknown Timetable edge %s", name)

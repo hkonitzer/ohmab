@@ -14,8 +14,8 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/hkonitzer/ohmab/ent/address"
+	"github.com/hkonitzer/ohmab/ent/operator"
 	"github.com/hkonitzer/ohmab/ent/predicate"
-	"github.com/hkonitzer/ohmab/ent/publicuser"
 	"github.com/hkonitzer/ohmab/ent/timetable"
 )
 
@@ -250,19 +250,19 @@ func (tu *TimetableUpdate) SetAddress(a *Address) *TimetableUpdate {
 	return tu.SetAddressID(a.ID)
 }
 
-// AddUsersOnDutyIDs adds the "users_on_duty" edge to the PublicUser entity by IDs.
-func (tu *TimetableUpdate) AddUsersOnDutyIDs(ids ...uuid.UUID) *TimetableUpdate {
-	tu.mutation.AddUsersOnDutyIDs(ids...)
+// AddOperatorsOnDutyIDs adds the "operators_on_duty" edge to the Operator entity by IDs.
+func (tu *TimetableUpdate) AddOperatorsOnDutyIDs(ids ...uuid.UUID) *TimetableUpdate {
+	tu.mutation.AddOperatorsOnDutyIDs(ids...)
 	return tu
 }
 
-// AddUsersOnDuty adds the "users_on_duty" edges to the PublicUser entity.
-func (tu *TimetableUpdate) AddUsersOnDuty(p ...*PublicUser) *TimetableUpdate {
-	ids := make([]uuid.UUID, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
+// AddOperatorsOnDuty adds the "operators_on_duty" edges to the Operator entity.
+func (tu *TimetableUpdate) AddOperatorsOnDuty(o ...*Operator) *TimetableUpdate {
+	ids := make([]uuid.UUID, len(o))
+	for i := range o {
+		ids[i] = o[i].ID
 	}
-	return tu.AddUsersOnDutyIDs(ids...)
+	return tu.AddOperatorsOnDutyIDs(ids...)
 }
 
 // Mutation returns the TimetableMutation object of the builder.
@@ -276,25 +276,25 @@ func (tu *TimetableUpdate) ClearAddress() *TimetableUpdate {
 	return tu
 }
 
-// ClearUsersOnDuty clears all "users_on_duty" edges to the PublicUser entity.
-func (tu *TimetableUpdate) ClearUsersOnDuty() *TimetableUpdate {
-	tu.mutation.ClearUsersOnDuty()
+// ClearOperatorsOnDuty clears all "operators_on_duty" edges to the Operator entity.
+func (tu *TimetableUpdate) ClearOperatorsOnDuty() *TimetableUpdate {
+	tu.mutation.ClearOperatorsOnDuty()
 	return tu
 }
 
-// RemoveUsersOnDutyIDs removes the "users_on_duty" edge to PublicUser entities by IDs.
-func (tu *TimetableUpdate) RemoveUsersOnDutyIDs(ids ...uuid.UUID) *TimetableUpdate {
-	tu.mutation.RemoveUsersOnDutyIDs(ids...)
+// RemoveOperatorsOnDutyIDs removes the "operators_on_duty" edge to Operator entities by IDs.
+func (tu *TimetableUpdate) RemoveOperatorsOnDutyIDs(ids ...uuid.UUID) *TimetableUpdate {
+	tu.mutation.RemoveOperatorsOnDutyIDs(ids...)
 	return tu
 }
 
-// RemoveUsersOnDuty removes "users_on_duty" edges to PublicUser entities.
-func (tu *TimetableUpdate) RemoveUsersOnDuty(p ...*PublicUser) *TimetableUpdate {
-	ids := make([]uuid.UUID, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
+// RemoveOperatorsOnDuty removes "operators_on_duty" edges to Operator entities.
+func (tu *TimetableUpdate) RemoveOperatorsOnDuty(o ...*Operator) *TimetableUpdate {
+	ids := make([]uuid.UUID, len(o))
+	for i := range o {
+		ids[i] = o[i].ID
 	}
-	return tu.RemoveUsersOnDutyIDs(ids...)
+	return tu.RemoveOperatorsOnDutyIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -461,28 +461,28 @@ func (tu *TimetableUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if tu.mutation.UsersOnDutyCleared() {
+	if tu.mutation.OperatorsOnDutyCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   timetable.UsersOnDutyTable,
-			Columns: timetable.UsersOnDutyPrimaryKey,
+			Table:   timetable.OperatorsOnDutyTable,
+			Columns: timetable.OperatorsOnDutyPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(publicuser.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(operator.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := tu.mutation.RemovedUsersOnDutyIDs(); len(nodes) > 0 && !tu.mutation.UsersOnDutyCleared() {
+	if nodes := tu.mutation.RemovedOperatorsOnDutyIDs(); len(nodes) > 0 && !tu.mutation.OperatorsOnDutyCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   timetable.UsersOnDutyTable,
-			Columns: timetable.UsersOnDutyPrimaryKey,
+			Table:   timetable.OperatorsOnDutyTable,
+			Columns: timetable.OperatorsOnDutyPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(publicuser.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(operator.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -490,15 +490,15 @@ func (tu *TimetableUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := tu.mutation.UsersOnDutyIDs(); len(nodes) > 0 {
+	if nodes := tu.mutation.OperatorsOnDutyIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   timetable.UsersOnDutyTable,
-			Columns: timetable.UsersOnDutyPrimaryKey,
+			Table:   timetable.OperatorsOnDutyTable,
+			Columns: timetable.OperatorsOnDutyPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(publicuser.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(operator.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -744,19 +744,19 @@ func (tuo *TimetableUpdateOne) SetAddress(a *Address) *TimetableUpdateOne {
 	return tuo.SetAddressID(a.ID)
 }
 
-// AddUsersOnDutyIDs adds the "users_on_duty" edge to the PublicUser entity by IDs.
-func (tuo *TimetableUpdateOne) AddUsersOnDutyIDs(ids ...uuid.UUID) *TimetableUpdateOne {
-	tuo.mutation.AddUsersOnDutyIDs(ids...)
+// AddOperatorsOnDutyIDs adds the "operators_on_duty" edge to the Operator entity by IDs.
+func (tuo *TimetableUpdateOne) AddOperatorsOnDutyIDs(ids ...uuid.UUID) *TimetableUpdateOne {
+	tuo.mutation.AddOperatorsOnDutyIDs(ids...)
 	return tuo
 }
 
-// AddUsersOnDuty adds the "users_on_duty" edges to the PublicUser entity.
-func (tuo *TimetableUpdateOne) AddUsersOnDuty(p ...*PublicUser) *TimetableUpdateOne {
-	ids := make([]uuid.UUID, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
+// AddOperatorsOnDuty adds the "operators_on_duty" edges to the Operator entity.
+func (tuo *TimetableUpdateOne) AddOperatorsOnDuty(o ...*Operator) *TimetableUpdateOne {
+	ids := make([]uuid.UUID, len(o))
+	for i := range o {
+		ids[i] = o[i].ID
 	}
-	return tuo.AddUsersOnDutyIDs(ids...)
+	return tuo.AddOperatorsOnDutyIDs(ids...)
 }
 
 // Mutation returns the TimetableMutation object of the builder.
@@ -770,25 +770,25 @@ func (tuo *TimetableUpdateOne) ClearAddress() *TimetableUpdateOne {
 	return tuo
 }
 
-// ClearUsersOnDuty clears all "users_on_duty" edges to the PublicUser entity.
-func (tuo *TimetableUpdateOne) ClearUsersOnDuty() *TimetableUpdateOne {
-	tuo.mutation.ClearUsersOnDuty()
+// ClearOperatorsOnDuty clears all "operators_on_duty" edges to the Operator entity.
+func (tuo *TimetableUpdateOne) ClearOperatorsOnDuty() *TimetableUpdateOne {
+	tuo.mutation.ClearOperatorsOnDuty()
 	return tuo
 }
 
-// RemoveUsersOnDutyIDs removes the "users_on_duty" edge to PublicUser entities by IDs.
-func (tuo *TimetableUpdateOne) RemoveUsersOnDutyIDs(ids ...uuid.UUID) *TimetableUpdateOne {
-	tuo.mutation.RemoveUsersOnDutyIDs(ids...)
+// RemoveOperatorsOnDutyIDs removes the "operators_on_duty" edge to Operator entities by IDs.
+func (tuo *TimetableUpdateOne) RemoveOperatorsOnDutyIDs(ids ...uuid.UUID) *TimetableUpdateOne {
+	tuo.mutation.RemoveOperatorsOnDutyIDs(ids...)
 	return tuo
 }
 
-// RemoveUsersOnDuty removes "users_on_duty" edges to PublicUser entities.
-func (tuo *TimetableUpdateOne) RemoveUsersOnDuty(p ...*PublicUser) *TimetableUpdateOne {
-	ids := make([]uuid.UUID, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
+// RemoveOperatorsOnDuty removes "operators_on_duty" edges to Operator entities.
+func (tuo *TimetableUpdateOne) RemoveOperatorsOnDuty(o ...*Operator) *TimetableUpdateOne {
+	ids := make([]uuid.UUID, len(o))
+	for i := range o {
+		ids[i] = o[i].ID
 	}
-	return tuo.RemoveUsersOnDutyIDs(ids...)
+	return tuo.RemoveOperatorsOnDutyIDs(ids...)
 }
 
 // Where appends a list predicates to the TimetableUpdate builder.
@@ -985,28 +985,28 @@ func (tuo *TimetableUpdateOne) sqlSave(ctx context.Context) (_node *Timetable, e
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if tuo.mutation.UsersOnDutyCleared() {
+	if tuo.mutation.OperatorsOnDutyCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   timetable.UsersOnDutyTable,
-			Columns: timetable.UsersOnDutyPrimaryKey,
+			Table:   timetable.OperatorsOnDutyTable,
+			Columns: timetable.OperatorsOnDutyPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(publicuser.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(operator.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := tuo.mutation.RemovedUsersOnDutyIDs(); len(nodes) > 0 && !tuo.mutation.UsersOnDutyCleared() {
+	if nodes := tuo.mutation.RemovedOperatorsOnDutyIDs(); len(nodes) > 0 && !tuo.mutation.OperatorsOnDutyCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   timetable.UsersOnDutyTable,
-			Columns: timetable.UsersOnDutyPrimaryKey,
+			Table:   timetable.OperatorsOnDutyTable,
+			Columns: timetable.OperatorsOnDutyPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(publicuser.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(operator.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -1014,15 +1014,15 @@ func (tuo *TimetableUpdateOne) sqlSave(ctx context.Context) (_node *Timetable, e
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := tuo.mutation.UsersOnDutyIDs(); len(nodes) > 0 {
+	if nodes := tuo.mutation.OperatorsOnDutyIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   timetable.UsersOnDutyTable,
-			Columns: timetable.UsersOnDutyPrimaryKey,
+			Table:   timetable.OperatorsOnDutyTable,
+			Columns: timetable.OperatorsOnDutyPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(publicuser.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(operator.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

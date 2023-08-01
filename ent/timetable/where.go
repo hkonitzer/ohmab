@@ -815,21 +815,21 @@ func HasAddressWith(preds ...predicate.Address) predicate.Timetable {
 	})
 }
 
-// HasUsersOnDuty applies the HasEdge predicate on the "users_on_duty" edge.
-func HasUsersOnDuty() predicate.Timetable {
+// HasOperatorsOnDuty applies the HasEdge predicate on the "operators_on_duty" edge.
+func HasOperatorsOnDuty() predicate.Timetable {
 	return predicate.Timetable(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, UsersOnDutyTable, UsersOnDutyPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2M, false, OperatorsOnDutyTable, OperatorsOnDutyPrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasUsersOnDutyWith applies the HasEdge predicate on the "users_on_duty" edge with a given conditions (other predicates).
-func HasUsersOnDutyWith(preds ...predicate.PublicUser) predicate.Timetable {
+// HasOperatorsOnDutyWith applies the HasEdge predicate on the "operators_on_duty" edge with a given conditions (other predicates).
+func HasOperatorsOnDutyWith(preds ...predicate.Operator) predicate.Timetable {
 	return predicate.Timetable(func(s *sql.Selector) {
-		step := newUsersOnDutyStep()
+		step := newOperatorsOnDutyStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

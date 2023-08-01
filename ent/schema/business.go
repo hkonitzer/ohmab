@@ -64,7 +64,7 @@ func (Business) Edges() []ent.Edge {
 			Annotations(entsql.OnDelete(entsql.Cascade)),
 		edge.To("tags", Tag.Type),
 		edge.To("users", User.Type),
-		edge.To("public_users", PublicUser.Type),
+		edge.To("operators", Operator.Type),
 	}
 }
 
@@ -88,6 +88,7 @@ func (Business) Indexes() []ent.Index {
 func (b Business) Hooks() []ent.Hook {
 	return []ent.Hook{
 		hooks.UpperCaseForBussinessFields(),
+		// @TODO: Hook to create public users while adding users to businesses: Update().AddUsers(u)
 		b.AuditLogForBusiness(),
 	}
 }

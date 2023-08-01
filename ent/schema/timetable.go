@@ -59,7 +59,7 @@ func (Timetable) Edges() []ent.Edge {
 			Required().
 			Unique().
 			Ref("timetables"),
-		edge.To("users_on_duty", PublicUser.Type),
+		edge.To("operators_on_duty", Operator.Type),
 	}
 }
 

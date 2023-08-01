@@ -20,7 +20,7 @@ import (
 	"github.com/hkonitzer/ohmab/ent/auditlog"
 	"github.com/hkonitzer/ohmab/ent/business"
 	"github.com/hkonitzer/ohmab/ent/content"
-	"github.com/hkonitzer/ohmab/ent/publicuser"
+	"github.com/hkonitzer/ohmab/ent/operator"
 	"github.com/hkonitzer/ohmab/ent/tag"
 	"github.com/hkonitzer/ohmab/ent/timetable"
 	"github.com/hkonitzer/ohmab/ent/user"
@@ -1239,20 +1239,20 @@ func (c *Content) ToEdge(order *ContentOrder) *ContentEdge {
 	}
 }
 
-// PublicUserEdge is the edge representation of PublicUser.
-type PublicUserEdge struct {
-	Node   *PublicUser `json:"node"`
-	Cursor Cursor      `json:"cursor"`
+// OperatorEdge is the edge representation of Operator.
+type OperatorEdge struct {
+	Node   *Operator `json:"node"`
+	Cursor Cursor    `json:"cursor"`
 }
 
-// PublicUserConnection is the connection containing edges to PublicUser.
-type PublicUserConnection struct {
-	Edges      []*PublicUserEdge `json:"edges"`
-	PageInfo   PageInfo          `json:"pageInfo"`
-	TotalCount int               `json:"totalCount"`
+// OperatorConnection is the connection containing edges to Operator.
+type OperatorConnection struct {
+	Edges      []*OperatorEdge `json:"edges"`
+	PageInfo   PageInfo        `json:"pageInfo"`
+	TotalCount int             `json:"totalCount"`
 }
 
-func (c *PublicUserConnection) build(nodes []*PublicUser, pager *publicuserPager, after *Cursor, first *int, before *Cursor, last *int) {
+func (c *OperatorConnection) build(nodes []*Operator, pager *operatorPager, after *Cursor, first *int, before *Cursor, last *int) {
 	c.PageInfo.HasNextPage = before != nil
 	c.PageInfo.HasPreviousPage = after != nil
 	if first != nil && *first+1 == len(nodes) {
@@ -1262,21 +1262,21 @@ func (c *PublicUserConnection) build(nodes []*PublicUser, pager *publicuserPager
 		c.PageInfo.HasPreviousPage = true
 		nodes = nodes[:len(nodes)-1]
 	}
-	var nodeAt func(int) *PublicUser
+	var nodeAt func(int) *Operator
 	if last != nil {
 		n := len(nodes) - 1
-		nodeAt = func(i int) *PublicUser {
+		nodeAt = func(i int) *Operator {
 			return nodes[n-i]
 		}
 	} else {
-		nodeAt = func(i int) *PublicUser {
+		nodeAt = func(i int) *Operator {
 			return nodes[i]
 		}
 	}
-	c.Edges = make([]*PublicUserEdge, len(nodes))
+	c.Edges = make([]*OperatorEdge, len(nodes))
 	for i := range nodes {
 		node := nodeAt(i)
-		c.Edges[i] = &PublicUserEdge{
+		c.Edges[i] = &OperatorEdge{
 			Node:   node,
 			Cursor: pager.toCursor(node),
 		}
@@ -1290,87 +1290,87 @@ func (c *PublicUserConnection) build(nodes []*PublicUser, pager *publicuserPager
 	}
 }
 
-// PublicUserPaginateOption enables pagination customization.
-type PublicUserPaginateOption func(*publicuserPager) error
+// OperatorPaginateOption enables pagination customization.
+type OperatorPaginateOption func(*operatorPager) error
 
-// WithPublicUserOrder configures pagination ordering.
-func WithPublicUserOrder(order *PublicUserOrder) PublicUserPaginateOption {
+// WithOperatorOrder configures pagination ordering.
+func WithOperatorOrder(order *OperatorOrder) OperatorPaginateOption {
 	if order == nil {
-		order = DefaultPublicUserOrder
+		order = DefaultOperatorOrder
 	}
 	o := *order
-	return func(pager *publicuserPager) error {
+	return func(pager *operatorPager) error {
 		if err := o.Direction.Validate(); err != nil {
 			return err
 		}
 		if o.Field == nil {
-			o.Field = DefaultPublicUserOrder.Field
+			o.Field = DefaultOperatorOrder.Field
 		}
 		pager.order = &o
 		return nil
 	}
 }
 
-// WithPublicUserFilter configures pagination filter.
-func WithPublicUserFilter(filter func(*PublicUserQuery) (*PublicUserQuery, error)) PublicUserPaginateOption {
-	return func(pager *publicuserPager) error {
+// WithOperatorFilter configures pagination filter.
+func WithOperatorFilter(filter func(*OperatorQuery) (*OperatorQuery, error)) OperatorPaginateOption {
+	return func(pager *operatorPager) error {
 		if filter == nil {
-			return errors.New("PublicUserQuery filter cannot be nil")
+			return errors.New("OperatorQuery filter cannot be nil")
 		}
 		pager.filter = filter
 		return nil
 	}
 }
 
-type publicuserPager struct {
+type operatorPager struct {
 	reverse bool
-	order   *PublicUserOrder
-	filter  func(*PublicUserQuery) (*PublicUserQuery, error)
+	order   *OperatorOrder
+	filter  func(*OperatorQuery) (*OperatorQuery, error)
 }
 
-func newPublicUserPager(opts []PublicUserPaginateOption, reverse bool) (*publicuserPager, error) {
-	pager := &publicuserPager{reverse: reverse}
+func newOperatorPager(opts []OperatorPaginateOption, reverse bool) (*operatorPager, error) {
+	pager := &operatorPager{reverse: reverse}
 	for _, opt := range opts {
 		if err := opt(pager); err != nil {
 			return nil, err
 		}
 	}
 	if pager.order == nil {
-		pager.order = DefaultPublicUserOrder
+		pager.order = DefaultOperatorOrder
 	}
 	return pager, nil
 }
 
-func (p *publicuserPager) applyFilter(query *PublicUserQuery) (*PublicUserQuery, error) {
+func (p *operatorPager) applyFilter(query *OperatorQuery) (*OperatorQuery, error) {
 	if p.filter != nil {
 		return p.filter(query)
 	}
 	return query, nil
 }
 
-func (p *publicuserPager) toCursor(pu *PublicUser) Cursor {
-	return p.order.Field.toCursor(pu)
+func (p *operatorPager) toCursor(o *Operator) Cursor {
+	return p.order.Field.toCursor(o)
 }
 
-func (p *publicuserPager) applyCursors(query *PublicUserQuery, after, before *Cursor) (*PublicUserQuery, error) {
+func (p *operatorPager) applyCursors(query *OperatorQuery, after, before *Cursor) (*OperatorQuery, error) {
 	direction := p.order.Direction
 	if p.reverse {
 		direction = direction.Reverse()
 	}
-	for _, predicate := range entgql.CursorsPredicate(after, before, DefaultPublicUserOrder.Field.column, p.order.Field.column, direction) {
+	for _, predicate := range entgql.CursorsPredicate(after, before, DefaultOperatorOrder.Field.column, p.order.Field.column, direction) {
 		query = query.Where(predicate)
 	}
 	return query, nil
 }
 
-func (p *publicuserPager) applyOrder(query *PublicUserQuery) *PublicUserQuery {
+func (p *operatorPager) applyOrder(query *OperatorQuery) *OperatorQuery {
 	direction := p.order.Direction
 	if p.reverse {
 		direction = direction.Reverse()
 	}
 	query = query.Order(p.order.Field.toTerm(direction.OrderTermOption()))
-	if p.order.Field != DefaultPublicUserOrder.Field {
-		query = query.Order(DefaultPublicUserOrder.Field.toTerm(direction.OrderTermOption()))
+	if p.order.Field != DefaultOperatorOrder.Field {
+		query = query.Order(DefaultOperatorOrder.Field.toTerm(direction.OrderTermOption()))
 	}
 	if len(query.ctx.Fields) > 0 {
 		query.ctx.AppendFieldOnce(p.order.Field.column)
@@ -1378,7 +1378,7 @@ func (p *publicuserPager) applyOrder(query *PublicUserQuery) *PublicUserQuery {
 	return query
 }
 
-func (p *publicuserPager) orderExpr(query *PublicUserQuery) sql.Querier {
+func (p *operatorPager) orderExpr(query *OperatorQuery) sql.Querier {
 	direction := p.order.Direction
 	if p.reverse {
 		direction = direction.Reverse()
@@ -1388,33 +1388,33 @@ func (p *publicuserPager) orderExpr(query *PublicUserQuery) sql.Querier {
 	}
 	return sql.ExprFunc(func(b *sql.Builder) {
 		b.Ident(p.order.Field.column).Pad().WriteString(string(direction))
-		if p.order.Field != DefaultPublicUserOrder.Field {
-			b.Comma().Ident(DefaultPublicUserOrder.Field.column).Pad().WriteString(string(direction))
+		if p.order.Field != DefaultOperatorOrder.Field {
+			b.Comma().Ident(DefaultOperatorOrder.Field.column).Pad().WriteString(string(direction))
 		}
 	})
 }
 
-// Paginate executes the query and returns a relay based cursor connection to PublicUser.
-func (pu *PublicUserQuery) Paginate(
+// Paginate executes the query and returns a relay based cursor connection to Operator.
+func (o *OperatorQuery) Paginate(
 	ctx context.Context, after *Cursor, first *int,
-	before *Cursor, last *int, opts ...PublicUserPaginateOption,
-) (*PublicUserConnection, error) {
+	before *Cursor, last *int, opts ...OperatorPaginateOption,
+) (*OperatorConnection, error) {
 	if err := validateFirstLast(first, last); err != nil {
 		return nil, err
 	}
-	pager, err := newPublicUserPager(opts, last != nil)
+	pager, err := newOperatorPager(opts, last != nil)
 	if err != nil {
 		return nil, err
 	}
-	if pu, err = pager.applyFilter(pu); err != nil {
+	if o, err = pager.applyFilter(o); err != nil {
 		return nil, err
 	}
-	conn := &PublicUserConnection{Edges: []*PublicUserEdge{}}
+	conn := &OperatorConnection{Edges: []*OperatorEdge{}}
 	ignoredEdges := !hasCollectedField(ctx, edgesField)
 	if hasCollectedField(ctx, totalCountField) || hasCollectedField(ctx, pageInfoField) {
 		hasPagination := after != nil || first != nil || before != nil || last != nil
 		if hasPagination || ignoredEdges {
-			if conn.TotalCount, err = pu.Clone().Count(ctx); err != nil {
+			if conn.TotalCount, err = o.Clone().Count(ctx); err != nil {
 				return nil, err
 			}
 			conn.PageInfo.HasNextPage = first != nil && conn.TotalCount > 0
@@ -1424,19 +1424,19 @@ func (pu *PublicUserQuery) Paginate(
 	if ignoredEdges || (first != nil && *first == 0) || (last != nil && *last == 0) {
 		return conn, nil
 	}
-	if pu, err = pager.applyCursors(pu, after, before); err != nil {
+	if o, err = pager.applyCursors(o, after, before); err != nil {
 		return nil, err
 	}
 	if limit := paginateLimit(first, last); limit != 0 {
-		pu.Limit(limit)
+		o.Limit(limit)
 	}
 	if field := collectedField(ctx, edgesField, nodeField); field != nil {
-		if err := pu.collectField(ctx, graphql.GetOperationContext(ctx), *field, []string{edgesField, nodeField}); err != nil {
+		if err := o.collectField(ctx, graphql.GetOperationContext(ctx), *field, []string{edgesField, nodeField}); err != nil {
 			return nil, err
 		}
 	}
-	pu = pager.applyOrder(pu)
-	nodes, err := pu.All(ctx)
+	o = pager.applyOrder(o)
+	nodes, err := o.All(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -1445,90 +1445,90 @@ func (pu *PublicUserQuery) Paginate(
 }
 
 var (
-	// PublicUserOrderFieldSurname orders PublicUser by surname.
-	PublicUserOrderFieldSurname = &PublicUserOrderField{
-		Value: func(pu *PublicUser) (ent.Value, error) {
-			return pu.Surname, nil
+	// OperatorOrderFieldSurname orders Operator by surname.
+	OperatorOrderFieldSurname = &OperatorOrderField{
+		Value: func(o *Operator) (ent.Value, error) {
+			return o.Surname, nil
 		},
-		column: publicuser.FieldSurname,
-		toTerm: publicuser.BySurname,
-		toCursor: func(pu *PublicUser) Cursor {
+		column: operator.FieldSurname,
+		toTerm: operator.BySurname,
+		toCursor: func(o *Operator) Cursor {
 			return Cursor{
-				ID:    pu.ID,
-				Value: pu.Surname,
+				ID:    o.ID,
+				Value: o.Surname,
 			}
 		},
 	}
 )
 
 // String implement fmt.Stringer interface.
-func (f PublicUserOrderField) String() string {
+func (f OperatorOrderField) String() string {
 	var str string
 	switch f.column {
-	case PublicUserOrderFieldSurname.column:
+	case OperatorOrderFieldSurname.column:
 		str = "SURNAME"
 	}
 	return str
 }
 
 // MarshalGQL implements graphql.Marshaler interface.
-func (f PublicUserOrderField) MarshalGQL(w io.Writer) {
+func (f OperatorOrderField) MarshalGQL(w io.Writer) {
 	io.WriteString(w, strconv.Quote(f.String()))
 }
 
 // UnmarshalGQL implements graphql.Unmarshaler interface.
-func (f *PublicUserOrderField) UnmarshalGQL(v interface{}) error {
+func (f *OperatorOrderField) UnmarshalGQL(v interface{}) error {
 	str, ok := v.(string)
 	if !ok {
-		return fmt.Errorf("PublicUserOrderField %T must be a string", v)
+		return fmt.Errorf("OperatorOrderField %T must be a string", v)
 	}
 	switch str {
 	case "SURNAME":
-		*f = *PublicUserOrderFieldSurname
+		*f = *OperatorOrderFieldSurname
 	default:
-		return fmt.Errorf("%s is not a valid PublicUserOrderField", str)
+		return fmt.Errorf("%s is not a valid OperatorOrderField", str)
 	}
 	return nil
 }
 
-// PublicUserOrderField defines the ordering field of PublicUser.
-type PublicUserOrderField struct {
-	// Value extracts the ordering value from the given PublicUser.
-	Value    func(*PublicUser) (ent.Value, error)
+// OperatorOrderField defines the ordering field of Operator.
+type OperatorOrderField struct {
+	// Value extracts the ordering value from the given Operator.
+	Value    func(*Operator) (ent.Value, error)
 	column   string // field or computed.
-	toTerm   func(...sql.OrderTermOption) publicuser.OrderOption
-	toCursor func(*PublicUser) Cursor
+	toTerm   func(...sql.OrderTermOption) operator.OrderOption
+	toCursor func(*Operator) Cursor
 }
 
-// PublicUserOrder defines the ordering of PublicUser.
-type PublicUserOrder struct {
-	Direction OrderDirection        `json:"direction"`
-	Field     *PublicUserOrderField `json:"field"`
+// OperatorOrder defines the ordering of Operator.
+type OperatorOrder struct {
+	Direction OrderDirection      `json:"direction"`
+	Field     *OperatorOrderField `json:"field"`
 }
 
-// DefaultPublicUserOrder is the default ordering of PublicUser.
-var DefaultPublicUserOrder = &PublicUserOrder{
+// DefaultOperatorOrder is the default ordering of Operator.
+var DefaultOperatorOrder = &OperatorOrder{
 	Direction: entgql.OrderDirectionAsc,
-	Field: &PublicUserOrderField{
-		Value: func(pu *PublicUser) (ent.Value, error) {
-			return pu.ID, nil
+	Field: &OperatorOrderField{
+		Value: func(o *Operator) (ent.Value, error) {
+			return o.ID, nil
 		},
-		column: publicuser.FieldID,
-		toTerm: publicuser.ByID,
-		toCursor: func(pu *PublicUser) Cursor {
-			return Cursor{ID: pu.ID}
+		column: operator.FieldID,
+		toTerm: operator.ByID,
+		toCursor: func(o *Operator) Cursor {
+			return Cursor{ID: o.ID}
 		},
 	},
 }
 
-// ToEdge converts PublicUser into PublicUserEdge.
-func (pu *PublicUser) ToEdge(order *PublicUserOrder) *PublicUserEdge {
+// ToEdge converts Operator into OperatorEdge.
+func (o *Operator) ToEdge(order *OperatorOrder) *OperatorEdge {
 	if order == nil {
-		order = DefaultPublicUserOrder
+		order = DefaultOperatorOrder
 	}
-	return &PublicUserEdge{
-		Node:   pu,
-		Cursor: order.Field.toCursor(pu),
+	return &OperatorEdge{
+		Node:   o,
+		Cursor: order.Field.toCursor(o),
 	}
 }
 

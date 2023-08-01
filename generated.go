@@ -93,22 +93,22 @@ type ComplexityRoot struct {
 	}
 
 	Business struct {
-		Active      func(childComplexity int) int
-		Addresses   func(childComplexity int) int
-		Alias       func(childComplexity int) int
-		Comment     func(childComplexity int) int
-		CreatedAt   func(childComplexity int) int
-		DeletedAt   func(childComplexity int) int
-		Email       func(childComplexity int) int
-		ID          func(childComplexity int) int
-		Name1       func(childComplexity int) int
-		Name2       func(childComplexity int) int
-		PublicUsers func(childComplexity int) int
-		Tags        func(childComplexity int) int
-		Telephone   func(childComplexity int) int
-		UpdatedAt   func(childComplexity int) int
-		Users       func(childComplexity int) int
-		Website     func(childComplexity int) int
+		Active    func(childComplexity int) int
+		Addresses func(childComplexity int) int
+		Alias     func(childComplexity int) int
+		Comment   func(childComplexity int) int
+		CreatedAt func(childComplexity int) int
+		DeletedAt func(childComplexity int) int
+		Email     func(childComplexity int) int
+		ID        func(childComplexity int) int
+		Name1     func(childComplexity int) int
+		Name2     func(childComplexity int) int
+		Operators func(childComplexity int) int
+		Tags      func(childComplexity int) int
+		Telephone func(childComplexity int) int
+		UpdatedAt func(childComplexity int) int
+		Users     func(childComplexity int) int
+		Website   func(childComplexity int) int
 	}
 
 	BusinessConnection struct {
@@ -142,20 +142,20 @@ type ComplexityRoot struct {
 		UpdateTimetable func(childComplexity int, id uuid.UUID, input ent.UpdateTimetableInput) int
 	}
 
-	PageInfo struct {
-		EndCursor       func(childComplexity int) int
-		HasNextPage     func(childComplexity int) int
-		HasPreviousPage func(childComplexity int) int
-		StartCursor     func(childComplexity int) int
-	}
-
-	PublicUser struct {
+	Operator struct {
 		Businesses func(childComplexity int) int
 		Firstname  func(childComplexity int) int
 		ID         func(childComplexity int) int
 		Surname    func(childComplexity int) int
 		Timetable  func(childComplexity int) int
 		Title      func(childComplexity int) int
+	}
+
+	PageInfo struct {
+		EndCursor       func(childComplexity int) int
+		HasNextPage     func(childComplexity int) int
+		HasPreviousPage func(childComplexity int) int
+		StartCursor     func(childComplexity int) int
 	}
 
 	Query struct {
@@ -190,10 +190,10 @@ type ComplexityRoot struct {
 		DeletedAt              func(childComplexity int) int
 		Duration               func(childComplexity int) int
 		ID                     func(childComplexity int) int
+		OperatorsOnDuty        func(childComplexity int) int
 		TimeWholeDay           func(childComplexity int) int
 		TimetableType          func(childComplexity int) int
 		UpdatedAt              func(childComplexity int) int
-		UsersOnDuty            func(childComplexity int) int
 	}
 
 	TimetableConnection struct {
@@ -520,12 +520,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Business.Name2(childComplexity), true
 
-	case "Business.publicUsers":
-		if e.complexity.Business.PublicUsers == nil {
+	case "Business.operators":
+		if e.complexity.Business.Operators == nil {
 			break
 		}
 
-		return e.complexity.Business.PublicUsers(childComplexity), true
+		return e.complexity.Business.Operators(childComplexity), true
 
 	case "Business.tags":
 		if e.complexity.Business.Tags == nil {
@@ -710,6 +710,48 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.UpdateTimetable(childComplexity, args["id"].(uuid.UUID), args["input"].(ent.UpdateTimetableInput)), true
 
+	case "Operator.businesses":
+		if e.complexity.Operator.Businesses == nil {
+			break
+		}
+
+		return e.complexity.Operator.Businesses(childComplexity), true
+
+	case "Operator.firstname":
+		if e.complexity.Operator.Firstname == nil {
+			break
+		}
+
+		return e.complexity.Operator.Firstname(childComplexity), true
+
+	case "Operator.id":
+		if e.complexity.Operator.ID == nil {
+			break
+		}
+
+		return e.complexity.Operator.ID(childComplexity), true
+
+	case "Operator.surname":
+		if e.complexity.Operator.Surname == nil {
+			break
+		}
+
+		return e.complexity.Operator.Surname(childComplexity), true
+
+	case "Operator.timetable":
+		if e.complexity.Operator.Timetable == nil {
+			break
+		}
+
+		return e.complexity.Operator.Timetable(childComplexity), true
+
+	case "Operator.title":
+		if e.complexity.Operator.Title == nil {
+			break
+		}
+
+		return e.complexity.Operator.Title(childComplexity), true
+
 	case "PageInfo.endCursor":
 		if e.complexity.PageInfo.EndCursor == nil {
 			break
@@ -737,48 +779,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.PageInfo.StartCursor(childComplexity), true
-
-	case "PublicUser.businesses":
-		if e.complexity.PublicUser.Businesses == nil {
-			break
-		}
-
-		return e.complexity.PublicUser.Businesses(childComplexity), true
-
-	case "PublicUser.firstname":
-		if e.complexity.PublicUser.Firstname == nil {
-			break
-		}
-
-		return e.complexity.PublicUser.Firstname(childComplexity), true
-
-	case "PublicUser.id":
-		if e.complexity.PublicUser.ID == nil {
-			break
-		}
-
-		return e.complexity.PublicUser.ID(childComplexity), true
-
-	case "PublicUser.surname":
-		if e.complexity.PublicUser.Surname == nil {
-			break
-		}
-
-		return e.complexity.PublicUser.Surname(childComplexity), true
-
-	case "PublicUser.timetable":
-		if e.complexity.PublicUser.Timetable == nil {
-			break
-		}
-
-		return e.complexity.PublicUser.Timetable(childComplexity), true
-
-	case "PublicUser.title":
-		if e.complexity.PublicUser.Title == nil {
-			break
-		}
-
-		return e.complexity.PublicUser.Title(childComplexity), true
 
 	case "Query.addresses":
 		if e.complexity.Query.Addresses == nil {
@@ -980,6 +980,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Timetable.ID(childComplexity), true
 
+	case "Timetable.operatorsOnDuty":
+		if e.complexity.Timetable.OperatorsOnDuty == nil {
+			break
+		}
+
+		return e.complexity.Timetable.OperatorsOnDuty(childComplexity), true
+
 	case "Timetable.timeWholeDay":
 		if e.complexity.Timetable.TimeWholeDay == nil {
 			break
@@ -1000,13 +1007,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Timetable.UpdatedAt(childComplexity), true
-
-	case "Timetable.usersOnDuty":
-		if e.complexity.Timetable.UsersOnDuty == nil {
-			break
-		}
-
-		return e.complexity.Timetable.UsersOnDuty(childComplexity), true
 
 	case "TimetableConnection.edges":
 		if e.complexity.TimetableConnection.Edges == nil {
@@ -1143,8 +1143,8 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputContentWhereInput,
 		ec.unmarshalInputCreateBusinessInput,
 		ec.unmarshalInputCreateTimetableInput,
-		ec.unmarshalInputPublicUserOrder,
-		ec.unmarshalInputPublicUserWhereInput,
+		ec.unmarshalInputOperatorOrder,
+		ec.unmarshalInputOperatorWhereInput,
 		ec.unmarshalInputTagOrder,
 		ec.unmarshalInputTagWhereInput,
 		ec.unmarshalInputTimetableOrder,
@@ -2232,8 +2232,8 @@ func (ec *executionContext) fieldContext_Address_business(ctx context.Context, f
 				return ec.fieldContext_Business_tags(ctx, field)
 			case "users":
 				return ec.fieldContext_Business_users(ctx, field)
-			case "publicUsers":
-				return ec.fieldContext_Business_publicUsers(ctx, field)
+			case "operators":
+				return ec.fieldContext_Business_operators(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Business", field.Name)
 		},
@@ -2307,8 +2307,8 @@ func (ec *executionContext) fieldContext_Address_timetables(ctx context.Context,
 				return ec.fieldContext_Timetable_availabilityByWhatsapp(ctx, field)
 			case "address":
 				return ec.fieldContext_Timetable_address(ctx, field)
-			case "usersOnDuty":
-				return ec.fieldContext_Timetable_usersOnDuty(ctx, field)
+			case "operatorsOnDuty":
+				return ec.fieldContext_Timetable_operatorsOnDuty(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Timetable", field.Name)
 		},
@@ -3593,8 +3593,8 @@ func (ec *executionContext) fieldContext_Business_users(ctx context.Context, fie
 	return fc, nil
 }
 
-func (ec *executionContext) _Business_publicUsers(ctx context.Context, field graphql.CollectedField, obj *ent.Business) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Business_publicUsers(ctx, field)
+func (ec *executionContext) _Business_operators(ctx context.Context, field graphql.CollectedField, obj *ent.Business) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Business_operators(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -3607,7 +3607,7 @@ func (ec *executionContext) _Business_publicUsers(ctx context.Context, field gra
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.PublicUsers(ctx)
+		return obj.Operators(ctx)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3616,12 +3616,12 @@ func (ec *executionContext) _Business_publicUsers(ctx context.Context, field gra
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*ent.PublicUser)
+	res := resTmp.([]*ent.Operator)
 	fc.Result = res
-	return ec.marshalOPublicUser2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐPublicUserᚄ(ctx, field.Selections, res)
+	return ec.marshalOOperator2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐOperatorᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Business_publicUsers(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Business_operators(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Business",
 		Field:      field,
@@ -3630,19 +3630,19 @@ func (ec *executionContext) fieldContext_Business_publicUsers(ctx context.Contex
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "id":
-				return ec.fieldContext_PublicUser_id(ctx, field)
+				return ec.fieldContext_Operator_id(ctx, field)
 			case "surname":
-				return ec.fieldContext_PublicUser_surname(ctx, field)
+				return ec.fieldContext_Operator_surname(ctx, field)
 			case "firstname":
-				return ec.fieldContext_PublicUser_firstname(ctx, field)
+				return ec.fieldContext_Operator_firstname(ctx, field)
 			case "title":
-				return ec.fieldContext_PublicUser_title(ctx, field)
+				return ec.fieldContext_Operator_title(ctx, field)
 			case "businesses":
-				return ec.fieldContext_PublicUser_businesses(ctx, field)
+				return ec.fieldContext_Operator_businesses(ctx, field)
 			case "timetable":
-				return ec.fieldContext_PublicUser_timetable(ctx, field)
+				return ec.fieldContext_Operator_timetable(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type PublicUser", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type Operator", field.Name)
 		},
 	}
 	return fc, nil
@@ -3859,8 +3859,8 @@ func (ec *executionContext) fieldContext_BusinessEdge_node(ctx context.Context, 
 				return ec.fieldContext_Business_tags(ctx, field)
 			case "users":
 				return ec.fieldContext_Business_users(ctx, field)
-			case "publicUsers":
-				return ec.fieldContext_Business_publicUsers(ctx, field)
+			case "operators":
+				return ec.fieldContext_Business_operators(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Business", field.Name)
 		},
@@ -4456,8 +4456,8 @@ func (ec *executionContext) fieldContext_Mutation_createBusiness(ctx context.Con
 				return ec.fieldContext_Business_tags(ctx, field)
 			case "users":
 				return ec.fieldContext_Business_users(ctx, field)
-			case "publicUsers":
-				return ec.fieldContext_Business_publicUsers(ctx, field)
+			case "operators":
+				return ec.fieldContext_Business_operators(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Business", field.Name)
 		},
@@ -4542,8 +4542,8 @@ func (ec *executionContext) fieldContext_Mutation_createTimetable(ctx context.Co
 				return ec.fieldContext_Timetable_availabilityByWhatsapp(ctx, field)
 			case "address":
 				return ec.fieldContext_Timetable_address(ctx, field)
-			case "usersOnDuty":
-				return ec.fieldContext_Timetable_usersOnDuty(ctx, field)
+			case "operatorsOnDuty":
+				return ec.fieldContext_Timetable_operatorsOnDuty(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Timetable", field.Name)
 		},
@@ -4628,8 +4628,8 @@ func (ec *executionContext) fieldContext_Mutation_updateTimetable(ctx context.Co
 				return ec.fieldContext_Timetable_availabilityByWhatsapp(ctx, field)
 			case "address":
 				return ec.fieldContext_Timetable_address(ctx, field)
-			case "usersOnDuty":
-				return ec.fieldContext_Timetable_usersOnDuty(ctx, field)
+			case "operatorsOnDuty":
+				return ec.fieldContext_Timetable_operatorsOnDuty(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Timetable", field.Name)
 		},
@@ -4644,6 +4644,329 @@ func (ec *executionContext) fieldContext_Mutation_updateTimetable(ctx context.Co
 	if fc.Args, err = ec.field_Mutation_updateTimetable_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Operator_id(ctx context.Context, field graphql.CollectedField, obj *ent.Operator) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Operator_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(uuid.UUID)
+	fc.Result = res
+	return ec.marshalNID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Operator_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Operator",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Operator_surname(ctx context.Context, field graphql.CollectedField, obj *ent.Operator) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Operator_surname(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Surname, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Operator_surname(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Operator",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Operator_firstname(ctx context.Context, field graphql.CollectedField, obj *ent.Operator) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Operator_firstname(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Firstname, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Operator_firstname(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Operator",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Operator_title(ctx context.Context, field graphql.CollectedField, obj *ent.Operator) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Operator_title(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Title, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalOString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Operator_title(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Operator",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Operator_businesses(ctx context.Context, field graphql.CollectedField, obj *ent.Operator) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Operator_businesses(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Businesses(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.Business)
+	fc.Result = res
+	return ec.marshalOBusiness2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐBusinessᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Operator_businesses(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Operator",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Business_id(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Business_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Business_updatedAt(ctx, field)
+			case "deletedAt":
+				return ec.fieldContext_Business_deletedAt(ctx, field)
+			case "name1":
+				return ec.fieldContext_Business_name1(ctx, field)
+			case "name2":
+				return ec.fieldContext_Business_name2(ctx, field)
+			case "alias":
+				return ec.fieldContext_Business_alias(ctx, field)
+			case "telephone":
+				return ec.fieldContext_Business_telephone(ctx, field)
+			case "email":
+				return ec.fieldContext_Business_email(ctx, field)
+			case "website":
+				return ec.fieldContext_Business_website(ctx, field)
+			case "comment":
+				return ec.fieldContext_Business_comment(ctx, field)
+			case "active":
+				return ec.fieldContext_Business_active(ctx, field)
+			case "addresses":
+				return ec.fieldContext_Business_addresses(ctx, field)
+			case "tags":
+				return ec.fieldContext_Business_tags(ctx, field)
+			case "users":
+				return ec.fieldContext_Business_users(ctx, field)
+			case "operators":
+				return ec.fieldContext_Business_operators(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Business", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Operator_timetable(ctx context.Context, field graphql.CollectedField, obj *ent.Operator) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Operator_timetable(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Timetable(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.Timetable)
+	fc.Result = res
+	return ec.marshalOTimetable2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐTimetableᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Operator_timetable(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Operator",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Timetable_id(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Timetable_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Timetable_updatedAt(ctx, field)
+			case "deletedAt":
+				return ec.fieldContext_Timetable_deletedAt(ctx, field)
+			case "timetableType":
+				return ec.fieldContext_Timetable_timetableType(ctx, field)
+			case "datetimeFrom":
+				return ec.fieldContext_Timetable_datetimeFrom(ctx, field)
+			case "duration":
+				return ec.fieldContext_Timetable_duration(ctx, field)
+			case "datetimeTo":
+				return ec.fieldContext_Timetable_datetimeTo(ctx, field)
+			case "timeWholeDay":
+				return ec.fieldContext_Timetable_timeWholeDay(ctx, field)
+			case "comment":
+				return ec.fieldContext_Timetable_comment(ctx, field)
+			case "availabilityByPhone":
+				return ec.fieldContext_Timetable_availabilityByPhone(ctx, field)
+			case "availabilityByEmail":
+				return ec.fieldContext_Timetable_availabilityByEmail(ctx, field)
+			case "availabilityBySms":
+				return ec.fieldContext_Timetable_availabilityBySms(ctx, field)
+			case "availabilityByWhatsapp":
+				return ec.fieldContext_Timetable_availabilityByWhatsapp(ctx, field)
+			case "address":
+				return ec.fieldContext_Timetable_address(ctx, field)
+			case "operatorsOnDuty":
+				return ec.fieldContext_Timetable_operatorsOnDuty(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Timetable", field.Name)
+		},
 	}
 	return fc, nil
 }
@@ -4813,329 +5136,6 @@ func (ec *executionContext) fieldContext_PageInfo_endCursor(ctx context.Context,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Cursor does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _PublicUser_id(ctx context.Context, field graphql.CollectedField, obj *ent.PublicUser) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_PublicUser_id(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.ID, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(uuid.UUID)
-	fc.Result = res
-	return ec.marshalNID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_PublicUser_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "PublicUser",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type ID does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _PublicUser_surname(ctx context.Context, field graphql.CollectedField, obj *ent.PublicUser) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_PublicUser_surname(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Surname, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_PublicUser_surname(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "PublicUser",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _PublicUser_firstname(ctx context.Context, field graphql.CollectedField, obj *ent.PublicUser) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_PublicUser_firstname(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Firstname, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_PublicUser_firstname(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "PublicUser",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _PublicUser_title(ctx context.Context, field graphql.CollectedField, obj *ent.PublicUser) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_PublicUser_title(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Title, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalOString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_PublicUser_title(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "PublicUser",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _PublicUser_businesses(ctx context.Context, field graphql.CollectedField, obj *ent.PublicUser) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_PublicUser_businesses(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Businesses(ctx)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.([]*ent.Business)
-	fc.Result = res
-	return ec.marshalOBusiness2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐBusinessᚄ(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_PublicUser_businesses(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "PublicUser",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Business_id(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Business_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_Business_updatedAt(ctx, field)
-			case "deletedAt":
-				return ec.fieldContext_Business_deletedAt(ctx, field)
-			case "name1":
-				return ec.fieldContext_Business_name1(ctx, field)
-			case "name2":
-				return ec.fieldContext_Business_name2(ctx, field)
-			case "alias":
-				return ec.fieldContext_Business_alias(ctx, field)
-			case "telephone":
-				return ec.fieldContext_Business_telephone(ctx, field)
-			case "email":
-				return ec.fieldContext_Business_email(ctx, field)
-			case "website":
-				return ec.fieldContext_Business_website(ctx, field)
-			case "comment":
-				return ec.fieldContext_Business_comment(ctx, field)
-			case "active":
-				return ec.fieldContext_Business_active(ctx, field)
-			case "addresses":
-				return ec.fieldContext_Business_addresses(ctx, field)
-			case "tags":
-				return ec.fieldContext_Business_tags(ctx, field)
-			case "users":
-				return ec.fieldContext_Business_users(ctx, field)
-			case "publicUsers":
-				return ec.fieldContext_Business_publicUsers(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Business", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _PublicUser_timetable(ctx context.Context, field graphql.CollectedField, obj *ent.PublicUser) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_PublicUser_timetable(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Timetable(ctx)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.([]*ent.Timetable)
-	fc.Result = res
-	return ec.marshalOTimetable2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐTimetableᚄ(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_PublicUser_timetable(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "PublicUser",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Timetable_id(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Timetable_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_Timetable_updatedAt(ctx, field)
-			case "deletedAt":
-				return ec.fieldContext_Timetable_deletedAt(ctx, field)
-			case "timetableType":
-				return ec.fieldContext_Timetable_timetableType(ctx, field)
-			case "datetimeFrom":
-				return ec.fieldContext_Timetable_datetimeFrom(ctx, field)
-			case "duration":
-				return ec.fieldContext_Timetable_duration(ctx, field)
-			case "datetimeTo":
-				return ec.fieldContext_Timetable_datetimeTo(ctx, field)
-			case "timeWholeDay":
-				return ec.fieldContext_Timetable_timeWholeDay(ctx, field)
-			case "comment":
-				return ec.fieldContext_Timetable_comment(ctx, field)
-			case "availabilityByPhone":
-				return ec.fieldContext_Timetable_availabilityByPhone(ctx, field)
-			case "availabilityByEmail":
-				return ec.fieldContext_Timetable_availabilityByEmail(ctx, field)
-			case "availabilityBySms":
-				return ec.fieldContext_Timetable_availabilityBySms(ctx, field)
-			case "availabilityByWhatsapp":
-				return ec.fieldContext_Timetable_availabilityByWhatsapp(ctx, field)
-			case "address":
-				return ec.fieldContext_Timetable_address(ctx, field)
-			case "usersOnDuty":
-				return ec.fieldContext_Timetable_usersOnDuty(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Timetable", field.Name)
 		},
 	}
 	return fc, nil
@@ -5890,8 +5890,8 @@ func (ec *executionContext) fieldContext_Tag_business(ctx context.Context, field
 				return ec.fieldContext_Business_tags(ctx, field)
 			case "users":
 				return ec.fieldContext_Business_users(ctx, field)
-			case "publicUsers":
-				return ec.fieldContext_Business_publicUsers(ctx, field)
+			case "operators":
+				return ec.fieldContext_Business_operators(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Business", field.Name)
 		},
@@ -6636,8 +6636,8 @@ func (ec *executionContext) fieldContext_Timetable_address(ctx context.Context, 
 	return fc, nil
 }
 
-func (ec *executionContext) _Timetable_usersOnDuty(ctx context.Context, field graphql.CollectedField, obj *ent.Timetable) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Timetable_usersOnDuty(ctx, field)
+func (ec *executionContext) _Timetable_operatorsOnDuty(ctx context.Context, field graphql.CollectedField, obj *ent.Timetable) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Timetable_operatorsOnDuty(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -6650,7 +6650,7 @@ func (ec *executionContext) _Timetable_usersOnDuty(ctx context.Context, field gr
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.UsersOnDuty(ctx)
+		return obj.OperatorsOnDuty(ctx)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -6659,12 +6659,12 @@ func (ec *executionContext) _Timetable_usersOnDuty(ctx context.Context, field gr
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*ent.PublicUser)
+	res := resTmp.([]*ent.Operator)
 	fc.Result = res
-	return ec.marshalOPublicUser2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐPublicUserᚄ(ctx, field.Selections, res)
+	return ec.marshalOOperator2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐOperatorᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Timetable_usersOnDuty(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Timetable_operatorsOnDuty(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Timetable",
 		Field:      field,
@@ -6673,19 +6673,19 @@ func (ec *executionContext) fieldContext_Timetable_usersOnDuty(ctx context.Conte
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "id":
-				return ec.fieldContext_PublicUser_id(ctx, field)
+				return ec.fieldContext_Operator_id(ctx, field)
 			case "surname":
-				return ec.fieldContext_PublicUser_surname(ctx, field)
+				return ec.fieldContext_Operator_surname(ctx, field)
 			case "firstname":
-				return ec.fieldContext_PublicUser_firstname(ctx, field)
+				return ec.fieldContext_Operator_firstname(ctx, field)
 			case "title":
-				return ec.fieldContext_PublicUser_title(ctx, field)
+				return ec.fieldContext_Operator_title(ctx, field)
 			case "businesses":
-				return ec.fieldContext_PublicUser_businesses(ctx, field)
+				return ec.fieldContext_Operator_businesses(ctx, field)
 			case "timetable":
-				return ec.fieldContext_PublicUser_timetable(ctx, field)
+				return ec.fieldContext_Operator_timetable(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type PublicUser", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type Operator", field.Name)
 		},
 	}
 	return fc, nil
@@ -6902,8 +6902,8 @@ func (ec *executionContext) fieldContext_TimetableEdge_node(ctx context.Context,
 				return ec.fieldContext_Timetable_availabilityByWhatsapp(ctx, field)
 			case "address":
 				return ec.fieldContext_Timetable_address(ctx, field)
-			case "usersOnDuty":
-				return ec.fieldContext_Timetable_usersOnDuty(ctx, field)
+			case "operatorsOnDuty":
+				return ec.fieldContext_Timetable_operatorsOnDuty(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Timetable", field.Name)
 		},
@@ -7452,8 +7452,8 @@ func (ec *executionContext) fieldContext_User_businesses(ctx context.Context, fi
 				return ec.fieldContext_Business_tags(ctx, field)
 			case "users":
 				return ec.fieldContext_Business_users(ctx, field)
-			case "publicUsers":
-				return ec.fieldContext_Business_publicUsers(ctx, field)
+			case "operators":
+				return ec.fieldContext_Business_operators(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Business", field.Name)
 		},
@@ -11623,7 +11623,7 @@ func (ec *executionContext) unmarshalInputBusinessWhereInput(ctx context.Context
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createdAt", "createdAtNEQ", "createdAtIn", "createdAtNotIn", "createdAtGT", "createdAtGTE", "createdAtLT", "createdAtLTE", "updatedAt", "updatedAtNEQ", "updatedAtIn", "updatedAtNotIn", "updatedAtGT", "updatedAtGTE", "updatedAtLT", "updatedAtLTE", "deletedAt", "deletedAtNEQ", "deletedAtIn", "deletedAtNotIn", "deletedAtGT", "deletedAtGTE", "deletedAtLT", "deletedAtLTE", "deletedAtIsNil", "deletedAtNotNil", "name1", "name1NEQ", "name1In", "name1NotIn", "name1GT", "name1GTE", "name1LT", "name1LTE", "name1Contains", "name1HasPrefix", "name1HasSuffix", "name1EqualFold", "name1ContainsFold", "name2", "name2NEQ", "name2In", "name2NotIn", "name2GT", "name2GTE", "name2LT", "name2LTE", "name2Contains", "name2HasPrefix", "name2HasSuffix", "name2IsNil", "name2NotNil", "name2EqualFold", "name2ContainsFold", "alias", "aliasNEQ", "aliasIn", "aliasNotIn", "aliasGT", "aliasGTE", "aliasLT", "aliasLTE", "aliasContains", "aliasHasPrefix", "aliasHasSuffix", "aliasEqualFold", "aliasContainsFold", "telephone", "telephoneNEQ", "telephoneIn", "telephoneNotIn", "telephoneGT", "telephoneGTE", "telephoneLT", "telephoneLTE", "telephoneContains", "telephoneHasPrefix", "telephoneHasSuffix", "telephoneIsNil", "telephoneNotNil", "telephoneEqualFold", "telephoneContainsFold", "email", "emailNEQ", "emailIn", "emailNotIn", "emailGT", "emailGTE", "emailLT", "emailLTE", "emailContains", "emailHasPrefix", "emailHasSuffix", "emailIsNil", "emailNotNil", "emailEqualFold", "emailContainsFold", "website", "websiteNEQ", "websiteIn", "websiteNotIn", "websiteGT", "websiteGTE", "websiteLT", "websiteLTE", "websiteContains", "websiteHasPrefix", "websiteHasSuffix", "websiteIsNil", "websiteNotNil", "websiteEqualFold", "websiteContainsFold", "comment", "commentNEQ", "commentIn", "commentNotIn", "commentGT", "commentGTE", "commentLT", "commentLTE", "commentContains", "commentHasPrefix", "commentHasSuffix", "commentIsNil", "commentNotNil", "commentEqualFold", "commentContainsFold", "active", "activeNEQ", "hasAddresses", "hasAddressesWith", "hasTags", "hasTagsWith", "hasUsers", "hasUsersWith", "hasPublicUsers", "hasPublicUsersWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createdAt", "createdAtNEQ", "createdAtIn", "createdAtNotIn", "createdAtGT", "createdAtGTE", "createdAtLT", "createdAtLTE", "updatedAt", "updatedAtNEQ", "updatedAtIn", "updatedAtNotIn", "updatedAtGT", "updatedAtGTE", "updatedAtLT", "updatedAtLTE", "deletedAt", "deletedAtNEQ", "deletedAtIn", "deletedAtNotIn", "deletedAtGT", "deletedAtGTE", "deletedAtLT", "deletedAtLTE", "deletedAtIsNil", "deletedAtNotNil", "name1", "name1NEQ", "name1In", "name1NotIn", "name1GT", "name1GTE", "name1LT", "name1LTE", "name1Contains", "name1HasPrefix", "name1HasSuffix", "name1EqualFold", "name1ContainsFold", "name2", "name2NEQ", "name2In", "name2NotIn", "name2GT", "name2GTE", "name2LT", "name2LTE", "name2Contains", "name2HasPrefix", "name2HasSuffix", "name2IsNil", "name2NotNil", "name2EqualFold", "name2ContainsFold", "alias", "aliasNEQ", "aliasIn", "aliasNotIn", "aliasGT", "aliasGTE", "aliasLT", "aliasLTE", "aliasContains", "aliasHasPrefix", "aliasHasSuffix", "aliasEqualFold", "aliasContainsFold", "telephone", "telephoneNEQ", "telephoneIn", "telephoneNotIn", "telephoneGT", "telephoneGTE", "telephoneLT", "telephoneLTE", "telephoneContains", "telephoneHasPrefix", "telephoneHasSuffix", "telephoneIsNil", "telephoneNotNil", "telephoneEqualFold", "telephoneContainsFold", "email", "emailNEQ", "emailIn", "emailNotIn", "emailGT", "emailGTE", "emailLT", "emailLTE", "emailContains", "emailHasPrefix", "emailHasSuffix", "emailIsNil", "emailNotNil", "emailEqualFold", "emailContainsFold", "website", "websiteNEQ", "websiteIn", "websiteNotIn", "websiteGT", "websiteGTE", "websiteLT", "websiteLTE", "websiteContains", "websiteHasPrefix", "websiteHasSuffix", "websiteIsNil", "websiteNotNil", "websiteEqualFold", "websiteContainsFold", "comment", "commentNEQ", "commentIn", "commentNotIn", "commentGT", "commentGTE", "commentLT", "commentLTE", "commentContains", "commentHasPrefix", "commentHasSuffix", "commentIsNil", "commentNotNil", "commentEqualFold", "commentContainsFold", "active", "activeNEQ", "hasAddresses", "hasAddressesWith", "hasTags", "hasTagsWith", "hasUsers", "hasUsersWith", "hasOperators", "hasOperatorsWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -12944,24 +12944,24 @@ func (ec *executionContext) unmarshalInputBusinessWhereInput(ctx context.Context
 				return it, err
 			}
 			it.HasUsersWith = data
-		case "hasPublicUsers":
+		case "hasOperators":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasPublicUsers"))
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasOperators"))
 			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.HasPublicUsers = data
-		case "hasPublicUsersWith":
+			it.HasOperators = data
+		case "hasOperatorsWith":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasPublicUsersWith"))
-			data, err := ec.unmarshalOPublicUserWhereInput2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐPublicUserWhereInputᚄ(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasOperatorsWith"))
+			data, err := ec.unmarshalOOperatorWhereInput2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐOperatorWhereInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.HasPublicUsersWith = data
+			it.HasOperatorsWith = data
 		}
 	}
 
@@ -13838,7 +13838,7 @@ func (ec *executionContext) unmarshalInputCreateBusinessInput(ctx context.Contex
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"createdAt", "updatedAt", "deletedAt", "name1", "name2", "alias", "telephone", "email", "website", "comment", "active", "addressIDs", "tagIDs", "userIDs", "publicUserIDs"}
+	fieldsInOrder := [...]string{"createdAt", "updatedAt", "deletedAt", "name1", "name2", "alias", "telephone", "email", "website", "comment", "active", "addressIDs", "tagIDs", "userIDs", "operatorIDs"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -13971,15 +13971,15 @@ func (ec *executionContext) unmarshalInputCreateBusinessInput(ctx context.Contex
 				return it, err
 			}
 			it.UserIDs = data
-		case "publicUserIDs":
+		case "operatorIDs":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("publicUserIDs"))
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("operatorIDs"))
 			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.PublicUserIDs = data
+			it.OperatorIDs = data
 		}
 	}
 
@@ -13993,7 +13993,7 @@ func (ec *executionContext) unmarshalInputCreateTimetableInput(ctx context.Conte
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"createdAt", "updatedAt", "deletedAt", "timetableType", "datetimeFrom", "duration", "datetimeTo", "timeWholeDay", "comment", "availabilityByPhone", "availabilityByEmail", "availabilityBySms", "availabilityByWhatsapp", "addressID", "usersOnDutyIDs"}
+	fieldsInOrder := [...]string{"createdAt", "updatedAt", "deletedAt", "timetableType", "datetimeFrom", "duration", "datetimeTo", "timeWholeDay", "comment", "availabilityByPhone", "availabilityByEmail", "availabilityBySms", "availabilityByWhatsapp", "addressID", "operatorsOnDutyIDs"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -14126,23 +14126,23 @@ func (ec *executionContext) unmarshalInputCreateTimetableInput(ctx context.Conte
 				return it, err
 			}
 			it.AddressID = data
-		case "usersOnDutyIDs":
+		case "operatorsOnDutyIDs":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("usersOnDutyIDs"))
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("operatorsOnDutyIDs"))
 			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.UsersOnDutyIDs = data
+			it.OperatorsOnDutyIDs = data
 		}
 	}
 
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputPublicUserOrder(ctx context.Context, obj interface{}) (ent.PublicUserOrder, error) {
-	var it ent.PublicUserOrder
+func (ec *executionContext) unmarshalInputOperatorOrder(ctx context.Context, obj interface{}) (ent.OperatorOrder, error) {
+	var it ent.OperatorOrder
 	asMap := map[string]interface{}{}
 	for k, v := range obj.(map[string]interface{}) {
 		asMap[k] = v
@@ -14172,7 +14172,7 @@ func (ec *executionContext) unmarshalInputPublicUserOrder(ctx context.Context, o
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("field"))
-			data, err := ec.unmarshalNPublicUserOrderField2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐPublicUserOrderField(ctx, v)
+			data, err := ec.unmarshalNOperatorOrderField2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐOperatorOrderField(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -14183,8 +14183,8 @@ func (ec *executionContext) unmarshalInputPublicUserOrder(ctx context.Context, o
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputPublicUserWhereInput(ctx context.Context, obj interface{}) (ent.PublicUserWhereInput, error) {
-	var it ent.PublicUserWhereInput
+func (ec *executionContext) unmarshalInputOperatorWhereInput(ctx context.Context, obj interface{}) (ent.OperatorWhereInput, error) {
+	var it ent.OperatorWhereInput
 	asMap := map[string]interface{}{}
 	for k, v := range obj.(map[string]interface{}) {
 		asMap[k] = v
@@ -14201,7 +14201,7 @@ func (ec *executionContext) unmarshalInputPublicUserWhereInput(ctx context.Conte
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("not"))
-			data, err := ec.unmarshalOPublicUserWhereInput2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐPublicUserWhereInput(ctx, v)
+			data, err := ec.unmarshalOOperatorWhereInput2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐOperatorWhereInput(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -14210,7 +14210,7 @@ func (ec *executionContext) unmarshalInputPublicUserWhereInput(ctx context.Conte
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("and"))
-			data, err := ec.unmarshalOPublicUserWhereInput2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐPublicUserWhereInputᚄ(ctx, v)
+			data, err := ec.unmarshalOOperatorWhereInput2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐOperatorWhereInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -14219,7 +14219,7 @@ func (ec *executionContext) unmarshalInputPublicUserWhereInput(ctx context.Conte
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("or"))
-			data, err := ec.unmarshalOPublicUserWhereInput2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐPublicUserWhereInputᚄ(ctx, v)
+			data, err := ec.unmarshalOOperatorWhereInput2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐOperatorWhereInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -15439,7 +15439,7 @@ func (ec *executionContext) unmarshalInputTimetableWhereInput(ctx context.Contex
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createdAt", "createdAtNEQ", "createdAtIn", "createdAtNotIn", "createdAtGT", "createdAtGTE", "createdAtLT", "createdAtLTE", "updatedAt", "updatedAtNEQ", "updatedAtIn", "updatedAtNotIn", "updatedAtGT", "updatedAtGTE", "updatedAtLT", "updatedAtLTE", "deletedAt", "deletedAtNEQ", "deletedAtIn", "deletedAtNotIn", "deletedAtGT", "deletedAtGTE", "deletedAtLT", "deletedAtLTE", "deletedAtIsNil", "deletedAtNotNil", "timetableType", "timetableTypeNEQ", "timetableTypeIn", "timetableTypeNotIn", "datetimeFrom", "datetimeFromNEQ", "datetimeFromIn", "datetimeFromNotIn", "datetimeFromGT", "datetimeFromGTE", "datetimeFromLT", "datetimeFromLTE", "duration", "durationNEQ", "durationIn", "durationNotIn", "durationGT", "durationGTE", "durationLT", "durationLTE", "durationIsNil", "durationNotNil", "datetimeTo", "datetimeToNEQ", "datetimeToIn", "datetimeToNotIn", "datetimeToGT", "datetimeToGTE", "datetimeToLT", "datetimeToLTE", "datetimeToIsNil", "datetimeToNotNil", "timeWholeDay", "timeWholeDayNEQ", "comment", "commentNEQ", "commentIn", "commentNotIn", "commentGT", "commentGTE", "commentLT", "commentLTE", "commentContains", "commentHasPrefix", "commentHasSuffix", "commentIsNil", "commentNotNil", "commentEqualFold", "commentContainsFold", "availabilityByPhone", "availabilityByPhoneNEQ", "availabilityByPhoneIn", "availabilityByPhoneNotIn", "availabilityByPhoneGT", "availabilityByPhoneGTE", "availabilityByPhoneLT", "availabilityByPhoneLTE", "availabilityByPhoneContains", "availabilityByPhoneHasPrefix", "availabilityByPhoneHasSuffix", "availabilityByPhoneIsNil", "availabilityByPhoneNotNil", "availabilityByPhoneEqualFold", "availabilityByPhoneContainsFold", "availabilityByEmail", "availabilityByEmailNEQ", "availabilityByEmailIn", "availabilityByEmailNotIn", "availabilityByEmailGT", "availabilityByEmailGTE", "availabilityByEmailLT", "availabilityByEmailLTE", "availabilityByEmailContains", "availabilityByEmailHasPrefix", "availabilityByEmailHasSuffix", "availabilityByEmailIsNil", "availabilityByEmailNotNil", "availabilityByEmailEqualFold", "availabilityByEmailContainsFold", "availabilityBySms", "availabilityBySmsNEQ", "availabilityBySmsIn", "availabilityBySmsNotIn", "availabilityBySmsGT", "availabilityBySmsGTE", "availabilityBySmsLT", "availabilityBySmsLTE", "availabilityBySmsContains", "availabilityBySmsHasPrefix", "availabilityBySmsHasSuffix", "availabilityBySmsIsNil", "availabilityBySmsNotNil", "availabilityBySmsEqualFold", "availabilityBySmsContainsFold", "availabilityByWhatsapp", "availabilityByWhatsappNEQ", "availabilityByWhatsappIn", "availabilityByWhatsappNotIn", "availabilityByWhatsappGT", "availabilityByWhatsappGTE", "availabilityByWhatsappLT", "availabilityByWhatsappLTE", "availabilityByWhatsappContains", "availabilityByWhatsappHasPrefix", "availabilityByWhatsappHasSuffix", "availabilityByWhatsappIsNil", "availabilityByWhatsappNotNil", "availabilityByWhatsappEqualFold", "availabilityByWhatsappContainsFold", "hasAddress", "hasAddressWith", "hasUsersOnDuty", "hasUsersOnDutyWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createdAt", "createdAtNEQ", "createdAtIn", "createdAtNotIn", "createdAtGT", "createdAtGTE", "createdAtLT", "createdAtLTE", "updatedAt", "updatedAtNEQ", "updatedAtIn", "updatedAtNotIn", "updatedAtGT", "updatedAtGTE", "updatedAtLT", "updatedAtLTE", "deletedAt", "deletedAtNEQ", "deletedAtIn", "deletedAtNotIn", "deletedAtGT", "deletedAtGTE", "deletedAtLT", "deletedAtLTE", "deletedAtIsNil", "deletedAtNotNil", "timetableType", "timetableTypeNEQ", "timetableTypeIn", "timetableTypeNotIn", "datetimeFrom", "datetimeFromNEQ", "datetimeFromIn", "datetimeFromNotIn", "datetimeFromGT", "datetimeFromGTE", "datetimeFromLT", "datetimeFromLTE", "duration", "durationNEQ", "durationIn", "durationNotIn", "durationGT", "durationGTE", "durationLT", "durationLTE", "durationIsNil", "durationNotNil", "datetimeTo", "datetimeToNEQ", "datetimeToIn", "datetimeToNotIn", "datetimeToGT", "datetimeToGTE", "datetimeToLT", "datetimeToLTE", "datetimeToIsNil", "datetimeToNotNil", "timeWholeDay", "timeWholeDayNEQ", "comment", "commentNEQ", "commentIn", "commentNotIn", "commentGT", "commentGTE", "commentLT", "commentLTE", "commentContains", "commentHasPrefix", "commentHasSuffix", "commentIsNil", "commentNotNil", "commentEqualFold", "commentContainsFold", "availabilityByPhone", "availabilityByPhoneNEQ", "availabilityByPhoneIn", "availabilityByPhoneNotIn", "availabilityByPhoneGT", "availabilityByPhoneGTE", "availabilityByPhoneLT", "availabilityByPhoneLTE", "availabilityByPhoneContains", "availabilityByPhoneHasPrefix", "availabilityByPhoneHasSuffix", "availabilityByPhoneIsNil", "availabilityByPhoneNotNil", "availabilityByPhoneEqualFold", "availabilityByPhoneContainsFold", "availabilityByEmail", "availabilityByEmailNEQ", "availabilityByEmailIn", "availabilityByEmailNotIn", "availabilityByEmailGT", "availabilityByEmailGTE", "availabilityByEmailLT", "availabilityByEmailLTE", "availabilityByEmailContains", "availabilityByEmailHasPrefix", "availabilityByEmailHasSuffix", "availabilityByEmailIsNil", "availabilityByEmailNotNil", "availabilityByEmailEqualFold", "availabilityByEmailContainsFold", "availabilityBySms", "availabilityBySmsNEQ", "availabilityBySmsIn", "availabilityBySmsNotIn", "availabilityBySmsGT", "availabilityBySmsGTE", "availabilityBySmsLT", "availabilityBySmsLTE", "availabilityBySmsContains", "availabilityBySmsHasPrefix", "availabilityBySmsHasSuffix", "availabilityBySmsIsNil", "availabilityBySmsNotNil", "availabilityBySmsEqualFold", "availabilityBySmsContainsFold", "availabilityByWhatsapp", "availabilityByWhatsappNEQ", "availabilityByWhatsappIn", "availabilityByWhatsappNotIn", "availabilityByWhatsappGT", "availabilityByWhatsappGTE", "availabilityByWhatsappLT", "availabilityByWhatsappLTE", "availabilityByWhatsappContains", "availabilityByWhatsappHasPrefix", "availabilityByWhatsappHasSuffix", "availabilityByWhatsappIsNil", "availabilityByWhatsappNotNil", "availabilityByWhatsappEqualFold", "availabilityByWhatsappContainsFold", "hasAddress", "hasAddressWith", "hasOperatorsOnDuty", "hasOperatorsOnDutyWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -16778,24 +16778,24 @@ func (ec *executionContext) unmarshalInputTimetableWhereInput(ctx context.Contex
 				return it, err
 			}
 			it.HasAddressWith = data
-		case "hasUsersOnDuty":
+		case "hasOperatorsOnDuty":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasUsersOnDuty"))
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasOperatorsOnDuty"))
 			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.HasUsersOnDuty = data
-		case "hasUsersOnDutyWith":
+			it.HasOperatorsOnDuty = data
+		case "hasOperatorsOnDutyWith":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasUsersOnDutyWith"))
-			data, err := ec.unmarshalOPublicUserWhereInput2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐPublicUserWhereInputᚄ(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasOperatorsOnDutyWith"))
+			data, err := ec.unmarshalOOperatorWhereInput2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐOperatorWhereInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.HasUsersOnDutyWith = data
+			it.HasOperatorsOnDutyWith = data
 		}
 	}
 
@@ -16809,7 +16809,7 @@ func (ec *executionContext) unmarshalInputUpdateTimetableInput(ctx context.Conte
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"updatedAt", "deletedAt", "clearDeletedAt", "timetableType", "datetimeFrom", "duration", "clearDuration", "datetimeTo", "clearDatetimeTo", "timeWholeDay", "comment", "clearComment", "availabilityByPhone", "clearAvailabilityByPhone", "availabilityByEmail", "clearAvailabilityByEmail", "availabilityBySms", "clearAvailabilityBySms", "availabilityByWhatsapp", "clearAvailabilityByWhatsapp", "addressID", "addUsersOnDutyIDs", "removeUsersOnDutyIDs", "clearUsersOnDuty"}
+	fieldsInOrder := [...]string{"updatedAt", "deletedAt", "clearDeletedAt", "timetableType", "datetimeFrom", "duration", "clearDuration", "datetimeTo", "clearDatetimeTo", "timeWholeDay", "comment", "clearComment", "availabilityByPhone", "clearAvailabilityByPhone", "availabilityByEmail", "clearAvailabilityByEmail", "availabilityBySms", "clearAvailabilityBySms", "availabilityByWhatsapp", "clearAvailabilityByWhatsapp", "addressID", "addOperatorsOnDutyIDs", "removeOperatorsOnDutyIDs", "clearOperatorsOnDuty"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -17005,33 +17005,33 @@ func (ec *executionContext) unmarshalInputUpdateTimetableInput(ctx context.Conte
 				return it, err
 			}
 			it.AddressID = data
-		case "addUsersOnDutyIDs":
+		case "addOperatorsOnDutyIDs":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("addUsersOnDutyIDs"))
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("addOperatorsOnDutyIDs"))
 			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.AddUsersOnDutyIDs = data
-		case "removeUsersOnDutyIDs":
+			it.AddOperatorsOnDutyIDs = data
+		case "removeOperatorsOnDutyIDs":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("removeUsersOnDutyIDs"))
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("removeOperatorsOnDutyIDs"))
 			data, err := ec.unmarshalOID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.RemoveUsersOnDutyIDs = data
-		case "clearUsersOnDuty":
+			it.RemoveOperatorsOnDutyIDs = data
+		case "clearOperatorsOnDuty":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearUsersOnDuty"))
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearOperatorsOnDuty"))
 			data, err := ec.unmarshalOBoolean2bool(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.ClearUsersOnDuty = data
+			it.ClearOperatorsOnDuty = data
 		}
 	}
 
@@ -18136,11 +18136,11 @@ func (ec *executionContext) _Node(ctx context.Context, sel ast.SelectionSet, obj
 			return graphql.Null
 		}
 		return ec._Content(ctx, sel, obj)
-	case *ent.PublicUser:
+	case *ent.Operator:
 		if obj == nil {
 			return graphql.Null
 		}
-		return ec._PublicUser(ctx, sel, obj)
+		return ec._Operator(ctx, sel, obj)
 	case *ent.Tag:
 		if obj == nil {
 			return graphql.Null
@@ -18641,7 +18641,7 @@ func (ec *executionContext) _Business(ctx context.Context, sel ast.SelectionSet,
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "publicUsers":
+		case "operators":
 			field := field
 
 			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
@@ -18650,7 +18650,7 @@ func (ec *executionContext) _Business(ctx context.Context, sel ast.SelectionSet,
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Business_publicUsers(ctx, field, obj)
+				res = ec._Business_operators(ctx, field, obj)
 				return res
 			}
 
@@ -18921,82 +18921,34 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 	return out
 }
 
-var pageInfoImplementors = []string{"PageInfo"}
+var operatorImplementors = []string{"Operator", "Node"}
 
-func (ec *executionContext) _PageInfo(ctx context.Context, sel ast.SelectionSet, obj *entgql.PageInfo[uuid.UUID]) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, pageInfoImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	deferred := make(map[string]*graphql.FieldSet)
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("PageInfo")
-		case "hasNextPage":
-			out.Values[i] = ec._PageInfo_hasNextPage(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "hasPreviousPage":
-			out.Values[i] = ec._PageInfo_hasPreviousPage(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "startCursor":
-			out.Values[i] = ec._PageInfo_startCursor(ctx, field, obj)
-		case "endCursor":
-			out.Values[i] = ec._PageInfo_endCursor(ctx, field, obj)
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch(ctx)
-	if out.Invalids > 0 {
-		return graphql.Null
-	}
-
-	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
-
-	for label, dfs := range deferred {
-		ec.processDeferredGroup(graphql.DeferredGroup{
-			Label:    label,
-			Path:     graphql.GetPath(ctx),
-			FieldSet: dfs,
-			Context:  ctx,
-		})
-	}
-
-	return out
-}
-
-var publicUserImplementors = []string{"PublicUser", "Node"}
-
-func (ec *executionContext) _PublicUser(ctx context.Context, sel ast.SelectionSet, obj *ent.PublicUser) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, publicUserImplementors)
+func (ec *executionContext) _Operator(ctx context.Context, sel ast.SelectionSet, obj *ent.Operator) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, operatorImplementors)
 
 	out := graphql.NewFieldSet(fields)
 	deferred := make(map[string]*graphql.FieldSet)
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
-			out.Values[i] = graphql.MarshalString("PublicUser")
+			out.Values[i] = graphql.MarshalString("Operator")
 		case "id":
-			out.Values[i] = ec._PublicUser_id(ctx, field, obj)
+			out.Values[i] = ec._Operator_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "surname":
-			out.Values[i] = ec._PublicUser_surname(ctx, field, obj)
+			out.Values[i] = ec._Operator_surname(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "firstname":
-			out.Values[i] = ec._PublicUser_firstname(ctx, field, obj)
+			out.Values[i] = ec._Operator_firstname(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
 		case "title":
-			out.Values[i] = ec._PublicUser_title(ctx, field, obj)
+			out.Values[i] = ec._Operator_title(ctx, field, obj)
 		case "businesses":
 			field := field
 
@@ -19006,7 +18958,7 @@ func (ec *executionContext) _PublicUser(ctx context.Context, sel ast.SelectionSe
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._PublicUser_businesses(ctx, field, obj)
+				res = ec._Operator_businesses(ctx, field, obj)
 				return res
 			}
 
@@ -19039,7 +18991,7 @@ func (ec *executionContext) _PublicUser(ctx context.Context, sel ast.SelectionSe
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._PublicUser_timetable(ctx, field, obj)
+				res = ec._Operator_timetable(ctx, field, obj)
 				return res
 			}
 
@@ -19063,6 +19015,54 @@ func (ec *executionContext) _PublicUser(ctx context.Context, sel ast.SelectionSe
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var pageInfoImplementors = []string{"PageInfo"}
+
+func (ec *executionContext) _PageInfo(ctx context.Context, sel ast.SelectionSet, obj *entgql.PageInfo[uuid.UUID]) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, pageInfoImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("PageInfo")
+		case "hasNextPage":
+			out.Values[i] = ec._PageInfo_hasNextPage(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "hasPreviousPage":
+			out.Values[i] = ec._PageInfo_hasPreviousPage(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "startCursor":
+			out.Values[i] = ec._PageInfo_startCursor(ctx, field, obj)
+		case "endCursor":
+			out.Values[i] = ec._PageInfo_endCursor(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -19460,7 +19460,7 @@ func (ec *executionContext) _Timetable(ctx context.Context, sel ast.SelectionSet
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "usersOnDuty":
+		case "operatorsOnDuty":
 			field := field
 
 			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
@@ -19469,7 +19469,7 @@ func (ec *executionContext) _Timetable(ctx context.Context, sel ast.SelectionSet
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Timetable_usersOnDuty(ctx, field, obj)
+				res = ec._Timetable_operatorsOnDuty(ctx, field, obj)
 				return res
 			}
 
@@ -20350,6 +20350,37 @@ func (ec *executionContext) marshalNNode2ᚕgithubᚗcomᚋhkonitzerᚋohmabᚋe
 	return ret
 }
 
+func (ec *executionContext) marshalNOperator2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐOperator(ctx context.Context, sel ast.SelectionSet, v *ent.Operator) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Operator(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNOperatorOrderField2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐOperatorOrderField(ctx context.Context, v interface{}) (*ent.OperatorOrderField, error) {
+	var res = new(ent.OperatorOrderField)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNOperatorOrderField2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐOperatorOrderField(ctx context.Context, sel ast.SelectionSet, v *ent.OperatorOrderField) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return v
+}
+
+func (ec *executionContext) unmarshalNOperatorWhereInput2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐOperatorWhereInput(ctx context.Context, v interface{}) (*ent.OperatorWhereInput, error) {
+	res, err := ec.unmarshalInputOperatorWhereInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalNOrderDirection2entgoᚗioᚋcontribᚋentgqlᚐOrderDirection(ctx context.Context, v interface{}) (entgql.OrderDirection, error) {
 	var res entgql.OrderDirection
 	err := res.UnmarshalGQL(v)
@@ -20362,37 +20393,6 @@ func (ec *executionContext) marshalNOrderDirection2entgoᚗioᚋcontribᚋentgql
 
 func (ec *executionContext) marshalNPageInfo2entgoᚗioᚋcontribᚋentgqlᚐPageInfo(ctx context.Context, sel ast.SelectionSet, v entgql.PageInfo[uuid.UUID]) graphql.Marshaler {
 	return ec._PageInfo(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNPublicUser2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐPublicUser(ctx context.Context, sel ast.SelectionSet, v *ent.PublicUser) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._PublicUser(ctx, sel, v)
-}
-
-func (ec *executionContext) unmarshalNPublicUserOrderField2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐPublicUserOrderField(ctx context.Context, v interface{}) (*ent.PublicUserOrderField, error) {
-	var res = new(ent.PublicUserOrderField)
-	err := res.UnmarshalGQL(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNPublicUserOrderField2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐPublicUserOrderField(ctx context.Context, sel ast.SelectionSet, v *ent.PublicUserOrderField) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return v
-}
-
-func (ec *executionContext) unmarshalNPublicUserWhereInput2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐPublicUserWhereInput(ctx context.Context, v interface{}) (*ent.PublicUserWhereInput, error) {
-	res, err := ec.unmarshalInputPublicUserWhereInput(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {
@@ -21656,7 +21656,7 @@ func (ec *executionContext) marshalONode2githubᚗcomᚋhkonitzerᚋohmabᚋent�
 	return ec._Node(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOPublicUser2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐPublicUserᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.PublicUser) graphql.Marshaler {
+func (ec *executionContext) marshalOOperator2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐOperatorᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.Operator) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -21683,7 +21683,7 @@ func (ec *executionContext) marshalOPublicUser2ᚕᚖgithubᚗcomᚋhkonitzerᚋ
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNPublicUser2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐPublicUser(ctx, sel, v[i])
+			ret[i] = ec.marshalNOperator2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐOperator(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -21703,7 +21703,7 @@ func (ec *executionContext) marshalOPublicUser2ᚕᚖgithubᚗcomᚋhkonitzerᚋ
 	return ret
 }
 
-func (ec *executionContext) unmarshalOPublicUserWhereInput2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐPublicUserWhereInputᚄ(ctx context.Context, v interface{}) ([]*ent.PublicUserWhereInput, error) {
+func (ec *executionContext) unmarshalOOperatorWhereInput2ᚕᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐOperatorWhereInputᚄ(ctx context.Context, v interface{}) ([]*ent.OperatorWhereInput, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -21712,10 +21712,10 @@ func (ec *executionContext) unmarshalOPublicUserWhereInput2ᚕᚖgithubᚗcomᚋ
 		vSlice = graphql.CoerceList(v)
 	}
 	var err error
-	res := make([]*ent.PublicUserWhereInput, len(vSlice))
+	res := make([]*ent.OperatorWhereInput, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNPublicUserWhereInput2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐPublicUserWhereInput(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNOperatorWhereInput2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐOperatorWhereInput(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
@@ -21723,11 +21723,11 @@ func (ec *executionContext) unmarshalOPublicUserWhereInput2ᚕᚖgithubᚗcomᚋ
 	return res, nil
 }
 
-func (ec *executionContext) unmarshalOPublicUserWhereInput2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐPublicUserWhereInput(ctx context.Context, v interface{}) (*ent.PublicUserWhereInput, error) {
+func (ec *executionContext) unmarshalOOperatorWhereInput2ᚖgithubᚗcomᚋhkonitzerᚋohmabᚋentᚐOperatorWhereInput(ctx context.Context, v interface{}) (*ent.OperatorWhereInput, error) {
 	if v == nil {
 		return nil, nil
 	}
-	res, err := ec.unmarshalInputPublicUserWhereInput(ctx, v)
+	res, err := ec.unmarshalInputOperatorWhereInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 

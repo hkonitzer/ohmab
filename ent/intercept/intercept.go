@@ -13,8 +13,8 @@ import (
 	"github.com/hkonitzer/ohmab/ent/auditlog"
 	"github.com/hkonitzer/ohmab/ent/business"
 	"github.com/hkonitzer/ohmab/ent/content"
+	"github.com/hkonitzer/ohmab/ent/operator"
 	"github.com/hkonitzer/ohmab/ent/predicate"
-	"github.com/hkonitzer/ohmab/ent/publicuser"
 	"github.com/hkonitzer/ohmab/ent/tag"
 	"github.com/hkonitzer/ohmab/ent/timetable"
 	"github.com/hkonitzer/ohmab/ent/user"
@@ -184,31 +184,31 @@ func (f TraverseContent) Traverse(ctx context.Context, q ent.Query) error {
 	return fmt.Errorf("unexpected query type %T. expect *ent.ContentQuery", q)
 }
 
-// The PublicUserFunc type is an adapter to allow the use of ordinary function as a Querier.
-type PublicUserFunc func(context.Context, *ent.PublicUserQuery) (ent.Value, error)
+// The OperatorFunc type is an adapter to allow the use of ordinary function as a Querier.
+type OperatorFunc func(context.Context, *ent.OperatorQuery) (ent.Value, error)
 
 // Query calls f(ctx, q).
-func (f PublicUserFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
-	if q, ok := q.(*ent.PublicUserQuery); ok {
+func (f OperatorFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.OperatorQuery); ok {
 		return f(ctx, q)
 	}
-	return nil, fmt.Errorf("unexpected query type %T. expect *ent.PublicUserQuery", q)
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.OperatorQuery", q)
 }
 
-// The TraversePublicUser type is an adapter to allow the use of ordinary function as Traverser.
-type TraversePublicUser func(context.Context, *ent.PublicUserQuery) error
+// The TraverseOperator type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseOperator func(context.Context, *ent.OperatorQuery) error
 
 // Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
-func (f TraversePublicUser) Intercept(next ent.Querier) ent.Querier {
+func (f TraverseOperator) Intercept(next ent.Querier) ent.Querier {
 	return next
 }
 
 // Traverse calls f(ctx, q).
-func (f TraversePublicUser) Traverse(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.PublicUserQuery); ok {
+func (f TraverseOperator) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.OperatorQuery); ok {
 		return f(ctx, q)
 	}
-	return fmt.Errorf("unexpected query type %T. expect *ent.PublicUserQuery", q)
+	return fmt.Errorf("unexpected query type %T. expect *ent.OperatorQuery", q)
 }
 
 // The TagFunc type is an adapter to allow the use of ordinary function as a Querier.
@@ -303,8 +303,8 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.BusinessQuery, predicate.Business, business.OrderOption]{typ: ent.TypeBusiness, tq: q}, nil
 	case *ent.ContentQuery:
 		return &query[*ent.ContentQuery, predicate.Content, content.OrderOption]{typ: ent.TypeContent, tq: q}, nil
-	case *ent.PublicUserQuery:
-		return &query[*ent.PublicUserQuery, predicate.PublicUser, publicuser.OrderOption]{typ: ent.TypePublicUser, tq: q}, nil
+	case *ent.OperatorQuery:
+		return &query[*ent.OperatorQuery, predicate.Operator, operator.OrderOption]{typ: ent.TypeOperator, tq: q}, nil
 	case *ent.TagQuery:
 		return &query[*ent.TagQuery, predicate.Tag, tag.OrderOption]{typ: ent.TypeTag, tq: q}, nil
 	case *ent.TimetableQuery:

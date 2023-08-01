@@ -231,15 +231,24 @@ func main() {
 					case "bool":
 						boolField, _ := strconv.ParseBool(field)
 						err_ = timetableCreate.Mutation().SetField(schemaField, boolField)
+						if err_ != nil {
+							logger.Fatal().Msgf("Error setting timetable field '%s' to '%s': %v", schemaField, field, err_)
+						}
 					case "uint8":
 						uint64Value, _ := strconv.ParseUint(field, 10, 8)
 						uint8Value := uint8(uint64Value)
 						err_ = timetableCreate.Mutation().SetField(schemaField, uint8Value)
+						if err_ != nil {
+							logger.Fatal().Msgf("Error setting timetable field '%s' to '%s': %v", schemaField, field, err_)
+						}
+					case "int":
+						i, _ := strconv.Atoi(field)
+						err_ = timetableCreate.Mutation().SetField(schemaField, i)
 					default: // string
 						err_ = timetableCreate.Mutation().SetField(schemaField, field)
-					}
-					if err_ != nil {
-						logger.Fatal().Msgf("Error setting timetable field '%s' to '%s': %v", schemaField, field, err_)
+						if err_ != nil {
+							logger.Fatal().Msgf("Error setting timetable field '%s' to '%s': %v", schemaField, field, err_)
+						}
 					}
 				}
 			default:

@@ -15,8 +15,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/hkonitzer/ohmab/ent/address"
 	"github.com/hkonitzer/ohmab/ent/business"
+	"github.com/hkonitzer/ohmab/ent/operator"
 	"github.com/hkonitzer/ohmab/ent/predicate"
-	"github.com/hkonitzer/ohmab/ent/publicuser"
 	"github.com/hkonitzer/ohmab/ent/tag"
 	"github.com/hkonitzer/ohmab/ent/user"
 )
@@ -231,19 +231,19 @@ func (bu *BusinessUpdate) AddUsers(u ...*User) *BusinessUpdate {
 	return bu.AddUserIDs(ids...)
 }
 
-// AddPublicUserIDs adds the "public_users" edge to the PublicUser entity by IDs.
-func (bu *BusinessUpdate) AddPublicUserIDs(ids ...uuid.UUID) *BusinessUpdate {
-	bu.mutation.AddPublicUserIDs(ids...)
+// AddOperatorIDs adds the "operators" edge to the Operator entity by IDs.
+func (bu *BusinessUpdate) AddOperatorIDs(ids ...uuid.UUID) *BusinessUpdate {
+	bu.mutation.AddOperatorIDs(ids...)
 	return bu
 }
 
-// AddPublicUsers adds the "public_users" edges to the PublicUser entity.
-func (bu *BusinessUpdate) AddPublicUsers(p ...*PublicUser) *BusinessUpdate {
-	ids := make([]uuid.UUID, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
+// AddOperators adds the "operators" edges to the Operator entity.
+func (bu *BusinessUpdate) AddOperators(o ...*Operator) *BusinessUpdate {
+	ids := make([]uuid.UUID, len(o))
+	for i := range o {
+		ids[i] = o[i].ID
 	}
-	return bu.AddPublicUserIDs(ids...)
+	return bu.AddOperatorIDs(ids...)
 }
 
 // Mutation returns the BusinessMutation object of the builder.
@@ -314,25 +314,25 @@ func (bu *BusinessUpdate) RemoveUsers(u ...*User) *BusinessUpdate {
 	return bu.RemoveUserIDs(ids...)
 }
 
-// ClearPublicUsers clears all "public_users" edges to the PublicUser entity.
-func (bu *BusinessUpdate) ClearPublicUsers() *BusinessUpdate {
-	bu.mutation.ClearPublicUsers()
+// ClearOperators clears all "operators" edges to the Operator entity.
+func (bu *BusinessUpdate) ClearOperators() *BusinessUpdate {
+	bu.mutation.ClearOperators()
 	return bu
 }
 
-// RemovePublicUserIDs removes the "public_users" edge to PublicUser entities by IDs.
-func (bu *BusinessUpdate) RemovePublicUserIDs(ids ...uuid.UUID) *BusinessUpdate {
-	bu.mutation.RemovePublicUserIDs(ids...)
+// RemoveOperatorIDs removes the "operators" edge to Operator entities by IDs.
+func (bu *BusinessUpdate) RemoveOperatorIDs(ids ...uuid.UUID) *BusinessUpdate {
+	bu.mutation.RemoveOperatorIDs(ids...)
 	return bu
 }
 
-// RemovePublicUsers removes "public_users" edges to PublicUser entities.
-func (bu *BusinessUpdate) RemovePublicUsers(p ...*PublicUser) *BusinessUpdate {
-	ids := make([]uuid.UUID, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
+// RemoveOperators removes "operators" edges to Operator entities.
+func (bu *BusinessUpdate) RemoveOperators(o ...*Operator) *BusinessUpdate {
+	ids := make([]uuid.UUID, len(o))
+	for i := range o {
+		ids[i] = o[i].ID
 	}
-	return bu.RemovePublicUserIDs(ids...)
+	return bu.RemoveOperatorIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -587,28 +587,28 @@ func (bu *BusinessUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if bu.mutation.PublicUsersCleared() {
+	if bu.mutation.OperatorsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   business.PublicUsersTable,
-			Columns: business.PublicUsersPrimaryKey,
+			Table:   business.OperatorsTable,
+			Columns: business.OperatorsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(publicuser.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(operator.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := bu.mutation.RemovedPublicUsersIDs(); len(nodes) > 0 && !bu.mutation.PublicUsersCleared() {
+	if nodes := bu.mutation.RemovedOperatorsIDs(); len(nodes) > 0 && !bu.mutation.OperatorsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   business.PublicUsersTable,
-			Columns: business.PublicUsersPrimaryKey,
+			Table:   business.OperatorsTable,
+			Columns: business.OperatorsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(publicuser.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(operator.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -616,15 +616,15 @@ func (bu *BusinessUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := bu.mutation.PublicUsersIDs(); len(nodes) > 0 {
+	if nodes := bu.mutation.OperatorsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   business.PublicUsersTable,
-			Columns: business.PublicUsersPrimaryKey,
+			Table:   business.OperatorsTable,
+			Columns: business.OperatorsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(publicuser.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(operator.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -849,19 +849,19 @@ func (buo *BusinessUpdateOne) AddUsers(u ...*User) *BusinessUpdateOne {
 	return buo.AddUserIDs(ids...)
 }
 
-// AddPublicUserIDs adds the "public_users" edge to the PublicUser entity by IDs.
-func (buo *BusinessUpdateOne) AddPublicUserIDs(ids ...uuid.UUID) *BusinessUpdateOne {
-	buo.mutation.AddPublicUserIDs(ids...)
+// AddOperatorIDs adds the "operators" edge to the Operator entity by IDs.
+func (buo *BusinessUpdateOne) AddOperatorIDs(ids ...uuid.UUID) *BusinessUpdateOne {
+	buo.mutation.AddOperatorIDs(ids...)
 	return buo
 }
 
-// AddPublicUsers adds the "public_users" edges to the PublicUser entity.
-func (buo *BusinessUpdateOne) AddPublicUsers(p ...*PublicUser) *BusinessUpdateOne {
-	ids := make([]uuid.UUID, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
+// AddOperators adds the "operators" edges to the Operator entity.
+func (buo *BusinessUpdateOne) AddOperators(o ...*Operator) *BusinessUpdateOne {
+	ids := make([]uuid.UUID, len(o))
+	for i := range o {
+		ids[i] = o[i].ID
 	}
-	return buo.AddPublicUserIDs(ids...)
+	return buo.AddOperatorIDs(ids...)
 }
 
 // Mutation returns the BusinessMutation object of the builder.
@@ -932,25 +932,25 @@ func (buo *BusinessUpdateOne) RemoveUsers(u ...*User) *BusinessUpdateOne {
 	return buo.RemoveUserIDs(ids...)
 }
 
-// ClearPublicUsers clears all "public_users" edges to the PublicUser entity.
-func (buo *BusinessUpdateOne) ClearPublicUsers() *BusinessUpdateOne {
-	buo.mutation.ClearPublicUsers()
+// ClearOperators clears all "operators" edges to the Operator entity.
+func (buo *BusinessUpdateOne) ClearOperators() *BusinessUpdateOne {
+	buo.mutation.ClearOperators()
 	return buo
 }
 
-// RemovePublicUserIDs removes the "public_users" edge to PublicUser entities by IDs.
-func (buo *BusinessUpdateOne) RemovePublicUserIDs(ids ...uuid.UUID) *BusinessUpdateOne {
-	buo.mutation.RemovePublicUserIDs(ids...)
+// RemoveOperatorIDs removes the "operators" edge to Operator entities by IDs.
+func (buo *BusinessUpdateOne) RemoveOperatorIDs(ids ...uuid.UUID) *BusinessUpdateOne {
+	buo.mutation.RemoveOperatorIDs(ids...)
 	return buo
 }
 
-// RemovePublicUsers removes "public_users" edges to PublicUser entities.
-func (buo *BusinessUpdateOne) RemovePublicUsers(p ...*PublicUser) *BusinessUpdateOne {
-	ids := make([]uuid.UUID, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
+// RemoveOperators removes "operators" edges to Operator entities.
+func (buo *BusinessUpdateOne) RemoveOperators(o ...*Operator) *BusinessUpdateOne {
+	ids := make([]uuid.UUID, len(o))
+	for i := range o {
+		ids[i] = o[i].ID
 	}
-	return buo.RemovePublicUserIDs(ids...)
+	return buo.RemoveOperatorIDs(ids...)
 }
 
 // Where appends a list predicates to the BusinessUpdate builder.
@@ -1235,28 +1235,28 @@ func (buo *BusinessUpdateOne) sqlSave(ctx context.Context) (_node *Business, err
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if buo.mutation.PublicUsersCleared() {
+	if buo.mutation.OperatorsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   business.PublicUsersTable,
-			Columns: business.PublicUsersPrimaryKey,
+			Table:   business.OperatorsTable,
+			Columns: business.OperatorsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(publicuser.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(operator.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := buo.mutation.RemovedPublicUsersIDs(); len(nodes) > 0 && !buo.mutation.PublicUsersCleared() {
+	if nodes := buo.mutation.RemovedOperatorsIDs(); len(nodes) > 0 && !buo.mutation.OperatorsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   business.PublicUsersTable,
-			Columns: business.PublicUsersPrimaryKey,
+			Table:   business.OperatorsTable,
+			Columns: business.OperatorsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(publicuser.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(operator.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -1264,15 +1264,15 @@ func (buo *BusinessUpdateOne) sqlSave(ctx context.Context) (_node *Business, err
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := buo.mutation.PublicUsersIDs(); len(nodes) > 0 {
+	if nodes := buo.mutation.OperatorsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   business.PublicUsersTable,
-			Columns: business.PublicUsersPrimaryKey,
+			Table:   business.OperatorsTable,
+			Columns: business.OperatorsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(publicuser.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(operator.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

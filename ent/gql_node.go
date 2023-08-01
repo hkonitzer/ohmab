@@ -15,7 +15,7 @@ import (
 	"github.com/hkonitzer/ohmab/ent/auditlog"
 	"github.com/hkonitzer/ohmab/ent/business"
 	"github.com/hkonitzer/ohmab/ent/content"
-	"github.com/hkonitzer/ohmab/ent/publicuser"
+	"github.com/hkonitzer/ohmab/ent/operator"
 	"github.com/hkonitzer/ohmab/ent/tag"
 	"github.com/hkonitzer/ohmab/ent/timetable"
 	"github.com/hkonitzer/ohmab/ent/user"
@@ -40,7 +40,7 @@ func (n *Business) IsNode() {}
 func (n *Content) IsNode() {}
 
 // IsNode implements the Node interface check for GQLGen.
-func (n *PublicUser) IsNode() {}
+func (n *Operator) IsNode() {}
 
 // IsNode implements the Node interface check for GQLGen.
 func (n *Tag) IsNode() {}
@@ -157,10 +157,10 @@ func (c *Client) noder(ctx context.Context, table string, id uuid.UUID) (Noder, 
 			return nil, err
 		}
 		return n, nil
-	case publicuser.Table:
-		query := c.PublicUser.Query().
-			Where(publicuser.ID(id))
-		query, err := query.CollectFields(ctx, "PublicUser")
+	case operator.Table:
+		query := c.Operator.Query().
+			Where(operator.ID(id))
+		query, err := query.CollectFields(ctx, "Operator")
 		if err != nil {
 			return nil, err
 		}
@@ -342,10 +342,10 @@ func (c *Client) noders(ctx context.Context, table string, ids []uuid.UUID) ([]N
 				*noder = node
 			}
 		}
-	case publicuser.Table:
-		query := c.PublicUser.Query().
-			Where(publicuser.IDIn(ids...))
-		query, err := query.CollectFields(ctx, "PublicUser")
+	case operator.Table:
+		query := c.Operator.Query().
+			Where(operator.IDIn(ids...))
+		query, err := query.CollectFields(ctx, "Operator")
 		if err != nil {
 			return nil, err
 		}

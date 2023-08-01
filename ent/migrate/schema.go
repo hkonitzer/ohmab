@@ -129,19 +129,19 @@ var (
 			},
 		},
 	}
-	// PublicUsersColumns holds the columns for the "public_users" table.
-	PublicUsersColumns = []*schema.Column{
+	// OperatorsColumns holds the columns for the "operators" table.
+	OperatorsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "surname", Type: field.TypeString, Size: 2147483647},
 		{Name: "firstname", Type: field.TypeString, Size: 2147483647},
 		{Name: "title", Type: field.TypeString, Nullable: true, Size: 2147483647},
 		{Name: "email", Type: field.TypeString, Unique: true, Size: 2147483647},
 	}
-	// PublicUsersTable holds the schema information for the "public_users" table.
-	PublicUsersTable = &schema.Table{
-		Name:       "public_users",
-		Columns:    PublicUsersColumns,
-		PrimaryKey: []*schema.Column{PublicUsersColumns[0]},
+	// OperatorsTable holds the schema information for the "operators" table.
+	OperatorsTable = &schema.Table{
+		Name:       "operators",
+		Columns:    OperatorsColumns,
+		PrimaryKey: []*schema.Column{OperatorsColumns[0]},
 	}
 	// TagsColumns holds the columns for the "tags" table.
 	TagsColumns = []*schema.Column{
@@ -282,52 +282,52 @@ var (
 			},
 		},
 	}
-	// BusinessPublicUsersColumns holds the columns for the "business_public_users" table.
-	BusinessPublicUsersColumns = []*schema.Column{
+	// BusinessOperatorsColumns holds the columns for the "business_operators" table.
+	BusinessOperatorsColumns = []*schema.Column{
 		{Name: "business_id", Type: field.TypeUUID},
-		{Name: "public_user_id", Type: field.TypeUUID},
+		{Name: "operator_id", Type: field.TypeUUID},
 	}
-	// BusinessPublicUsersTable holds the schema information for the "business_public_users" table.
-	BusinessPublicUsersTable = &schema.Table{
-		Name:       "business_public_users",
-		Columns:    BusinessPublicUsersColumns,
-		PrimaryKey: []*schema.Column{BusinessPublicUsersColumns[0], BusinessPublicUsersColumns[1]},
+	// BusinessOperatorsTable holds the schema information for the "business_operators" table.
+	BusinessOperatorsTable = &schema.Table{
+		Name:       "business_operators",
+		Columns:    BusinessOperatorsColumns,
+		PrimaryKey: []*schema.Column{BusinessOperatorsColumns[0], BusinessOperatorsColumns[1]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "business_public_users_business_id",
-				Columns:    []*schema.Column{BusinessPublicUsersColumns[0]},
+				Symbol:     "business_operators_business_id",
+				Columns:    []*schema.Column{BusinessOperatorsColumns[0]},
 				RefColumns: []*schema.Column{BusinessesColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:     "business_public_users_public_user_id",
-				Columns:    []*schema.Column{BusinessPublicUsersColumns[1]},
-				RefColumns: []*schema.Column{PublicUsersColumns[0]},
+				Symbol:     "business_operators_operator_id",
+				Columns:    []*schema.Column{BusinessOperatorsColumns[1]},
+				RefColumns: []*schema.Column{OperatorsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 		},
 	}
-	// TimetableUsersOnDutyColumns holds the columns for the "timetable_users_on_duty" table.
-	TimetableUsersOnDutyColumns = []*schema.Column{
+	// TimetableOperatorsOnDutyColumns holds the columns for the "timetable_operators_on_duty" table.
+	TimetableOperatorsOnDutyColumns = []*schema.Column{
 		{Name: "timetable_id", Type: field.TypeUUID},
-		{Name: "public_user_id", Type: field.TypeUUID},
+		{Name: "operator_id", Type: field.TypeUUID},
 	}
-	// TimetableUsersOnDutyTable holds the schema information for the "timetable_users_on_duty" table.
-	TimetableUsersOnDutyTable = &schema.Table{
-		Name:       "timetable_users_on_duty",
-		Columns:    TimetableUsersOnDutyColumns,
-		PrimaryKey: []*schema.Column{TimetableUsersOnDutyColumns[0], TimetableUsersOnDutyColumns[1]},
+	// TimetableOperatorsOnDutyTable holds the schema information for the "timetable_operators_on_duty" table.
+	TimetableOperatorsOnDutyTable = &schema.Table{
+		Name:       "timetable_operators_on_duty",
+		Columns:    TimetableOperatorsOnDutyColumns,
+		PrimaryKey: []*schema.Column{TimetableOperatorsOnDutyColumns[0], TimetableOperatorsOnDutyColumns[1]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "timetable_users_on_duty_timetable_id",
-				Columns:    []*schema.Column{TimetableUsersOnDutyColumns[0]},
+				Symbol:     "timetable_operators_on_duty_timetable_id",
+				Columns:    []*schema.Column{TimetableOperatorsOnDutyColumns[0]},
 				RefColumns: []*schema.Column{TimetablesColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:     "timetable_users_on_duty_public_user_id",
-				Columns:    []*schema.Column{TimetableUsersOnDutyColumns[1]},
-				RefColumns: []*schema.Column{PublicUsersColumns[0]},
+				Symbol:     "timetable_operators_on_duty_operator_id",
+				Columns:    []*schema.Column{TimetableOperatorsOnDutyColumns[1]},
+				RefColumns: []*schema.Column{OperatorsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 		},
@@ -363,14 +363,14 @@ var (
 		AuditLogsTable,
 		BusinessesTable,
 		ContentsTable,
-		PublicUsersTable,
+		OperatorsTable,
 		TagsTable,
 		TimetablesTable,
 		UsersTable,
 		BusinessTagsTable,
 		BusinessUsersTable,
-		BusinessPublicUsersTable,
-		TimetableUsersOnDutyTable,
+		BusinessOperatorsTable,
+		TimetableOperatorsOnDutyTable,
 		UserTagsTable,
 	}
 )
@@ -382,10 +382,10 @@ func init() {
 	BusinessTagsTable.ForeignKeys[1].RefTable = TagsTable
 	BusinessUsersTable.ForeignKeys[0].RefTable = BusinessesTable
 	BusinessUsersTable.ForeignKeys[1].RefTable = UsersTable
-	BusinessPublicUsersTable.ForeignKeys[0].RefTable = BusinessesTable
-	BusinessPublicUsersTable.ForeignKeys[1].RefTable = PublicUsersTable
-	TimetableUsersOnDutyTable.ForeignKeys[0].RefTable = TimetablesTable
-	TimetableUsersOnDutyTable.ForeignKeys[1].RefTable = PublicUsersTable
+	BusinessOperatorsTable.ForeignKeys[0].RefTable = BusinessesTable
+	BusinessOperatorsTable.ForeignKeys[1].RefTable = OperatorsTable
+	TimetableOperatorsOnDutyTable.ForeignKeys[0].RefTable = TimetablesTable
+	TimetableOperatorsOnDutyTable.ForeignKeys[1].RefTable = OperatorsTable
 	UserTagsTable.ForeignKeys[0].RefTable = UsersTable
 	UserTagsTable.ForeignKeys[1].RefTable = TagsTable
 }

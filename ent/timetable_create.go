@@ -13,7 +13,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/hkonitzer/ohmab/ent/address"
-	"github.com/hkonitzer/ohmab/ent/publicuser"
+	"github.com/hkonitzer/ohmab/ent/operator"
 	"github.com/hkonitzer/ohmab/ent/timetable"
 )
 
@@ -223,19 +223,19 @@ func (tc *TimetableCreate) SetAddress(a *Address) *TimetableCreate {
 	return tc.SetAddressID(a.ID)
 }
 
-// AddUsersOnDutyIDs adds the "users_on_duty" edge to the PublicUser entity by IDs.
-func (tc *TimetableCreate) AddUsersOnDutyIDs(ids ...uuid.UUID) *TimetableCreate {
-	tc.mutation.AddUsersOnDutyIDs(ids...)
+// AddOperatorsOnDutyIDs adds the "operators_on_duty" edge to the Operator entity by IDs.
+func (tc *TimetableCreate) AddOperatorsOnDutyIDs(ids ...uuid.UUID) *TimetableCreate {
+	tc.mutation.AddOperatorsOnDutyIDs(ids...)
 	return tc
 }
 
-// AddUsersOnDuty adds the "users_on_duty" edges to the PublicUser entity.
-func (tc *TimetableCreate) AddUsersOnDuty(p ...*PublicUser) *TimetableCreate {
-	ids := make([]uuid.UUID, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
+// AddOperatorsOnDuty adds the "operators_on_duty" edges to the Operator entity.
+func (tc *TimetableCreate) AddOperatorsOnDuty(o ...*Operator) *TimetableCreate {
+	ids := make([]uuid.UUID, len(o))
+	for i := range o {
+		ids[i] = o[i].ID
 	}
-	return tc.AddUsersOnDutyIDs(ids...)
+	return tc.AddOperatorsOnDutyIDs(ids...)
 }
 
 // Mutation returns the TimetableMutation object of the builder.
@@ -441,15 +441,15 @@ func (tc *TimetableCreate) createSpec() (*Timetable, *sqlgraph.CreateSpec) {
 		_node.address_timetables = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := tc.mutation.UsersOnDutyIDs(); len(nodes) > 0 {
+	if nodes := tc.mutation.OperatorsOnDutyIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   timetable.UsersOnDutyTable,
-			Columns: timetable.UsersOnDutyPrimaryKey,
+			Table:   timetable.OperatorsOnDutyTable,
+			Columns: timetable.OperatorsOnDutyPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(publicuser.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(operator.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

@@ -11,7 +11,9 @@ type newUser struct {
 	Password  string
 	Firstname string
 	Surname   string
+	Title     string
 	Role      int
+	PublicAPI string
 	Scopes    []string
 }
 
@@ -35,6 +37,8 @@ func init() {
 	CmdCreateUser.MarkFlagRequired("firstname")
 	CmdCreateUser.Flags().StringVarP(&NewUser.Surname, "surname", "s", "", "Surname")
 	CmdCreateUser.MarkFlagRequired("surname")
+	CmdCreateUser.Flags().StringVarP(&NewUser.Title, "title", "t", "", "Title")
 	CmdCreateUser.Flags().IntVarP(&NewUser.Role, "role", "r", privacy.ViewerRole(), "Role")
 	CmdCreateUser.Flags().StringSliceVarP(&NewUser.Scopes, "scopes", "", nil, "Scopes")
+	CmdCreateUser.Flags().StringVarP(&NewUser.PublicAPI, "publicapi", "a", "", "User will be shown in the public api as operator")
 }

@@ -57,15 +57,15 @@ type Timetable struct {
 type TimetableEdges struct {
 	// Address holds the value of the address edge.
 	Address *Address `json:"address,omitempty"`
-	// UsersOnDuty holds the value of the users_on_duty edge.
-	UsersOnDuty []*PublicUser `json:"users_on_duty,omitempty"`
+	// OperatorsOnDuty holds the value of the operators_on_duty edge.
+	OperatorsOnDuty []*Operator `json:"operators_on_duty,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [2]bool
 	// totalCount holds the count of the edges above.
 	totalCount [2]map[string]int
 
-	namedUsersOnDuty map[string][]*PublicUser
+	namedOperatorsOnDuty map[string][]*Operator
 }
 
 // AddressOrErr returns the Address value or an error if the edge
@@ -81,13 +81,13 @@ func (e TimetableEdges) AddressOrErr() (*Address, error) {
 	return nil, &NotLoadedError{edge: "address"}
 }
 
-// UsersOnDutyOrErr returns the UsersOnDuty value or an error if the edge
+// OperatorsOnDutyOrErr returns the OperatorsOnDuty value or an error if the edge
 // was not loaded in eager-loading.
-func (e TimetableEdges) UsersOnDutyOrErr() ([]*PublicUser, error) {
+func (e TimetableEdges) OperatorsOnDutyOrErr() ([]*Operator, error) {
 	if e.loadedTypes[1] {
-		return e.UsersOnDuty, nil
+		return e.OperatorsOnDuty, nil
 	}
-	return nil, &NotLoadedError{edge: "users_on_duty"}
+	return nil, &NotLoadedError{edge: "operators_on_duty"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -231,9 +231,9 @@ func (t *Timetable) QueryAddress() *AddressQuery {
 	return NewTimetableClient(t.config).QueryAddress(t)
 }
 
-// QueryUsersOnDuty queries the "users_on_duty" edge of the Timetable entity.
-func (t *Timetable) QueryUsersOnDuty() *PublicUserQuery {
-	return NewTimetableClient(t.config).QueryUsersOnDuty(t)
+// QueryOperatorsOnDuty queries the "operators_on_duty" edge of the Timetable entity.
+func (t *Timetable) QueryOperatorsOnDuty() *OperatorQuery {
+	return NewTimetableClient(t.config).QueryOperatorsOnDuty(t)
 }
 
 // Update returns a builder for updating this Timetable.
@@ -301,27 +301,27 @@ func (t *Timetable) String() string {
 	return builder.String()
 }
 
-// NamedUsersOnDuty returns the UsersOnDuty named value or an error if the edge was not
+// NamedOperatorsOnDuty returns the OperatorsOnDuty named value or an error if the edge was not
 // loaded in eager-loading with this name.
-func (t *Timetable) NamedUsersOnDuty(name string) ([]*PublicUser, error) {
-	if t.Edges.namedUsersOnDuty == nil {
+func (t *Timetable) NamedOperatorsOnDuty(name string) ([]*Operator, error) {
+	if t.Edges.namedOperatorsOnDuty == nil {
 		return nil, &NotLoadedError{edge: name}
 	}
-	nodes, ok := t.Edges.namedUsersOnDuty[name]
+	nodes, ok := t.Edges.namedOperatorsOnDuty[name]
 	if !ok {
 		return nil, &NotLoadedError{edge: name}
 	}
 	return nodes, nil
 }
 
-func (t *Timetable) appendNamedUsersOnDuty(name string, edges ...*PublicUser) {
-	if t.Edges.namedUsersOnDuty == nil {
-		t.Edges.namedUsersOnDuty = make(map[string][]*PublicUser)
+func (t *Timetable) appendNamedOperatorsOnDuty(name string, edges ...*Operator) {
+	if t.Edges.namedOperatorsOnDuty == nil {
+		t.Edges.namedOperatorsOnDuty = make(map[string][]*Operator)
 	}
 	if len(edges) == 0 {
-		t.Edges.namedUsersOnDuty[name] = []*PublicUser{}
+		t.Edges.namedOperatorsOnDuty[name] = []*Operator{}
 	} else {
-		t.Edges.namedUsersOnDuty[name] = append(t.Edges.namedUsersOnDuty[name], edges...)
+		t.Edges.namedOperatorsOnDuty[name] = append(t.Edges.namedOperatorsOnDuty[name], edges...)
 	}
 }
 

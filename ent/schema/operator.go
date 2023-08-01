@@ -11,13 +11,16 @@ import (
 	"github.com/hkonitzer/ohmab/internal/pkg/privacy/rule"
 )
 
-// User holds the schema definition for the User entity.
-type PublicUser struct {
+// Operator holds the schema definition for the Operator entity.
+// These users were derived from the users if the flag public_api is set to 1
+// There is no connection to the Users table, because of the public api
+// See hooks.UpdatePublicUser()
+type Operator struct {
 	ent.Schema
 }
 
 // Fields of a User.
-func (PublicUser) Fields() []ent.Field {
+func (Operator) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID(constants.IDFieldName, uuid.UUID{}).
 			Immutable().Default(uuid.New),
@@ -32,14 +35,14 @@ func (PublicUser) Fields() []ent.Field {
 	}
 }
 
-func (PublicUser) Edges() []ent.Edge {
+func (Operator) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("businesses", Business.Type).Ref("public_users").Comment("The businesses this user is associated with"),
-		edge.From("timetable", Timetable.Type).Ref("users_on_duty").Comment("The persons on duty for this timetable entry"),
+		edge.From("businesses", Business.Type).Ref("operators").Comment("The businesses this user is associated with"),
+		edge.From("timetable", Timetable.Type).Ref("operators_on_duty").Comment("The persons on duty for this timetable entry"),
 	}
 }
 
-func (PublicUser) Policy() ent.Policy {
+func (Operator) Policy() ent.Policy {
 	return privacy.Policy{
 		Mutation: privacy.MutationPolicy{ // see also user.go
 			rule.AllowIfAdmin(),

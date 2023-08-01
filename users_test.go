@@ -5,7 +5,7 @@ import (
 	"github.com/hkonitzer/ohmab/ent"
 	"github.com/hkonitzer/ohmab/ent/business"
 	"github.com/hkonitzer/ohmab/ent/enttest"
-	"github.com/hkonitzer/ohmab/ent/publicuser"
+	"github.com/hkonitzer/ohmab/ent/operator"
 	"github.com/hkonitzer/ohmab/ent/schema"
 	"github.com/hkonitzer/ohmab/ent/user"
 	"github.com/hkonitzer/ohmab/internal/pkg/privacy"
@@ -77,10 +77,10 @@ func TestCreateUser(t *testing.T) {
 	require.Equal(t, quser1.UsePublicapi, schema.UsePublicApiValue, "usePublicApi should be true")
 
 	// query the business for the public user, created from the user above
-	bus2, err := client.Business.Query().Where(business.Name1("TEST1")).WithPublicUsers().Only(adminCtx)
+	bus2, err := client.Business.Query().Where(business.Name1("TEST1")).WithOperators().Only(adminCtx)
 	require.NoError(t, err)
-	require.Len(t, bus2.Edges.PublicUsers, 1, "business TEST1 should have one public user")
-	pubus2 := bus2.Edges.PublicUsers[0]
+	require.Len(t, bus2.Edges.Operators, 1, "business TEST1 should have one public user")
+	pubus2 := bus2.Edges.Operators[0]
 	require.Equal(t, "Erika", pubus2.Firstname, "surname should be Erika")
 	require.Equal(t, "Musterfrau", pubus2.Surname, "surname should be Musterfrau")
 	require.Equal(t, "Dr.", pubus2.Title, "title should be Dr.")
@@ -103,10 +103,10 @@ func TestCreateUser(t *testing.T) {
 	// update user (should update public user as well)
 	_, err = client.User.UpdateOneID(quser1.ID).SetTitle("Prof.").Save(adminCtx)
 	require.NoError(t, err)
-	bus3, err := client.Business.Query().Where(business.Name1("TEST1")).WithPublicUsers().Only(adminCtx)
+	bus3, err := client.Business.Query().Where(business.Name1("TEST1")).WithOperators().Only(adminCtx)
 	require.NoError(t, err)
-	require.Len(t, bus3.Edges.PublicUsers, 1, "business TEST1 should have one public user")
-	pubus3 := bus3.Edges.PublicUsers[0]
+	require.Len(t, bus3.Edges.Operators, 1, "business TEST1 should have one public user")
+	pubus3 := bus3.Edges.Operators[0]
 	require.Equal(t, "Erika", pubus3.Firstname, "surname should be Erika")
 	require.Equal(t, "Musterfrau", pubus3.Surname, "surname should be Musterfrau")
 	require.Equal(t, "Prof.", pubus3.Title, "title should be now Prof.")
@@ -148,7 +148,7 @@ func TestCreateUser(t *testing.T) {
 	require.Equal(t, 1, len(quser4.Edges.Businesses), "user should have exact one business")
 	require.Equal(t, quser4.UsePublicapi, schema.UsePublicApiValue, "usePublicApi should be true")
 	// is there a public user for john doe? -should be since we set public_api to 1 above
-	pquser5, err := client.PublicUser.Query().Where(publicuser.Email("jdoe@localhost")).Only(adminCtx)
+	pquser5, err := client.Operator.Query().Where(operator.Email("jdoe@localhost")).Only(adminCtx)
 	require.NoError(t, err)
 	require.Equal(t, "Joe", pquser5.Firstname, "firstname should be Joe")
 	require.Equal(t, "Doe", pquser5.Surname, "surname should be Doe")
@@ -162,14 +162,13 @@ func TestCreateUser(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, "", quser5.UsePublicapi, "usePublicApi should be false")
 	// the public user should be deleted
-	_, err = client.PublicUser.Query().Where(publicuser.Email("jdoe@localhost")).Only(adminCtx)
+	_, err = client.Operator.Query().Where(operator.Email("jdoe@localhost")).Only(adminCtx)
 	require.Error(t, err, "should fail because public user does not exist anymore")
 	// delete the first user, should also delete the public user
 	err = client.User.DeleteOneID(quser1.ID).Exec(adminCtx) // TESTUSER1
 	require.NoError(t, err)
 	_, err = client.User.Query().Where(user.Login("TESTUSER1")).OnlyID(adminCtx)
 	require.Error(t, err, "should fail because user does not exist anymore")
-	_, err = client.PublicUser.Query().Where(publicuser.Email("emusterfrau@localhost")).Only(adminCtx)
+	_, err = client.Operator.Query().Where(operator.Email("emusterfrau@localhost")).Only(adminCtx)
 	require.Error(t, err, "should fail because user does not exist anymore")
-
 }

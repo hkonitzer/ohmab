@@ -12,21 +12,21 @@ import (
 
 // CreateBusinessInput represents a mutation input for creating businesses.
 type CreateBusinessInput struct {
-	CreatedAt     *time.Time
-	UpdatedAt     *time.Time
-	DeletedAt     *time.Time
-	Name1         string
-	Name2         *string
-	Alias         string
-	Telephone     *string
-	Email         *string
-	Website       *string
-	Comment       *string
-	Active        *bool
-	AddressIDs    []uuid.UUID
-	TagIDs        []uuid.UUID
-	UserIDs       []uuid.UUID
-	PublicUserIDs []uuid.UUID
+	CreatedAt   *time.Time
+	UpdatedAt   *time.Time
+	DeletedAt   *time.Time
+	Name1       string
+	Name2       *string
+	Alias       string
+	Telephone   *string
+	Email       *string
+	Website     *string
+	Comment     *string
+	Active      *bool
+	AddressIDs  []uuid.UUID
+	TagIDs      []uuid.UUID
+	UserIDs     []uuid.UUID
+	OperatorIDs []uuid.UUID
 }
 
 // Mutate applies the CreateBusinessInput on the BusinessMutation builder.
@@ -69,8 +69,8 @@ func (i *CreateBusinessInput) Mutate(m *BusinessMutation) {
 	if v := i.UserIDs; len(v) > 0 {
 		m.AddUserIDs(v...)
 	}
-	if v := i.PublicUserIDs; len(v) > 0 {
-		m.AddPublicUserIDs(v...)
+	if v := i.OperatorIDs; len(v) > 0 {
+		m.AddOperatorIDs(v...)
 	}
 }
 
@@ -96,7 +96,7 @@ type CreateTimetableInput struct {
 	AvailabilityBySms      *string
 	AvailabilityByWhatsapp *string
 	AddressID              uuid.UUID
-	UsersOnDutyIDs         []uuid.UUID
+	OperatorsOnDutyIDs     []uuid.UUID
 }
 
 // Mutate applies the CreateTimetableInput on the TimetableMutation builder.
@@ -139,8 +139,8 @@ func (i *CreateTimetableInput) Mutate(m *TimetableMutation) {
 		m.SetAvailabilityByWhatsapp(*v)
 	}
 	m.SetAddressID(i.AddressID)
-	if v := i.UsersOnDutyIDs; len(v) > 0 {
-		m.AddUsersOnDutyIDs(v...)
+	if v := i.OperatorsOnDutyIDs; len(v) > 0 {
+		m.AddOperatorsOnDutyIDs(v...)
 	}
 }
 
@@ -173,9 +173,9 @@ type UpdateTimetableInput struct {
 	ClearAvailabilityByWhatsapp bool
 	AvailabilityByWhatsapp      *string
 	AddressID                   *uuid.UUID
-	ClearUsersOnDuty            bool
-	AddUsersOnDutyIDs           []uuid.UUID
-	RemoveUsersOnDutyIDs        []uuid.UUID
+	ClearOperatorsOnDuty        bool
+	AddOperatorsOnDutyIDs       []uuid.UUID
+	RemoveOperatorsOnDutyIDs    []uuid.UUID
 }
 
 // Mutate applies the UpdateTimetableInput on the TimetableMutation builder.
@@ -243,14 +243,14 @@ func (i *UpdateTimetableInput) Mutate(m *TimetableMutation) {
 	if v := i.AddressID; v != nil {
 		m.SetAddressID(*v)
 	}
-	if i.ClearUsersOnDuty {
-		m.ClearUsersOnDuty()
+	if i.ClearOperatorsOnDuty {
+		m.ClearOperatorsOnDuty()
 	}
-	if v := i.AddUsersOnDutyIDs; len(v) > 0 {
-		m.AddUsersOnDutyIDs(v...)
+	if v := i.AddOperatorsOnDutyIDs; len(v) > 0 {
+		m.AddOperatorsOnDutyIDs(v...)
 	}
-	if v := i.RemoveUsersOnDutyIDs; len(v) > 0 {
-		m.RemoveUsersOnDutyIDs(v...)
+	if v := i.RemoveOperatorsOnDutyIDs; len(v) > 0 {
+		m.RemoveOperatorsOnDutyIDs(v...)
 	}
 }
 

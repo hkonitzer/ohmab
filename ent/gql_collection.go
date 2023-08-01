@@ -13,7 +13,7 @@ import (
 	"github.com/hkonitzer/ohmab/ent/auditlog"
 	"github.com/hkonitzer/ohmab/ent/business"
 	"github.com/hkonitzer/ohmab/ent/content"
-	"github.com/hkonitzer/ohmab/ent/publicuser"
+	"github.com/hkonitzer/ohmab/ent/operator"
 	"github.com/hkonitzer/ohmab/ent/tag"
 	"github.com/hkonitzer/ohmab/ent/timetable"
 	"github.com/hkonitzer/ohmab/ent/user"
@@ -317,16 +317,16 @@ func (b *BusinessQuery) collectField(ctx context.Context, opCtx *graphql.Operati
 			b.WithNamedUsers(alias, func(wq *UserQuery) {
 				*wq = *query
 			})
-		case "publicUsers":
+		case "operators":
 			var (
 				alias = field.Alias
 				path  = append(path, alias)
-				query = (&PublicUserClient{config: b.config}).Query()
+				query = (&OperatorClient{config: b.config}).Query()
 			)
 			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
 				return err
 			}
-			b.WithNamedPublicUsers(alias, func(wq *PublicUserQuery) {
+			b.WithNamedOperators(alias, func(wq *OperatorQuery) {
 				*wq = *query
 			})
 		case "createdAt":
@@ -588,23 +588,23 @@ func newContentPaginateArgs(rv map[string]any) *contentPaginateArgs {
 }
 
 // CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
-func (pu *PublicUserQuery) CollectFields(ctx context.Context, satisfies ...string) (*PublicUserQuery, error) {
+func (o *OperatorQuery) CollectFields(ctx context.Context, satisfies ...string) (*OperatorQuery, error) {
 	fc := graphql.GetFieldContext(ctx)
 	if fc == nil {
-		return pu, nil
+		return o, nil
 	}
-	if err := pu.collectField(ctx, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
+	if err := o.collectField(ctx, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
 		return nil, err
 	}
-	return pu, nil
+	return o, nil
 }
 
-func (pu *PublicUserQuery) collectField(ctx context.Context, opCtx *graphql.OperationContext, collected graphql.CollectedField, path []string, satisfies ...string) error {
+func (o *OperatorQuery) collectField(ctx context.Context, opCtx *graphql.OperationContext, collected graphql.CollectedField, path []string, satisfies ...string) error {
 	path = append([]string(nil), path...)
 	var (
 		unknownSeen    bool
-		fieldSeen      = make(map[string]struct{}, len(publicuser.Columns))
-		selectedFields = []string{publicuser.FieldID}
+		fieldSeen      = make(map[string]struct{}, len(operator.Columns))
+		selectedFields = []string{operator.FieldID}
 	)
 	for _, field := range graphql.CollectFields(opCtx, collected.Selections, satisfies) {
 		switch field.Name {
@@ -612,40 +612,40 @@ func (pu *PublicUserQuery) collectField(ctx context.Context, opCtx *graphql.Oper
 			var (
 				alias = field.Alias
 				path  = append(path, alias)
-				query = (&BusinessClient{config: pu.config}).Query()
+				query = (&BusinessClient{config: o.config}).Query()
 			)
 			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
 				return err
 			}
-			pu.WithNamedBusinesses(alias, func(wq *BusinessQuery) {
+			o.WithNamedBusinesses(alias, func(wq *BusinessQuery) {
 				*wq = *query
 			})
 		case "timetable":
 			var (
 				alias = field.Alias
 				path  = append(path, alias)
-				query = (&TimetableClient{config: pu.config}).Query()
+				query = (&TimetableClient{config: o.config}).Query()
 			)
 			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
 				return err
 			}
-			pu.WithNamedTimetable(alias, func(wq *TimetableQuery) {
+			o.WithNamedTimetable(alias, func(wq *TimetableQuery) {
 				*wq = *query
 			})
 		case "surname":
-			if _, ok := fieldSeen[publicuser.FieldSurname]; !ok {
-				selectedFields = append(selectedFields, publicuser.FieldSurname)
-				fieldSeen[publicuser.FieldSurname] = struct{}{}
+			if _, ok := fieldSeen[operator.FieldSurname]; !ok {
+				selectedFields = append(selectedFields, operator.FieldSurname)
+				fieldSeen[operator.FieldSurname] = struct{}{}
 			}
 		case "firstname":
-			if _, ok := fieldSeen[publicuser.FieldFirstname]; !ok {
-				selectedFields = append(selectedFields, publicuser.FieldFirstname)
-				fieldSeen[publicuser.FieldFirstname] = struct{}{}
+			if _, ok := fieldSeen[operator.FieldFirstname]; !ok {
+				selectedFields = append(selectedFields, operator.FieldFirstname)
+				fieldSeen[operator.FieldFirstname] = struct{}{}
 			}
 		case "title":
-			if _, ok := fieldSeen[publicuser.FieldTitle]; !ok {
-				selectedFields = append(selectedFields, publicuser.FieldTitle)
-				fieldSeen[publicuser.FieldTitle] = struct{}{}
+			if _, ok := fieldSeen[operator.FieldTitle]; !ok {
+				selectedFields = append(selectedFields, operator.FieldTitle)
+				fieldSeen[operator.FieldTitle] = struct{}{}
 			}
 		case "id":
 		case "__typename":
@@ -654,19 +654,19 @@ func (pu *PublicUserQuery) collectField(ctx context.Context, opCtx *graphql.Oper
 		}
 	}
 	if !unknownSeen {
-		pu.Select(selectedFields...)
+		o.Select(selectedFields...)
 	}
 	return nil
 }
 
-type publicuserPaginateArgs struct {
+type operatorPaginateArgs struct {
 	first, last   *int
 	after, before *Cursor
-	opts          []PublicUserPaginateOption
+	opts          []OperatorPaginateOption
 }
 
-func newPublicUserPaginateArgs(rv map[string]any) *publicuserPaginateArgs {
-	args := &publicuserPaginateArgs{}
+func newOperatorPaginateArgs(rv map[string]any) *operatorPaginateArgs {
+	args := &operatorPaginateArgs{}
 	if rv == nil {
 		return args
 	}
@@ -687,7 +687,7 @@ func newPublicUserPaginateArgs(rv map[string]any) *publicuserPaginateArgs {
 		case map[string]any:
 			var (
 				err1, err2 error
-				order      = &PublicUserOrder{Field: &PublicUserOrderField{}, Direction: entgql.OrderDirectionAsc}
+				order      = &OperatorOrder{Field: &OperatorOrderField{}, Direction: entgql.OrderDirectionAsc}
 			)
 			if d, ok := v[directionField]; ok {
 				err1 = order.Direction.UnmarshalGQL(d)
@@ -696,16 +696,16 @@ func newPublicUserPaginateArgs(rv map[string]any) *publicuserPaginateArgs {
 				err2 = order.Field.UnmarshalGQL(f)
 			}
 			if err1 == nil && err2 == nil {
-				args.opts = append(args.opts, WithPublicUserOrder(order))
+				args.opts = append(args.opts, WithOperatorOrder(order))
 			}
-		case *PublicUserOrder:
+		case *OperatorOrder:
 			if v != nil {
-				args.opts = append(args.opts, WithPublicUserOrder(v))
+				args.opts = append(args.opts, WithOperatorOrder(v))
 			}
 		}
 	}
-	if v, ok := rv[whereField].(*PublicUserWhereInput); ok {
-		args.opts = append(args.opts, WithPublicUserFilter(v.Filter))
+	if v, ok := rv[whereField].(*OperatorWhereInput); ok {
+		args.opts = append(args.opts, WithOperatorFilter(v.Filter))
 	}
 	return args
 }
@@ -874,16 +874,16 @@ func (t *TimetableQuery) collectField(ctx context.Context, opCtx *graphql.Operat
 				return err
 			}
 			t.withAddress = query
-		case "usersOnDuty":
+		case "operatorsOnDuty":
 			var (
 				alias = field.Alias
 				path  = append(path, alias)
-				query = (&PublicUserClient{config: t.config}).Query()
+				query = (&OperatorClient{config: t.config}).Query()
 			)
 			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
 				return err
 			}
-			t.WithNamedUsersOnDuty(alias, func(wq *PublicUserQuery) {
+			t.WithNamedOperatorsOnDuty(alias, func(wq *OperatorQuery) {
 				*wq = *query
 			})
 		case "createdAt":

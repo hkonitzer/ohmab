@@ -7,7 +7,7 @@ import (
 	"github.com/hkonitzer/ohmab/ent"
 	"github.com/hkonitzer/ohmab/ent/business"
 	"github.com/hkonitzer/ohmab/ent/hook"
-	"github.com/hkonitzer/ohmab/ent/publicuser"
+	"github.com/hkonitzer/ohmab/ent/operator"
 	"github.com/hkonitzer/ohmab/ent/user"
 )
 
@@ -29,7 +29,7 @@ func UpdatePublicUser() ent.Hook {
 				if len(m.BusinessesIDs()) == 0 {
 					return nil, fmt.Errorf("no active businesses on user, but public usage wanted")
 				}
-				puc := m.Client().PublicUser.Create()
+				puc := m.Client().Operator.Create()
 				if ee {
 					puc.SetEmail(e)
 				}
@@ -76,11 +76,11 @@ func UpdatePublicUser() ent.Hook {
 			for _, b := range ub {
 				ubids = append(ubids, b.ID)
 			}
-			puq := m.Client().PublicUser.Query().
-				Where(publicuser.Email(ue)).
-				Where(publicuser.Firstname(uf)).
-				Where(publicuser.Surname(us)).
-				Where(publicuser.Title(ut))
+			puq := m.Client().Operator.Query().
+				Where(operator.Email(ue)).
+				Where(operator.Firstname(uf)).
+				Where(operator.Surname(us)).
+				Where(operator.Title(ut))
 			puq.WithBusinesses(func(query *ent.BusinessQuery) {
 				//query.Where(business.IDIn(m.BusinessesIDs()...))
 				query.Where(business.IDIn(ubids...))
@@ -88,7 +88,7 @@ func UpdatePublicUser() ent.Hook {
 			puf, err := puq.First(ctx)
 			if ent.IsNotFound(err) {
 				// create a new public user (public_api changed to 1 on user)
-				puc := m.Client().PublicUser.Create().
+				puc := m.Client().Operator.Create().
 					SetEmail(ue).
 					SetFirstname(uf).
 					SetSurname(us)
@@ -106,7 +106,7 @@ func UpdatePublicUser() ent.Hook {
 			}
 			// update or delete?
 			if deleteOp || (enpu && npu != "1") {
-				err = m.Client().PublicUser.DeleteOneID(puf.ID).Exec(ctx)
+				err = m.Client().Operator.DeleteOneID(puf.ID).Exec(ctx)
 				if err != nil {
 					return nil, err
 				}

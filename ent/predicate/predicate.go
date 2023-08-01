@@ -19,8 +19,8 @@ type Business func(*sql.Selector)
 // Content is the predicate function for content builders.
 type Content func(*sql.Selector)
 
-// PublicUser is the predicate function for publicuser builders.
-type PublicUser func(*sql.Selector)
+// Operator is the predicate function for operator builders.
+type Operator func(*sql.Selector)
 
 // Tag is the predicate function for tag builders.
 type Tag func(*sql.Selector)

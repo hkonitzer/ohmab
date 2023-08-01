@@ -32,6 +32,7 @@ var CmdCreateUser = &cobra.Command{
 			fmt.Println(fmt.Errorf("failed hashing password: %v", err))
 			os.Exit(1)
 		}
+
 		u, err := client.User.Create().
 			SetLogin(NewUser.Login).
 			SetEmail(NewUser.EMail).
@@ -45,7 +46,6 @@ var CmdCreateUser = &cobra.Command{
 		}
 		fmt.Println("User created with ID: ", u.ID)
 		if NewUser.Scopes != nil && len(NewUser.Scopes) > 0 {
-
 			for _, scope := range NewUser.Scopes {
 				id := uuid.Must(uuid.Parse(scope))
 				bq := client.Business.Query().Where(business.IDEQ(id)).WithUsers()
@@ -60,6 +60,13 @@ var CmdCreateUser = &cobra.Command{
 					os.Exit(1)
 				}
 				fmt.Println("scope added: ", b.ID)
+			}
+			if NewUser.PublicAPI == "1" { // has to be after adding the businesses
+				err = u.Update().SetUsePublicapi("1").Exec(ctx)
+				if err != nil {
+					fmt.Println(fmt.Errorf("failed setting public api: %v", err))
+					os.Exit(1)
+				}
 			}
 
 		}

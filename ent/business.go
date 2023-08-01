@@ -55,18 +55,18 @@ type BusinessEdges struct {
 	Tags []*Tag `json:"tags,omitempty"`
 	// Users holds the value of the users edge.
 	Users []*User `json:"users,omitempty"`
-	// PublicUsers holds the value of the public_users edge.
-	PublicUsers []*PublicUser `json:"public_users,omitempty"`
+	// Operators holds the value of the operators edge.
+	Operators []*Operator `json:"operators,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [4]bool
 	// totalCount holds the count of the edges above.
 	totalCount [4]map[string]int
 
-	namedAddresses   map[string][]*Address
-	namedTags        map[string][]*Tag
-	namedUsers       map[string][]*User
-	namedPublicUsers map[string][]*PublicUser
+	namedAddresses map[string][]*Address
+	namedTags      map[string][]*Tag
+	namedUsers     map[string][]*User
+	namedOperators map[string][]*Operator
 }
 
 // AddressesOrErr returns the Addresses value or an error if the edge
@@ -96,13 +96,13 @@ func (e BusinessEdges) UsersOrErr() ([]*User, error) {
 	return nil, &NotLoadedError{edge: "users"}
 }
 
-// PublicUsersOrErr returns the PublicUsers value or an error if the edge
+// OperatorsOrErr returns the Operators value or an error if the edge
 // was not loaded in eager-loading.
-func (e BusinessEdges) PublicUsersOrErr() ([]*PublicUser, error) {
+func (e BusinessEdges) OperatorsOrErr() ([]*Operator, error) {
 	if e.loadedTypes[3] {
-		return e.PublicUsers, nil
+		return e.Operators, nil
 	}
-	return nil, &NotLoadedError{edge: "public_users"}
+	return nil, &NotLoadedError{edge: "operators"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -233,9 +233,9 @@ func (b *Business) QueryUsers() *UserQuery {
 	return NewBusinessClient(b.config).QueryUsers(b)
 }
 
-// QueryPublicUsers queries the "public_users" edge of the Business entity.
-func (b *Business) QueryPublicUsers() *PublicUserQuery {
-	return NewBusinessClient(b.config).QueryPublicUsers(b)
+// QueryOperators queries the "operators" edge of the Business entity.
+func (b *Business) QueryOperators() *OperatorQuery {
+	return NewBusinessClient(b.config).QueryOperators(b)
 }
 
 // Update returns a builder for updating this Business.
@@ -369,27 +369,27 @@ func (b *Business) appendNamedUsers(name string, edges ...*User) {
 	}
 }
 
-// NamedPublicUsers returns the PublicUsers named value or an error if the edge was not
+// NamedOperators returns the Operators named value or an error if the edge was not
 // loaded in eager-loading with this name.
-func (b *Business) NamedPublicUsers(name string) ([]*PublicUser, error) {
-	if b.Edges.namedPublicUsers == nil {
+func (b *Business) NamedOperators(name string) ([]*Operator, error) {
+	if b.Edges.namedOperators == nil {
 		return nil, &NotLoadedError{edge: name}
 	}
-	nodes, ok := b.Edges.namedPublicUsers[name]
+	nodes, ok := b.Edges.namedOperators[name]
 	if !ok {
 		return nil, &NotLoadedError{edge: name}
 	}
 	return nodes, nil
 }
 
-func (b *Business) appendNamedPublicUsers(name string, edges ...*PublicUser) {
-	if b.Edges.namedPublicUsers == nil {
-		b.Edges.namedPublicUsers = make(map[string][]*PublicUser)
+func (b *Business) appendNamedOperators(name string, edges ...*Operator) {
+	if b.Edges.namedOperators == nil {
+		b.Edges.namedOperators = make(map[string][]*Operator)
 	}
 	if len(edges) == 0 {
-		b.Edges.namedPublicUsers[name] = []*PublicUser{}
+		b.Edges.namedOperators[name] = []*Operator{}
 	} else {
-		b.Edges.namedPublicUsers[name] = append(b.Edges.namedPublicUsers[name], edges...)
+		b.Edges.namedOperators[name] = append(b.Edges.namedOperators[name], edges...)
 	}
 }
 

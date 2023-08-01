@@ -48,8 +48,8 @@ const (
 	FieldAvailabilityByWhatsapp = "availability_by_whatsapp"
 	// EdgeAddress holds the string denoting the address edge name in mutations.
 	EdgeAddress = "address"
-	// EdgeUsersOnDuty holds the string denoting the users_on_duty edge name in mutations.
-	EdgeUsersOnDuty = "users_on_duty"
+	// EdgeOperatorsOnDuty holds the string denoting the operators_on_duty edge name in mutations.
+	EdgeOperatorsOnDuty = "operators_on_duty"
 	// Table holds the table name of the timetable in the database.
 	Table = "timetables"
 	// AddressTable is the table that holds the address relation/edge.
@@ -59,11 +59,11 @@ const (
 	AddressInverseTable = "addresses"
 	// AddressColumn is the table column denoting the address relation/edge.
 	AddressColumn = "address_timetables"
-	// UsersOnDutyTable is the table that holds the users_on_duty relation/edge. The primary key declared below.
-	UsersOnDutyTable = "timetable_users_on_duty"
-	// UsersOnDutyInverseTable is the table name for the PublicUser entity.
-	// It exists in this package in order to avoid circular dependency with the "publicuser" package.
-	UsersOnDutyInverseTable = "public_users"
+	// OperatorsOnDutyTable is the table that holds the operators_on_duty relation/edge. The primary key declared below.
+	OperatorsOnDutyTable = "timetable_operators_on_duty"
+	// OperatorsOnDutyInverseTable is the table name for the Operator entity.
+	// It exists in this package in order to avoid circular dependency with the "operator" package.
+	OperatorsOnDutyInverseTable = "operators"
 )
 
 // Columns holds all SQL columns for timetable fields.
@@ -91,9 +91,9 @@ var ForeignKeys = []string{
 }
 
 var (
-	// UsersOnDutyPrimaryKey and UsersOnDutyColumn2 are the table columns denoting the
-	// primary key for the users_on_duty relation (M2M).
-	UsersOnDutyPrimaryKey = []string{"timetable_id", "public_user_id"}
+	// OperatorsOnDutyPrimaryKey and OperatorsOnDutyColumn2 are the table columns denoting the
+	// primary key for the operators_on_duty relation (M2M).
+	OperatorsOnDutyPrimaryKey = []string{"timetable_id", "operator_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -242,17 +242,17 @@ func ByAddressField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
-// ByUsersOnDutyCount orders the results by users_on_duty count.
-func ByUsersOnDutyCount(opts ...sql.OrderTermOption) OrderOption {
+// ByOperatorsOnDutyCount orders the results by operators_on_duty count.
+func ByOperatorsOnDutyCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newUsersOnDutyStep(), opts...)
+		sqlgraph.OrderByNeighborsCount(s, newOperatorsOnDutyStep(), opts...)
 	}
 }
 
-// ByUsersOnDuty orders the results by users_on_duty terms.
-func ByUsersOnDuty(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+// ByOperatorsOnDuty orders the results by operators_on_duty terms.
+func ByOperatorsOnDuty(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newUsersOnDutyStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newOperatorsOnDutyStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 func newAddressStep() *sqlgraph.Step {
@@ -262,11 +262,11 @@ func newAddressStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2O, true, AddressTable, AddressColumn),
 	)
 }
-func newUsersOnDutyStep() *sqlgraph.Step {
+func newOperatorsOnDutyStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(UsersOnDutyInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2M, false, UsersOnDutyTable, UsersOnDutyPrimaryKey...),
+		sqlgraph.To(OperatorsOnDutyInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, false, OperatorsOnDutyTable, OperatorsOnDutyPrimaryKey...),
 	)
 }
 

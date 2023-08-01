@@ -13,8 +13,8 @@ import (
 	"github.com/hkonitzer/ohmab/ent/auditlog"
 	"github.com/hkonitzer/ohmab/ent/business"
 	"github.com/hkonitzer/ohmab/ent/content"
+	"github.com/hkonitzer/ohmab/ent/operator"
 	"github.com/hkonitzer/ohmab/ent/predicate"
-	"github.com/hkonitzer/ohmab/ent/publicuser"
 	"github.com/hkonitzer/ohmab/ent/tag"
 	"github.com/hkonitzer/ohmab/ent/timetable"
 	"github.com/hkonitzer/ohmab/ent/user"
@@ -1420,9 +1420,9 @@ type BusinessWhereInput struct {
 	HasUsers     *bool             `json:"hasUsers,omitempty"`
 	HasUsersWith []*UserWhereInput `json:"hasUsersWith,omitempty"`
 
-	// "public_users" edge predicates.
-	HasPublicUsers     *bool                   `json:"hasPublicUsers,omitempty"`
-	HasPublicUsersWith []*PublicUserWhereInput `json:"hasPublicUsersWith,omitempty"`
+	// "operators" edge predicates.
+	HasOperators     *bool                 `json:"hasOperators,omitempty"`
+	HasOperatorsWith []*OperatorWhereInput `json:"hasOperatorsWith,omitempty"`
 }
 
 // AddPredicates adds custom predicates to the where input to be used during the filtering phase.
@@ -1962,23 +1962,23 @@ func (i *BusinessWhereInput) P() (predicate.Business, error) {
 		}
 		predicates = append(predicates, business.HasUsersWith(with...))
 	}
-	if i.HasPublicUsers != nil {
-		p := business.HasPublicUsers()
-		if !*i.HasPublicUsers {
+	if i.HasOperators != nil {
+		p := business.HasOperators()
+		if !*i.HasOperators {
 			p = business.Not(p)
 		}
 		predicates = append(predicates, p)
 	}
-	if len(i.HasPublicUsersWith) > 0 {
-		with := make([]predicate.PublicUser, 0, len(i.HasPublicUsersWith))
-		for _, w := range i.HasPublicUsersWith {
+	if len(i.HasOperatorsWith) > 0 {
+		with := make([]predicate.Operator, 0, len(i.HasOperatorsWith))
+		for _, w := range i.HasOperatorsWith {
 			p, err := w.P()
 			if err != nil {
-				return nil, fmt.Errorf("%w: field 'HasPublicUsersWith'", err)
+				return nil, fmt.Errorf("%w: field 'HasOperatorsWith'", err)
 			}
 			with = append(with, p)
 		}
-		predicates = append(predicates, business.HasPublicUsersWith(with...))
+		predicates = append(predicates, business.HasOperatorsWith(with...))
 	}
 	switch len(predicates) {
 	case 0:
@@ -2446,12 +2446,12 @@ func (i *ContentWhereInput) P() (predicate.Content, error) {
 	}
 }
 
-// PublicUserWhereInput represents a where input for filtering PublicUser queries.
-type PublicUserWhereInput struct {
-	Predicates []predicate.PublicUser  `json:"-"`
-	Not        *PublicUserWhereInput   `json:"not,omitempty"`
-	Or         []*PublicUserWhereInput `json:"or,omitempty"`
-	And        []*PublicUserWhereInput `json:"and,omitempty"`
+// OperatorWhereInput represents a where input for filtering Operator queries.
+type OperatorWhereInput struct {
+	Predicates []predicate.Operator  `json:"-"`
+	Not        *OperatorWhereInput   `json:"not,omitempty"`
+	Or         []*OperatorWhereInput `json:"or,omitempty"`
+	And        []*OperatorWhereInput `json:"and,omitempty"`
 
 	// "id" field predicates.
 	ID      *uuid.UUID  `json:"id,omitempty"`
@@ -2535,18 +2535,18 @@ type PublicUserWhereInput struct {
 }
 
 // AddPredicates adds custom predicates to the where input to be used during the filtering phase.
-func (i *PublicUserWhereInput) AddPredicates(predicates ...predicate.PublicUser) {
+func (i *OperatorWhereInput) AddPredicates(predicates ...predicate.Operator) {
 	i.Predicates = append(i.Predicates, predicates...)
 }
 
-// Filter applies the PublicUserWhereInput filter on the PublicUserQuery builder.
-func (i *PublicUserWhereInput) Filter(q *PublicUserQuery) (*PublicUserQuery, error) {
+// Filter applies the OperatorWhereInput filter on the OperatorQuery builder.
+func (i *OperatorWhereInput) Filter(q *OperatorQuery) (*OperatorQuery, error) {
 	if i == nil {
 		return q, nil
 	}
 	p, err := i.P()
 	if err != nil {
-		if err == ErrEmptyPublicUserWhereInput {
+		if err == ErrEmptyOperatorWhereInput {
 			return q, nil
 		}
 		return nil, err
@@ -2554,19 +2554,19 @@ func (i *PublicUserWhereInput) Filter(q *PublicUserQuery) (*PublicUserQuery, err
 	return q.Where(p), nil
 }
 
-// ErrEmptyPublicUserWhereInput is returned in case the PublicUserWhereInput is empty.
-var ErrEmptyPublicUserWhereInput = errors.New("ent: empty predicate PublicUserWhereInput")
+// ErrEmptyOperatorWhereInput is returned in case the OperatorWhereInput is empty.
+var ErrEmptyOperatorWhereInput = errors.New("ent: empty predicate OperatorWhereInput")
 
-// P returns a predicate for filtering publicusers.
+// P returns a predicate for filtering operators.
 // An error is returned if the input is empty or invalid.
-func (i *PublicUserWhereInput) P() (predicate.PublicUser, error) {
-	var predicates []predicate.PublicUser
+func (i *OperatorWhereInput) P() (predicate.Operator, error) {
+	var predicates []predicate.Operator
 	if i.Not != nil {
 		p, err := i.Not.P()
 		if err != nil {
 			return nil, fmt.Errorf("%w: field 'not'", err)
 		}
-		predicates = append(predicates, publicuser.Not(p))
+		predicates = append(predicates, operator.Not(p))
 	}
 	switch n := len(i.Or); {
 	case n == 1:
@@ -2576,7 +2576,7 @@ func (i *PublicUserWhereInput) P() (predicate.PublicUser, error) {
 		}
 		predicates = append(predicates, p)
 	case n > 1:
-		or := make([]predicate.PublicUser, 0, n)
+		or := make([]predicate.Operator, 0, n)
 		for _, w := range i.Or {
 			p, err := w.P()
 			if err != nil {
@@ -2584,7 +2584,7 @@ func (i *PublicUserWhereInput) P() (predicate.PublicUser, error) {
 			}
 			or = append(or, p)
 		}
-		predicates = append(predicates, publicuser.Or(or...))
+		predicates = append(predicates, operator.Or(or...))
 	}
 	switch n := len(i.And); {
 	case n == 1:
@@ -2594,7 +2594,7 @@ func (i *PublicUserWhereInput) P() (predicate.PublicUser, error) {
 		}
 		predicates = append(predicates, p)
 	case n > 1:
-		and := make([]predicate.PublicUser, 0, n)
+		and := make([]predicate.Operator, 0, n)
 		for _, w := range i.And {
 			p, err := w.P()
 			if err != nil {
@@ -2602,200 +2602,200 @@ func (i *PublicUserWhereInput) P() (predicate.PublicUser, error) {
 			}
 			and = append(and, p)
 		}
-		predicates = append(predicates, publicuser.And(and...))
+		predicates = append(predicates, operator.And(and...))
 	}
 	predicates = append(predicates, i.Predicates...)
 	if i.ID != nil {
-		predicates = append(predicates, publicuser.IDEQ(*i.ID))
+		predicates = append(predicates, operator.IDEQ(*i.ID))
 	}
 	if i.IDNEQ != nil {
-		predicates = append(predicates, publicuser.IDNEQ(*i.IDNEQ))
+		predicates = append(predicates, operator.IDNEQ(*i.IDNEQ))
 	}
 	if len(i.IDIn) > 0 {
-		predicates = append(predicates, publicuser.IDIn(i.IDIn...))
+		predicates = append(predicates, operator.IDIn(i.IDIn...))
 	}
 	if len(i.IDNotIn) > 0 {
-		predicates = append(predicates, publicuser.IDNotIn(i.IDNotIn...))
+		predicates = append(predicates, operator.IDNotIn(i.IDNotIn...))
 	}
 	if i.IDGT != nil {
-		predicates = append(predicates, publicuser.IDGT(*i.IDGT))
+		predicates = append(predicates, operator.IDGT(*i.IDGT))
 	}
 	if i.IDGTE != nil {
-		predicates = append(predicates, publicuser.IDGTE(*i.IDGTE))
+		predicates = append(predicates, operator.IDGTE(*i.IDGTE))
 	}
 	if i.IDLT != nil {
-		predicates = append(predicates, publicuser.IDLT(*i.IDLT))
+		predicates = append(predicates, operator.IDLT(*i.IDLT))
 	}
 	if i.IDLTE != nil {
-		predicates = append(predicates, publicuser.IDLTE(*i.IDLTE))
+		predicates = append(predicates, operator.IDLTE(*i.IDLTE))
 	}
 	if i.Surname != nil {
-		predicates = append(predicates, publicuser.SurnameEQ(*i.Surname))
+		predicates = append(predicates, operator.SurnameEQ(*i.Surname))
 	}
 	if i.SurnameNEQ != nil {
-		predicates = append(predicates, publicuser.SurnameNEQ(*i.SurnameNEQ))
+		predicates = append(predicates, operator.SurnameNEQ(*i.SurnameNEQ))
 	}
 	if len(i.SurnameIn) > 0 {
-		predicates = append(predicates, publicuser.SurnameIn(i.SurnameIn...))
+		predicates = append(predicates, operator.SurnameIn(i.SurnameIn...))
 	}
 	if len(i.SurnameNotIn) > 0 {
-		predicates = append(predicates, publicuser.SurnameNotIn(i.SurnameNotIn...))
+		predicates = append(predicates, operator.SurnameNotIn(i.SurnameNotIn...))
 	}
 	if i.SurnameGT != nil {
-		predicates = append(predicates, publicuser.SurnameGT(*i.SurnameGT))
+		predicates = append(predicates, operator.SurnameGT(*i.SurnameGT))
 	}
 	if i.SurnameGTE != nil {
-		predicates = append(predicates, publicuser.SurnameGTE(*i.SurnameGTE))
+		predicates = append(predicates, operator.SurnameGTE(*i.SurnameGTE))
 	}
 	if i.SurnameLT != nil {
-		predicates = append(predicates, publicuser.SurnameLT(*i.SurnameLT))
+		predicates = append(predicates, operator.SurnameLT(*i.SurnameLT))
 	}
 	if i.SurnameLTE != nil {
-		predicates = append(predicates, publicuser.SurnameLTE(*i.SurnameLTE))
+		predicates = append(predicates, operator.SurnameLTE(*i.SurnameLTE))
 	}
 	if i.SurnameContains != nil {
-		predicates = append(predicates, publicuser.SurnameContains(*i.SurnameContains))
+		predicates = append(predicates, operator.SurnameContains(*i.SurnameContains))
 	}
 	if i.SurnameHasPrefix != nil {
-		predicates = append(predicates, publicuser.SurnameHasPrefix(*i.SurnameHasPrefix))
+		predicates = append(predicates, operator.SurnameHasPrefix(*i.SurnameHasPrefix))
 	}
 	if i.SurnameHasSuffix != nil {
-		predicates = append(predicates, publicuser.SurnameHasSuffix(*i.SurnameHasSuffix))
+		predicates = append(predicates, operator.SurnameHasSuffix(*i.SurnameHasSuffix))
 	}
 	if i.SurnameEqualFold != nil {
-		predicates = append(predicates, publicuser.SurnameEqualFold(*i.SurnameEqualFold))
+		predicates = append(predicates, operator.SurnameEqualFold(*i.SurnameEqualFold))
 	}
 	if i.SurnameContainsFold != nil {
-		predicates = append(predicates, publicuser.SurnameContainsFold(*i.SurnameContainsFold))
+		predicates = append(predicates, operator.SurnameContainsFold(*i.SurnameContainsFold))
 	}
 	if i.Firstname != nil {
-		predicates = append(predicates, publicuser.FirstnameEQ(*i.Firstname))
+		predicates = append(predicates, operator.FirstnameEQ(*i.Firstname))
 	}
 	if i.FirstnameNEQ != nil {
-		predicates = append(predicates, publicuser.FirstnameNEQ(*i.FirstnameNEQ))
+		predicates = append(predicates, operator.FirstnameNEQ(*i.FirstnameNEQ))
 	}
 	if len(i.FirstnameIn) > 0 {
-		predicates = append(predicates, publicuser.FirstnameIn(i.FirstnameIn...))
+		predicates = append(predicates, operator.FirstnameIn(i.FirstnameIn...))
 	}
 	if len(i.FirstnameNotIn) > 0 {
-		predicates = append(predicates, publicuser.FirstnameNotIn(i.FirstnameNotIn...))
+		predicates = append(predicates, operator.FirstnameNotIn(i.FirstnameNotIn...))
 	}
 	if i.FirstnameGT != nil {
-		predicates = append(predicates, publicuser.FirstnameGT(*i.FirstnameGT))
+		predicates = append(predicates, operator.FirstnameGT(*i.FirstnameGT))
 	}
 	if i.FirstnameGTE != nil {
-		predicates = append(predicates, publicuser.FirstnameGTE(*i.FirstnameGTE))
+		predicates = append(predicates, operator.FirstnameGTE(*i.FirstnameGTE))
 	}
 	if i.FirstnameLT != nil {
-		predicates = append(predicates, publicuser.FirstnameLT(*i.FirstnameLT))
+		predicates = append(predicates, operator.FirstnameLT(*i.FirstnameLT))
 	}
 	if i.FirstnameLTE != nil {
-		predicates = append(predicates, publicuser.FirstnameLTE(*i.FirstnameLTE))
+		predicates = append(predicates, operator.FirstnameLTE(*i.FirstnameLTE))
 	}
 	if i.FirstnameContains != nil {
-		predicates = append(predicates, publicuser.FirstnameContains(*i.FirstnameContains))
+		predicates = append(predicates, operator.FirstnameContains(*i.FirstnameContains))
 	}
 	if i.FirstnameHasPrefix != nil {
-		predicates = append(predicates, publicuser.FirstnameHasPrefix(*i.FirstnameHasPrefix))
+		predicates = append(predicates, operator.FirstnameHasPrefix(*i.FirstnameHasPrefix))
 	}
 	if i.FirstnameHasSuffix != nil {
-		predicates = append(predicates, publicuser.FirstnameHasSuffix(*i.FirstnameHasSuffix))
+		predicates = append(predicates, operator.FirstnameHasSuffix(*i.FirstnameHasSuffix))
 	}
 	if i.FirstnameEqualFold != nil {
-		predicates = append(predicates, publicuser.FirstnameEqualFold(*i.FirstnameEqualFold))
+		predicates = append(predicates, operator.FirstnameEqualFold(*i.FirstnameEqualFold))
 	}
 	if i.FirstnameContainsFold != nil {
-		predicates = append(predicates, publicuser.FirstnameContainsFold(*i.FirstnameContainsFold))
+		predicates = append(predicates, operator.FirstnameContainsFold(*i.FirstnameContainsFold))
 	}
 	if i.Title != nil {
-		predicates = append(predicates, publicuser.TitleEQ(*i.Title))
+		predicates = append(predicates, operator.TitleEQ(*i.Title))
 	}
 	if i.TitleNEQ != nil {
-		predicates = append(predicates, publicuser.TitleNEQ(*i.TitleNEQ))
+		predicates = append(predicates, operator.TitleNEQ(*i.TitleNEQ))
 	}
 	if len(i.TitleIn) > 0 {
-		predicates = append(predicates, publicuser.TitleIn(i.TitleIn...))
+		predicates = append(predicates, operator.TitleIn(i.TitleIn...))
 	}
 	if len(i.TitleNotIn) > 0 {
-		predicates = append(predicates, publicuser.TitleNotIn(i.TitleNotIn...))
+		predicates = append(predicates, operator.TitleNotIn(i.TitleNotIn...))
 	}
 	if i.TitleGT != nil {
-		predicates = append(predicates, publicuser.TitleGT(*i.TitleGT))
+		predicates = append(predicates, operator.TitleGT(*i.TitleGT))
 	}
 	if i.TitleGTE != nil {
-		predicates = append(predicates, publicuser.TitleGTE(*i.TitleGTE))
+		predicates = append(predicates, operator.TitleGTE(*i.TitleGTE))
 	}
 	if i.TitleLT != nil {
-		predicates = append(predicates, publicuser.TitleLT(*i.TitleLT))
+		predicates = append(predicates, operator.TitleLT(*i.TitleLT))
 	}
 	if i.TitleLTE != nil {
-		predicates = append(predicates, publicuser.TitleLTE(*i.TitleLTE))
+		predicates = append(predicates, operator.TitleLTE(*i.TitleLTE))
 	}
 	if i.TitleContains != nil {
-		predicates = append(predicates, publicuser.TitleContains(*i.TitleContains))
+		predicates = append(predicates, operator.TitleContains(*i.TitleContains))
 	}
 	if i.TitleHasPrefix != nil {
-		predicates = append(predicates, publicuser.TitleHasPrefix(*i.TitleHasPrefix))
+		predicates = append(predicates, operator.TitleHasPrefix(*i.TitleHasPrefix))
 	}
 	if i.TitleHasSuffix != nil {
-		predicates = append(predicates, publicuser.TitleHasSuffix(*i.TitleHasSuffix))
+		predicates = append(predicates, operator.TitleHasSuffix(*i.TitleHasSuffix))
 	}
 	if i.TitleIsNil {
-		predicates = append(predicates, publicuser.TitleIsNil())
+		predicates = append(predicates, operator.TitleIsNil())
 	}
 	if i.TitleNotNil {
-		predicates = append(predicates, publicuser.TitleNotNil())
+		predicates = append(predicates, operator.TitleNotNil())
 	}
 	if i.TitleEqualFold != nil {
-		predicates = append(predicates, publicuser.TitleEqualFold(*i.TitleEqualFold))
+		predicates = append(predicates, operator.TitleEqualFold(*i.TitleEqualFold))
 	}
 	if i.TitleContainsFold != nil {
-		predicates = append(predicates, publicuser.TitleContainsFold(*i.TitleContainsFold))
+		predicates = append(predicates, operator.TitleContainsFold(*i.TitleContainsFold))
 	}
 	if i.Email != nil {
-		predicates = append(predicates, publicuser.EmailEQ(*i.Email))
+		predicates = append(predicates, operator.EmailEQ(*i.Email))
 	}
 	if i.EmailNEQ != nil {
-		predicates = append(predicates, publicuser.EmailNEQ(*i.EmailNEQ))
+		predicates = append(predicates, operator.EmailNEQ(*i.EmailNEQ))
 	}
 	if len(i.EmailIn) > 0 {
-		predicates = append(predicates, publicuser.EmailIn(i.EmailIn...))
+		predicates = append(predicates, operator.EmailIn(i.EmailIn...))
 	}
 	if len(i.EmailNotIn) > 0 {
-		predicates = append(predicates, publicuser.EmailNotIn(i.EmailNotIn...))
+		predicates = append(predicates, operator.EmailNotIn(i.EmailNotIn...))
 	}
 	if i.EmailGT != nil {
-		predicates = append(predicates, publicuser.EmailGT(*i.EmailGT))
+		predicates = append(predicates, operator.EmailGT(*i.EmailGT))
 	}
 	if i.EmailGTE != nil {
-		predicates = append(predicates, publicuser.EmailGTE(*i.EmailGTE))
+		predicates = append(predicates, operator.EmailGTE(*i.EmailGTE))
 	}
 	if i.EmailLT != nil {
-		predicates = append(predicates, publicuser.EmailLT(*i.EmailLT))
+		predicates = append(predicates, operator.EmailLT(*i.EmailLT))
 	}
 	if i.EmailLTE != nil {
-		predicates = append(predicates, publicuser.EmailLTE(*i.EmailLTE))
+		predicates = append(predicates, operator.EmailLTE(*i.EmailLTE))
 	}
 	if i.EmailContains != nil {
-		predicates = append(predicates, publicuser.EmailContains(*i.EmailContains))
+		predicates = append(predicates, operator.EmailContains(*i.EmailContains))
 	}
 	if i.EmailHasPrefix != nil {
-		predicates = append(predicates, publicuser.EmailHasPrefix(*i.EmailHasPrefix))
+		predicates = append(predicates, operator.EmailHasPrefix(*i.EmailHasPrefix))
 	}
 	if i.EmailHasSuffix != nil {
-		predicates = append(predicates, publicuser.EmailHasSuffix(*i.EmailHasSuffix))
+		predicates = append(predicates, operator.EmailHasSuffix(*i.EmailHasSuffix))
 	}
 	if i.EmailEqualFold != nil {
-		predicates = append(predicates, publicuser.EmailEqualFold(*i.EmailEqualFold))
+		predicates = append(predicates, operator.EmailEqualFold(*i.EmailEqualFold))
 	}
 	if i.EmailContainsFold != nil {
-		predicates = append(predicates, publicuser.EmailContainsFold(*i.EmailContainsFold))
+		predicates = append(predicates, operator.EmailContainsFold(*i.EmailContainsFold))
 	}
 
 	if i.HasBusinesses != nil {
-		p := publicuser.HasBusinesses()
+		p := operator.HasBusinesses()
 		if !*i.HasBusinesses {
-			p = publicuser.Not(p)
+			p = operator.Not(p)
 		}
 		predicates = append(predicates, p)
 	}
@@ -2808,12 +2808,12 @@ func (i *PublicUserWhereInput) P() (predicate.PublicUser, error) {
 			}
 			with = append(with, p)
 		}
-		predicates = append(predicates, publicuser.HasBusinessesWith(with...))
+		predicates = append(predicates, operator.HasBusinessesWith(with...))
 	}
 	if i.HasTimetable != nil {
-		p := publicuser.HasTimetable()
+		p := operator.HasTimetable()
 		if !*i.HasTimetable {
-			p = publicuser.Not(p)
+			p = operator.Not(p)
 		}
 		predicates = append(predicates, p)
 	}
@@ -2826,15 +2826,15 @@ func (i *PublicUserWhereInput) P() (predicate.PublicUser, error) {
 			}
 			with = append(with, p)
 		}
-		predicates = append(predicates, publicuser.HasTimetableWith(with...))
+		predicates = append(predicates, operator.HasTimetableWith(with...))
 	}
 	switch len(predicates) {
 	case 0:
-		return nil, ErrEmptyPublicUserWhereInput
+		return nil, ErrEmptyOperatorWhereInput
 	case 1:
 		return predicates[0], nil
 	default:
-		return publicuser.And(predicates...), nil
+		return operator.And(predicates...), nil
 	}
 }
 
@@ -3414,9 +3414,9 @@ type TimetableWhereInput struct {
 	HasAddress     *bool                `json:"hasAddress,omitempty"`
 	HasAddressWith []*AddressWhereInput `json:"hasAddressWith,omitempty"`
 
-	// "users_on_duty" edge predicates.
-	HasUsersOnDuty     *bool                   `json:"hasUsersOnDuty,omitempty"`
-	HasUsersOnDutyWith []*PublicUserWhereInput `json:"hasUsersOnDutyWith,omitempty"`
+	// "operators_on_duty" edge predicates.
+	HasOperatorsOnDuty     *bool                 `json:"hasOperatorsOnDuty,omitempty"`
+	HasOperatorsOnDutyWith []*OperatorWhereInput `json:"hasOperatorsOnDutyWith,omitempty"`
 }
 
 // AddPredicates adds custom predicates to the where input to be used during the filtering phase.
@@ -3938,23 +3938,23 @@ func (i *TimetableWhereInput) P() (predicate.Timetable, error) {
 		}
 		predicates = append(predicates, timetable.HasAddressWith(with...))
 	}
-	if i.HasUsersOnDuty != nil {
-		p := timetable.HasUsersOnDuty()
-		if !*i.HasUsersOnDuty {
+	if i.HasOperatorsOnDuty != nil {
+		p := timetable.HasOperatorsOnDuty()
+		if !*i.HasOperatorsOnDuty {
 			p = timetable.Not(p)
 		}
 		predicates = append(predicates, p)
 	}
-	if len(i.HasUsersOnDutyWith) > 0 {
-		with := make([]predicate.PublicUser, 0, len(i.HasUsersOnDutyWith))
-		for _, w := range i.HasUsersOnDutyWith {
+	if len(i.HasOperatorsOnDutyWith) > 0 {
+		with := make([]predicate.Operator, 0, len(i.HasOperatorsOnDutyWith))
+		for _, w := range i.HasOperatorsOnDutyWith {
 			p, err := w.P()
 			if err != nil {
-				return nil, fmt.Errorf("%w: field 'HasUsersOnDutyWith'", err)
+				return nil, fmt.Errorf("%w: field 'HasOperatorsOnDutyWith'", err)
 			}
 			with = append(with, p)
 		}
-		predicates = append(predicates, timetable.HasUsersOnDutyWith(with...))
+		predicates = append(predicates, timetable.HasOperatorsOnDutyWith(with...))
 	}
 	switch len(predicates) {
 	case 0:

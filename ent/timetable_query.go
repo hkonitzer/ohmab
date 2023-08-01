@@ -14,24 +14,24 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/hkonitzer/ohmab/ent/address"
+	"github.com/hkonitzer/ohmab/ent/operator"
 	"github.com/hkonitzer/ohmab/ent/predicate"
-	"github.com/hkonitzer/ohmab/ent/publicuser"
 	"github.com/hkonitzer/ohmab/ent/timetable"
 )
 
 // TimetableQuery is the builder for querying Timetable entities.
 type TimetableQuery struct {
 	config
-	ctx                  *QueryContext
-	order                []timetable.OrderOption
-	inters               []Interceptor
-	predicates           []predicate.Timetable
-	withAddress          *AddressQuery
-	withUsersOnDuty      *PublicUserQuery
-	withFKs              bool
-	modifiers            []func(*sql.Selector)
-	loadTotal            []func(context.Context, []*Timetable) error
-	withNamedUsersOnDuty map[string]*PublicUserQuery
+	ctx                      *QueryContext
+	order                    []timetable.OrderOption
+	inters                   []Interceptor
+	predicates               []predicate.Timetable
+	withAddress              *AddressQuery
+	withOperatorsOnDuty      *OperatorQuery
+	withFKs                  bool
+	modifiers                []func(*sql.Selector)
+	loadTotal                []func(context.Context, []*Timetable) error
+	withNamedOperatorsOnDuty map[string]*OperatorQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -90,9 +90,9 @@ func (tq *TimetableQuery) QueryAddress() *AddressQuery {
 	return query
 }
 
-// QueryUsersOnDuty chains the current query on the "users_on_duty" edge.
-func (tq *TimetableQuery) QueryUsersOnDuty() *PublicUserQuery {
-	query := (&PublicUserClient{config: tq.config}).Query()
+// QueryOperatorsOnDuty chains the current query on the "operators_on_duty" edge.
+func (tq *TimetableQuery) QueryOperatorsOnDuty() *OperatorQuery {
+	query := (&OperatorClient{config: tq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := tq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -103,8 +103,8 @@ func (tq *TimetableQuery) QueryUsersOnDuty() *PublicUserQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(timetable.Table, timetable.FieldID, selector),
-			sqlgraph.To(publicuser.Table, publicuser.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, timetable.UsersOnDutyTable, timetable.UsersOnDutyPrimaryKey...),
+			sqlgraph.To(operator.Table, operator.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, timetable.OperatorsOnDutyTable, timetable.OperatorsOnDutyPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(tq.driver.Dialect(), step)
 		return fromU, nil
@@ -299,13 +299,13 @@ func (tq *TimetableQuery) Clone() *TimetableQuery {
 		return nil
 	}
 	return &TimetableQuery{
-		config:          tq.config,
-		ctx:             tq.ctx.Clone(),
-		order:           append([]timetable.OrderOption{}, tq.order...),
-		inters:          append([]Interceptor{}, tq.inters...),
-		predicates:      append([]predicate.Timetable{}, tq.predicates...),
-		withAddress:     tq.withAddress.Clone(),
-		withUsersOnDuty: tq.withUsersOnDuty.Clone(),
+		config:              tq.config,
+		ctx:                 tq.ctx.Clone(),
+		order:               append([]timetable.OrderOption{}, tq.order...),
+		inters:              append([]Interceptor{}, tq.inters...),
+		predicates:          append([]predicate.Timetable{}, tq.predicates...),
+		withAddress:         tq.withAddress.Clone(),
+		withOperatorsOnDuty: tq.withOperatorsOnDuty.Clone(),
 		// clone intermediate query.
 		sql:  tq.sql.Clone(),
 		path: tq.path,
@@ -323,14 +323,14 @@ func (tq *TimetableQuery) WithAddress(opts ...func(*AddressQuery)) *TimetableQue
 	return tq
 }
 
-// WithUsersOnDuty tells the query-builder to eager-load the nodes that are connected to
-// the "users_on_duty" edge. The optional arguments are used to configure the query builder of the edge.
-func (tq *TimetableQuery) WithUsersOnDuty(opts ...func(*PublicUserQuery)) *TimetableQuery {
-	query := (&PublicUserClient{config: tq.config}).Query()
+// WithOperatorsOnDuty tells the query-builder to eager-load the nodes that are connected to
+// the "operators_on_duty" edge. The optional arguments are used to configure the query builder of the edge.
+func (tq *TimetableQuery) WithOperatorsOnDuty(opts ...func(*OperatorQuery)) *TimetableQuery {
+	query := (&OperatorClient{config: tq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	tq.withUsersOnDuty = query
+	tq.withOperatorsOnDuty = query
 	return tq
 }
 
@@ -415,7 +415,7 @@ func (tq *TimetableQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Ti
 		_spec       = tq.querySpec()
 		loadedTypes = [2]bool{
 			tq.withAddress != nil,
-			tq.withUsersOnDuty != nil,
+			tq.withOperatorsOnDuty != nil,
 		}
 	)
 	if tq.withAddress != nil {
@@ -451,17 +451,17 @@ func (tq *TimetableQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Ti
 			return nil, err
 		}
 	}
-	if query := tq.withUsersOnDuty; query != nil {
-		if err := tq.loadUsersOnDuty(ctx, query, nodes,
-			func(n *Timetable) { n.Edges.UsersOnDuty = []*PublicUser{} },
-			func(n *Timetable, e *PublicUser) { n.Edges.UsersOnDuty = append(n.Edges.UsersOnDuty, e) }); err != nil {
+	if query := tq.withOperatorsOnDuty; query != nil {
+		if err := tq.loadOperatorsOnDuty(ctx, query, nodes,
+			func(n *Timetable) { n.Edges.OperatorsOnDuty = []*Operator{} },
+			func(n *Timetable, e *Operator) { n.Edges.OperatorsOnDuty = append(n.Edges.OperatorsOnDuty, e) }); err != nil {
 			return nil, err
 		}
 	}
-	for name, query := range tq.withNamedUsersOnDuty {
-		if err := tq.loadUsersOnDuty(ctx, query, nodes,
-			func(n *Timetable) { n.appendNamedUsersOnDuty(name) },
-			func(n *Timetable, e *PublicUser) { n.appendNamedUsersOnDuty(name, e) }); err != nil {
+	for name, query := range tq.withNamedOperatorsOnDuty {
+		if err := tq.loadOperatorsOnDuty(ctx, query, nodes,
+			func(n *Timetable) { n.appendNamedOperatorsOnDuty(name) },
+			func(n *Timetable, e *Operator) { n.appendNamedOperatorsOnDuty(name, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -505,7 +505,7 @@ func (tq *TimetableQuery) loadAddress(ctx context.Context, query *AddressQuery, 
 	}
 	return nil
 }
-func (tq *TimetableQuery) loadUsersOnDuty(ctx context.Context, query *PublicUserQuery, nodes []*Timetable, init func(*Timetable), assign func(*Timetable, *PublicUser)) error {
+func (tq *TimetableQuery) loadOperatorsOnDuty(ctx context.Context, query *OperatorQuery, nodes []*Timetable, init func(*Timetable), assign func(*Timetable, *Operator)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
 	byID := make(map[uuid.UUID]*Timetable)
 	nids := make(map[uuid.UUID]map[*Timetable]struct{})
@@ -517,11 +517,11 @@ func (tq *TimetableQuery) loadUsersOnDuty(ctx context.Context, query *PublicUser
 		}
 	}
 	query.Where(func(s *sql.Selector) {
-		joinT := sql.Table(timetable.UsersOnDutyTable)
-		s.Join(joinT).On(s.C(publicuser.FieldID), joinT.C(timetable.UsersOnDutyPrimaryKey[1]))
-		s.Where(sql.InValues(joinT.C(timetable.UsersOnDutyPrimaryKey[0]), edgeIDs...))
+		joinT := sql.Table(timetable.OperatorsOnDutyTable)
+		s.Join(joinT).On(s.C(operator.FieldID), joinT.C(timetable.OperatorsOnDutyPrimaryKey[1]))
+		s.Where(sql.InValues(joinT.C(timetable.OperatorsOnDutyPrimaryKey[0]), edgeIDs...))
 		columns := s.SelectedColumns()
-		s.Select(joinT.C(timetable.UsersOnDutyPrimaryKey[0]))
+		s.Select(joinT.C(timetable.OperatorsOnDutyPrimaryKey[0]))
 		s.AppendSelect(columns...)
 		s.SetDistinct(false)
 	})
@@ -551,14 +551,14 @@ func (tq *TimetableQuery) loadUsersOnDuty(ctx context.Context, query *PublicUser
 			}
 		})
 	})
-	neighbors, err := withInterceptors[[]*PublicUser](ctx, query, qr, query.inters)
+	neighbors, err := withInterceptors[[]*Operator](ctx, query, qr, query.inters)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
 		nodes, ok := nids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected "users_on_duty" node returned %v`, n.ID)
+			return fmt.Errorf(`unexpected "operators_on_duty" node returned %v`, n.ID)
 		}
 		for kn := range nodes {
 			assign(kn, n)
@@ -651,17 +651,17 @@ func (tq *TimetableQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	return selector
 }
 
-// WithNamedUsersOnDuty tells the query-builder to eager-load the nodes that are connected to the "users_on_duty"
+// WithNamedOperatorsOnDuty tells the query-builder to eager-load the nodes that are connected to the "operators_on_duty"
 // edge with the given name. The optional arguments are used to configure the query builder of the edge.
-func (tq *TimetableQuery) WithNamedUsersOnDuty(name string, opts ...func(*PublicUserQuery)) *TimetableQuery {
-	query := (&PublicUserClient{config: tq.config}).Query()
+func (tq *TimetableQuery) WithNamedOperatorsOnDuty(name string, opts ...func(*OperatorQuery)) *TimetableQuery {
+	query := (&OperatorClient{config: tq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	if tq.withNamedUsersOnDuty == nil {
-		tq.withNamedUsersOnDuty = make(map[string]*PublicUserQuery)
+	if tq.withNamedOperatorsOnDuty == nil {
+		tq.withNamedOperatorsOnDuty = make(map[string]*OperatorQuery)
 	}
-	tq.withNamedUsersOnDuty[name] = query
+	tq.withNamedOperatorsOnDuty[name] = query
 	return tq
 }
 

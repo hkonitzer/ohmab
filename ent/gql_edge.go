@@ -65,38 +65,38 @@ func (b *Business) Users(ctx context.Context) (result []*User, err error) {
 	return result, err
 }
 
-func (b *Business) PublicUsers(ctx context.Context) (result []*PublicUser, err error) {
+func (b *Business) Operators(ctx context.Context) (result []*Operator, err error) {
 	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
-		result, err = b.NamedPublicUsers(graphql.GetFieldContext(ctx).Field.Alias)
+		result, err = b.NamedOperators(graphql.GetFieldContext(ctx).Field.Alias)
 	} else {
-		result, err = b.Edges.PublicUsersOrErr()
+		result, err = b.Edges.OperatorsOrErr()
 	}
 	if IsNotLoaded(err) {
-		result, err = b.QueryPublicUsers().All(ctx)
+		result, err = b.QueryOperators().All(ctx)
 	}
 	return result, err
 }
 
-func (pu *PublicUser) Businesses(ctx context.Context) (result []*Business, err error) {
+func (o *Operator) Businesses(ctx context.Context) (result []*Business, err error) {
 	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
-		result, err = pu.NamedBusinesses(graphql.GetFieldContext(ctx).Field.Alias)
+		result, err = o.NamedBusinesses(graphql.GetFieldContext(ctx).Field.Alias)
 	} else {
-		result, err = pu.Edges.BusinessesOrErr()
+		result, err = o.Edges.BusinessesOrErr()
 	}
 	if IsNotLoaded(err) {
-		result, err = pu.QueryBusinesses().All(ctx)
+		result, err = o.QueryBusinesses().All(ctx)
 	}
 	return result, err
 }
 
-func (pu *PublicUser) Timetable(ctx context.Context) (result []*Timetable, err error) {
+func (o *Operator) Timetable(ctx context.Context) (result []*Timetable, err error) {
 	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
-		result, err = pu.NamedTimetable(graphql.GetFieldContext(ctx).Field.Alias)
+		result, err = o.NamedTimetable(graphql.GetFieldContext(ctx).Field.Alias)
 	} else {
-		result, err = pu.Edges.TimetableOrErr()
+		result, err = o.Edges.TimetableOrErr()
 	}
 	if IsNotLoaded(err) {
-		result, err = pu.QueryTimetable().All(ctx)
+		result, err = o.QueryTimetable().All(ctx)
 	}
 	return result, err
 }
@@ -133,14 +133,14 @@ func (t *Timetable) Address(ctx context.Context) (*Address, error) {
 	return result, err
 }
 
-func (t *Timetable) UsersOnDuty(ctx context.Context) (result []*PublicUser, err error) {
+func (t *Timetable) OperatorsOnDuty(ctx context.Context) (result []*Operator, err error) {
 	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
-		result, err = t.NamedUsersOnDuty(graphql.GetFieldContext(ctx).Field.Alias)
+		result, err = t.NamedOperatorsOnDuty(graphql.GetFieldContext(ctx).Field.Alias)
 	} else {
-		result, err = t.Edges.UsersOnDutyOrErr()
+		result, err = t.Edges.OperatorsOnDutyOrErr()
 	}
 	if IsNotLoaded(err) {
-		result, err = t.QueryUsersOnDuty().All(ctx)
+		result, err = t.QueryOperatorsOnDuty().All(ctx)
 	}
 	return result, err
 }

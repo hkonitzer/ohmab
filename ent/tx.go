@@ -21,8 +21,8 @@ type Tx struct {
 	Business *BusinessClient
 	// Content is the client for interacting with the Content builders.
 	Content *ContentClient
-	// PublicUser is the client for interacting with the PublicUser builders.
-	PublicUser *PublicUserClient
+	// Operator is the client for interacting with the Operator builders.
+	Operator *OperatorClient
 	// Tag is the client for interacting with the Tag builders.
 	Tag *TagClient
 	// Timetable is the client for interacting with the Timetable builders.
@@ -164,7 +164,7 @@ func (tx *Tx) init() {
 	tx.AuditLog = NewAuditLogClient(tx.config)
 	tx.Business = NewBusinessClient(tx.config)
 	tx.Content = NewContentClient(tx.config)
-	tx.PublicUser = NewPublicUserClient(tx.config)
+	tx.Operator = NewOperatorClient(tx.config)
 	tx.Tag = NewTagClient(tx.config)
 	tx.Timetable = NewTimetableClient(tx.config)
 	tx.User = NewUserClient(tx.config)

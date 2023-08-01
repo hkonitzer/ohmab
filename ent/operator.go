@@ -10,11 +10,11 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/hkonitzer/ohmab/ent/publicuser"
+	"github.com/hkonitzer/ohmab/ent/operator"
 )
 
-// PublicUser is the model entity for the PublicUser schema.
-type PublicUser struct {
+// Operator is the model entity for the Operator schema.
+type Operator struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
@@ -27,13 +27,13 @@ type PublicUser struct {
 	// Email holds the value of the "email" field.
 	Email string `json:"-"`
 	// Edges holds the relations/edges for other nodes in the graph.
-	// The values are being populated by the PublicUserQuery when eager-loading is set.
-	Edges        PublicUserEdges `json:"edges"`
+	// The values are being populated by the OperatorQuery when eager-loading is set.
+	Edges        OperatorEdges `json:"edges"`
 	selectValues sql.SelectValues
 }
 
-// PublicUserEdges holds the relations/edges for other nodes in the graph.
-type PublicUserEdges struct {
+// OperatorEdges holds the relations/edges for other nodes in the graph.
+type OperatorEdges struct {
 	// The businesses this user is associated with
 	Businesses []*Business `json:"businesses,omitempty"`
 	// The persons on duty for this timetable entry
@@ -50,7 +50,7 @@ type PublicUserEdges struct {
 
 // BusinessesOrErr returns the Businesses value or an error if the edge
 // was not loaded in eager-loading.
-func (e PublicUserEdges) BusinessesOrErr() ([]*Business, error) {
+func (e OperatorEdges) BusinessesOrErr() ([]*Business, error) {
 	if e.loadedTypes[0] {
 		return e.Businesses, nil
 	}
@@ -59,7 +59,7 @@ func (e PublicUserEdges) BusinessesOrErr() ([]*Business, error) {
 
 // TimetableOrErr returns the Timetable value or an error if the edge
 // was not loaded in eager-loading.
-func (e PublicUserEdges) TimetableOrErr() ([]*Timetable, error) {
+func (e OperatorEdges) TimetableOrErr() ([]*Timetable, error) {
 	if e.loadedTypes[1] {
 		return e.Timetable, nil
 	}
@@ -67,13 +67,13 @@ func (e PublicUserEdges) TimetableOrErr() ([]*Timetable, error) {
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
-func (*PublicUser) scanValues(columns []string) ([]any, error) {
+func (*Operator) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case publicuser.FieldSurname, publicuser.FieldFirstname, publicuser.FieldTitle, publicuser.FieldEmail:
+		case operator.FieldSurname, operator.FieldFirstname, operator.FieldTitle, operator.FieldEmail:
 			values[i] = new(sql.NullString)
-		case publicuser.FieldID:
+		case operator.FieldID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -83,97 +83,97 @@ func (*PublicUser) scanValues(columns []string) ([]any, error) {
 }
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
-// to the PublicUser fields.
-func (pu *PublicUser) assignValues(columns []string, values []any) error {
+// to the Operator fields.
+func (o *Operator) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
 	for i := range columns {
 		switch columns[i] {
-		case publicuser.FieldID:
+		case operator.FieldID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				pu.ID = *value
+				o.ID = *value
 			}
-		case publicuser.FieldSurname:
+		case operator.FieldSurname:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field surname", values[i])
 			} else if value.Valid {
-				pu.Surname = value.String
+				o.Surname = value.String
 			}
-		case publicuser.FieldFirstname:
+		case operator.FieldFirstname:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field firstname", values[i])
 			} else if value.Valid {
-				pu.Firstname = value.String
+				o.Firstname = value.String
 			}
-		case publicuser.FieldTitle:
+		case operator.FieldTitle:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field title", values[i])
 			} else if value.Valid {
-				pu.Title = value.String
+				o.Title = value.String
 			}
-		case publicuser.FieldEmail:
+		case operator.FieldEmail:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field email", values[i])
 			} else if value.Valid {
-				pu.Email = value.String
+				o.Email = value.String
 			}
 		default:
-			pu.selectValues.Set(columns[i], values[i])
+			o.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
 }
 
-// Value returns the ent.Value that was dynamically selected and assigned to the PublicUser.
+// Value returns the ent.Value that was dynamically selected and assigned to the Operator.
 // This includes values selected through modifiers, order, etc.
-func (pu *PublicUser) Value(name string) (ent.Value, error) {
-	return pu.selectValues.Get(name)
+func (o *Operator) Value(name string) (ent.Value, error) {
+	return o.selectValues.Get(name)
 }
 
-// QueryBusinesses queries the "businesses" edge of the PublicUser entity.
-func (pu *PublicUser) QueryBusinesses() *BusinessQuery {
-	return NewPublicUserClient(pu.config).QueryBusinesses(pu)
+// QueryBusinesses queries the "businesses" edge of the Operator entity.
+func (o *Operator) QueryBusinesses() *BusinessQuery {
+	return NewOperatorClient(o.config).QueryBusinesses(o)
 }
 
-// QueryTimetable queries the "timetable" edge of the PublicUser entity.
-func (pu *PublicUser) QueryTimetable() *TimetableQuery {
-	return NewPublicUserClient(pu.config).QueryTimetable(pu)
+// QueryTimetable queries the "timetable" edge of the Operator entity.
+func (o *Operator) QueryTimetable() *TimetableQuery {
+	return NewOperatorClient(o.config).QueryTimetable(o)
 }
 
-// Update returns a builder for updating this PublicUser.
-// Note that you need to call PublicUser.Unwrap() before calling this method if this PublicUser
+// Update returns a builder for updating this Operator.
+// Note that you need to call Operator.Unwrap() before calling this method if this Operator
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (pu *PublicUser) Update() *PublicUserUpdateOne {
-	return NewPublicUserClient(pu.config).UpdateOne(pu)
+func (o *Operator) Update() *OperatorUpdateOne {
+	return NewOperatorClient(o.config).UpdateOne(o)
 }
 
-// Unwrap unwraps the PublicUser entity that was returned from a transaction after it was closed,
+// Unwrap unwraps the Operator entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (pu *PublicUser) Unwrap() *PublicUser {
-	_tx, ok := pu.config.driver.(*txDriver)
+func (o *Operator) Unwrap() *Operator {
+	_tx, ok := o.config.driver.(*txDriver)
 	if !ok {
-		panic("ent: PublicUser is not a transactional entity")
+		panic("ent: Operator is not a transactional entity")
 	}
-	pu.config.driver = _tx.drv
-	return pu
+	o.config.driver = _tx.drv
+	return o
 }
 
 // String implements the fmt.Stringer.
-func (pu *PublicUser) String() string {
+func (o *Operator) String() string {
 	var builder strings.Builder
-	builder.WriteString("PublicUser(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", pu.ID))
+	builder.WriteString("Operator(")
+	builder.WriteString(fmt.Sprintf("id=%v, ", o.ID))
 	builder.WriteString("surname=")
-	builder.WriteString(pu.Surname)
+	builder.WriteString(o.Surname)
 	builder.WriteString(", ")
 	builder.WriteString("firstname=")
-	builder.WriteString(pu.Firstname)
+	builder.WriteString(o.Firstname)
 	builder.WriteString(", ")
 	builder.WriteString("title=")
-	builder.WriteString(pu.Title)
+	builder.WriteString(o.Title)
 	builder.WriteString(", ")
 	builder.WriteString("email=<sensitive>")
 	builder.WriteByte(')')
@@ -182,51 +182,51 @@ func (pu *PublicUser) String() string {
 
 // NamedBusinesses returns the Businesses named value or an error if the edge was not
 // loaded in eager-loading with this name.
-func (pu *PublicUser) NamedBusinesses(name string) ([]*Business, error) {
-	if pu.Edges.namedBusinesses == nil {
+func (o *Operator) NamedBusinesses(name string) ([]*Business, error) {
+	if o.Edges.namedBusinesses == nil {
 		return nil, &NotLoadedError{edge: name}
 	}
-	nodes, ok := pu.Edges.namedBusinesses[name]
+	nodes, ok := o.Edges.namedBusinesses[name]
 	if !ok {
 		return nil, &NotLoadedError{edge: name}
 	}
 	return nodes, nil
 }
 
-func (pu *PublicUser) appendNamedBusinesses(name string, edges ...*Business) {
-	if pu.Edges.namedBusinesses == nil {
-		pu.Edges.namedBusinesses = make(map[string][]*Business)
+func (o *Operator) appendNamedBusinesses(name string, edges ...*Business) {
+	if o.Edges.namedBusinesses == nil {
+		o.Edges.namedBusinesses = make(map[string][]*Business)
 	}
 	if len(edges) == 0 {
-		pu.Edges.namedBusinesses[name] = []*Business{}
+		o.Edges.namedBusinesses[name] = []*Business{}
 	} else {
-		pu.Edges.namedBusinesses[name] = append(pu.Edges.namedBusinesses[name], edges...)
+		o.Edges.namedBusinesses[name] = append(o.Edges.namedBusinesses[name], edges...)
 	}
 }
 
 // NamedTimetable returns the Timetable named value or an error if the edge was not
 // loaded in eager-loading with this name.
-func (pu *PublicUser) NamedTimetable(name string) ([]*Timetable, error) {
-	if pu.Edges.namedTimetable == nil {
+func (o *Operator) NamedTimetable(name string) ([]*Timetable, error) {
+	if o.Edges.namedTimetable == nil {
 		return nil, &NotLoadedError{edge: name}
 	}
-	nodes, ok := pu.Edges.namedTimetable[name]
+	nodes, ok := o.Edges.namedTimetable[name]
 	if !ok {
 		return nil, &NotLoadedError{edge: name}
 	}
 	return nodes, nil
 }
 
-func (pu *PublicUser) appendNamedTimetable(name string, edges ...*Timetable) {
-	if pu.Edges.namedTimetable == nil {
-		pu.Edges.namedTimetable = make(map[string][]*Timetable)
+func (o *Operator) appendNamedTimetable(name string, edges ...*Timetable) {
+	if o.Edges.namedTimetable == nil {
+		o.Edges.namedTimetable = make(map[string][]*Timetable)
 	}
 	if len(edges) == 0 {
-		pu.Edges.namedTimetable[name] = []*Timetable{}
+		o.Edges.namedTimetable[name] = []*Timetable{}
 	} else {
-		pu.Edges.namedTimetable[name] = append(pu.Edges.namedTimetable[name], edges...)
+		o.Edges.namedTimetable[name] = append(o.Edges.namedTimetable[name], edges...)
 	}
 }
 
-// PublicUsers is a parsable slice of PublicUser.
-type PublicUsers []*PublicUser
+// Operators is a parsable slice of Operator.
+type Operators []*Operator

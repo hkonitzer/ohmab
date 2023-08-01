@@ -17,7 +17,7 @@ import (
 	"github.com/hkonitzer/ohmab/ent/auditlog"
 	"github.com/hkonitzer/ohmab/ent/business"
 	"github.com/hkonitzer/ohmab/ent/content"
-	"github.com/hkonitzer/ohmab/ent/publicuser"
+	"github.com/hkonitzer/ohmab/ent/operator"
 	"github.com/hkonitzer/ohmab/ent/tag"
 	"github.com/hkonitzer/ohmab/ent/timetable"
 	"github.com/hkonitzer/ohmab/ent/user"
@@ -81,14 +81,14 @@ var (
 func checkColumn(table, column string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
-			address.Table:    address.ValidColumn,
-			auditlog.Table:   auditlog.ValidColumn,
-			business.Table:   business.ValidColumn,
-			content.Table:    content.ValidColumn,
-			publicuser.Table: publicuser.ValidColumn,
-			tag.Table:        tag.ValidColumn,
-			timetable.Table:  timetable.ValidColumn,
-			user.Table:       user.ValidColumn,
+			address.Table:   address.ValidColumn,
+			auditlog.Table:  auditlog.ValidColumn,
+			business.Table:  business.ValidColumn,
+			content.Table:   content.ValidColumn,
+			operator.Table:  operator.ValidColumn,
+			tag.Table:       tag.ValidColumn,
+			timetable.Table: timetable.ValidColumn,
+			user.Table:      user.ValidColumn,
 		})
 	})
 	return columnCheck(table, column)

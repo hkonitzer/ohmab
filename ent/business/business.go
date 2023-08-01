@@ -45,8 +45,8 @@ const (
 	EdgeTags = "tags"
 	// EdgeUsers holds the string denoting the users edge name in mutations.
 	EdgeUsers = "users"
-	// EdgePublicUsers holds the string denoting the public_users edge name in mutations.
-	EdgePublicUsers = "public_users"
+	// EdgeOperators holds the string denoting the operators edge name in mutations.
+	EdgeOperators = "operators"
 	// Table holds the table name of the business in the database.
 	Table = "businesses"
 	// AddressesTable is the table that holds the addresses relation/edge.
@@ -66,11 +66,11 @@ const (
 	// UsersInverseTable is the table name for the User entity.
 	// It exists in this package in order to avoid circular dependency with the "user" package.
 	UsersInverseTable = "users"
-	// PublicUsersTable is the table that holds the public_users relation/edge. The primary key declared below.
-	PublicUsersTable = "business_public_users"
-	// PublicUsersInverseTable is the table name for the PublicUser entity.
-	// It exists in this package in order to avoid circular dependency with the "publicuser" package.
-	PublicUsersInverseTable = "public_users"
+	// OperatorsTable is the table that holds the operators relation/edge. The primary key declared below.
+	OperatorsTable = "business_operators"
+	// OperatorsInverseTable is the table name for the Operator entity.
+	// It exists in this package in order to avoid circular dependency with the "operator" package.
+	OperatorsInverseTable = "operators"
 )
 
 // Columns holds all SQL columns for business fields.
@@ -96,9 +96,9 @@ var (
 	// UsersPrimaryKey and UsersColumn2 are the table columns denoting the
 	// primary key for the users relation (M2M).
 	UsersPrimaryKey = []string{"business_id", "user_id"}
-	// PublicUsersPrimaryKey and PublicUsersColumn2 are the table columns denoting the
-	// primary key for the public_users relation (M2M).
-	PublicUsersPrimaryKey = []string{"business_id", "public_user_id"}
+	// OperatorsPrimaryKey and OperatorsColumn2 are the table columns denoting the
+	// primary key for the operators relation (M2M).
+	OperatorsPrimaryKey = []string{"business_id", "operator_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -240,17 +240,17 @@ func ByUsers(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
-// ByPublicUsersCount orders the results by public_users count.
-func ByPublicUsersCount(opts ...sql.OrderTermOption) OrderOption {
+// ByOperatorsCount orders the results by operators count.
+func ByOperatorsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newPublicUsersStep(), opts...)
+		sqlgraph.OrderByNeighborsCount(s, newOperatorsStep(), opts...)
 	}
 }
 
-// ByPublicUsers orders the results by public_users terms.
-func ByPublicUsers(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+// ByOperators orders the results by operators terms.
+func ByOperators(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newPublicUsersStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newOperatorsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 func newAddressesStep() *sqlgraph.Step {
@@ -274,10 +274,10 @@ func newUsersStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2M, false, UsersTable, UsersPrimaryKey...),
 	)
 }
-func newPublicUsersStep() *sqlgraph.Step {
+func newOperatorsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(PublicUsersInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2M, false, PublicUsersTable, PublicUsersPrimaryKey...),
+		sqlgraph.To(OperatorsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, false, OperatorsTable, OperatorsPrimaryKey...),
 	)
 }

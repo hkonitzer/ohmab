@@ -30,7 +30,7 @@ var srv *routes.Server
 func main() {
 	// Get logger
 	logger := log.GetLoggerInstance()
-
+	logger.Info().Msg("Starting OHMAB V" + config.Version)
 	// Get the configuration
 	configurations, err := config.Get()
 	if err != nil {

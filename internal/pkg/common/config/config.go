@@ -63,6 +63,8 @@ type DatabaseConfigurations struct {
 var configurations *Configurations
 var initOnce, readOnce sync.Once
 
+var Version string
+
 func Get() (*Configurations, error) {
 	var err error = nil
 	readOnce.Do(func() {

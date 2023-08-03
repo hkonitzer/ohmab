@@ -161,7 +161,9 @@ func createTestData(client *ent.Client) {
 	logger := log.GetLoggerInstance()
 
 	var ctx = context.Background()
-	ctx = privacy.NewContext(ctx, &privacy.UserViewer{Role: privacy.Admin})
+	uv := &privacy.UserViewer{Role: privacy.Admin}
+	uv.SetUserID("TESTDATA")
+	ctx = privacy.NewContext(ctx, uv)
 	// Check if database is empty
 	count, err := client.Business.Query().Count(ctx)
 	if err != nil {

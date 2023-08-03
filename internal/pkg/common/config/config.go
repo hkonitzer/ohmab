@@ -147,7 +147,7 @@ func read() {
 				fmt.Sprintf("postgres://%s:%s@l%s:%v/%s?sslmode=%s&application_name=OHMAB",
 					viper.Get("database.dbuser"),
 					viper.Get("database.dbpassword"),
-					viper.Get("database.host"),
+					viper.Get("database.dbhost"),
 					viper.Get("database.dbport"),
 					viper.Get("database.dbname"),
 					viper.Get("database.postgres.sslmode"),

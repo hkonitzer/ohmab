@@ -1,3 +1,6 @@
 *.csv
 config.yml
 build/
+
+docker-compose.yml
+dockerbuild.sh

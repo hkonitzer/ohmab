@@ -30,7 +30,7 @@ var srv *routes.Server
 func main() {
 	// Get logger
 	logger := log.GetLoggerInstance()
-	logger.Info().Msg("Starting OHMAB V" + config.Version)
+	logger.Info().Msg("Starting OHMAB Version " + config.Version)
 	// Get the configuration
 	configurations, err := config.Get()
 	if err != nil {
@@ -43,6 +43,7 @@ func main() {
 	if environment != "" && strings.ToLower(environment) == "development" {
 		developmentMode = true
 		logger.Debug().Msgf("DEVELOPMENT mode enabled, DEBUG LEVEL: %v", configurations.DEBUG)
+		logger.Debug().Msgf("Database dialect %s on host: %s", configurations.Database.Dialect, configurations.Database.DBHost)
 	}
 
 	ctx := context.TODO()

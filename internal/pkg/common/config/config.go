@@ -144,9 +144,10 @@ func read() {
 		if viper.Get("database.dialect") == "postgres" {
 			viper.SetDefault("database.postgres.sslmode", "disable")
 			viper.Set("database.dsn",
-				fmt.Sprintf("postgres://%s:%s@localhost:%v/%s?sslmode=%s&application_name=OHMAB",
+				fmt.Sprintf("postgres://%s:%s@l%s:%v/%s?sslmode=%s&application_name=OHMAB",
 					viper.Get("database.dbuser"),
 					viper.Get("database.dbpassword"),
+					viper.Get("database.host"),
 					viper.Get("database.dbport"),
 					viper.Get("database.dbname"),
 					viper.Get("database.postgres.sslmode"),

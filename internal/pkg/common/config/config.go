@@ -92,8 +92,11 @@ func Init() {
 	initOnce.Do(read)
 }
 
-func configFileExists(path string) bool {
-	info, err := os.Stat(path + "/config.yml")
+func configFileExists(path string, filename string) bool {
+	if filename == "" {
+		filename = "config"
+	}
+	info, err := os.Stat(path + "/" + filename + ".yml")
 	if os.IsNotExist(err) {
 		return false
 	}
@@ -101,45 +104,47 @@ func configFileExists(path string) bool {
 }
 
 func read() {
-	// Set the file name of the config file
-	viper.SetConfigName("config")
-
-	if configFileExists(".") { // search config in current directory
-		viper.AddConfigPath(".")
-	} else { // use home directory
-		home, err := os.UserHomeDir()
-		if err != nil {
-			panic(fmt.Sprintf("Error getting user home directory, %s", err))
-		}
-		if configFileExists(home) {
-			viper.AddConfigPath(home)
-		} else {
-			// use config provided by flag
-			// Set the path to look for the configurations' file
-			configFile := flag.String("config", "./config.yml", "path to the config file")
-			flag.Parse()
-			viper.AddConfigPath(*configFile)
-		}
-	}
-
 	// Enable VIPER to read Environment Variables
 	viper.AutomaticEnv()
 
-	viper.SetConfigType("yml")
-
 	// Set undefined variables (defaults)
 	viper.SetDefault("server.port", 8081)
-	viper.SetDefault("database.dialect", "sqlite3")
 	viper.SetDefault("database.dbname", "ohmab")
 	viper.SetDefault("database.dbuser", "ohmab")
+	viper.SetDefault("database.dialect", "sqlite3")
 	viper.SetDefault("DEBUG", 0)
 	viper.SetDefault("ENVIRONMENT", DevelopmentEnvironment)
 	viper.SetDefault("OAUTHSECRETKEY", "OHMAB-Secret-Key")
 
-	if err := viper.ReadInConfig(); err != nil {
-		panic(fmt.Sprintf("Error reading config file, %s", err))
+	// Set the file name of the config file
+	configFilePath := flag.String("configpath", ".", "path to the config file")
+	configFile := flag.String("config", "config", "name of the config file (does not inculde extension yml!)")
+	flag.Parse()
+	viper.SetConfigName(*configFile)
+	viper.SetConfigType("yml")
+	configFromFileUsed := false
+	if configFileExists(*configFilePath, *configFile) { // search config in current directory
+		viper.AddConfigPath(*configFilePath)
+		configFromFileUsed = true
+	} else { // use home directory
+		home, err := os.UserHomeDir()
+		if err != nil {
+			panic(fmt.Sprintf("reading config file: error getting user home directory, %s", err))
+		}
+		if configFileExists(home, "") {
+			viper.AddConfigPath(home)
+			configFromFileUsed = true
+		} else {
+			fmt.Printf("WARNING: Could not read config file '%s' from %s or %s\n", *configFile, *configFilePath, home)
+		}
 	}
-
+	if configFromFileUsed {
+		if err := viper.ReadInConfig(); err != nil {
+			if err != nil {
+				panic(fmt.Sprintf("error reading config file: %s", err)) // TODO: continue if viper.ConfigFileNotFoundError == true, delete bool above then
+			}
+		}
+	}
 	if !viper.IsSet("database.dsn") {
 		if viper.Get("database.dialect") == "postgres" {
 			viper.SetDefault("database.postgres.sslmode", "disable")
@@ -158,9 +163,11 @@ func read() {
 			viper.Set("database.dsn",
 				fmt.Sprintf("file:%s.db?mode=%s&cache=%s&_fk=1",
 					viper.Get("database.dbname"),
-					viper.Get("ddatabase.sqlite3.mode"),
+					viper.Get("database.sqlite3.mode"),
 					viper.Get("database.sqlite3.cache"),
 				))
+		} else {
+			panic("database.dialect not specified") // perhaps config file is missing
 		}
 	}
 }

@@ -6,6 +6,7 @@ import (
 	"github.com/hkonitzer/ohmab/ent"
 	"github.com/hkonitzer/ohmab/ent/migrate"
 	"github.com/hkonitzer/ohmab/internal/pkg/common/log"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 func CreateSQLiteClient(dsn string, ctx context.Context, debug bool) *ent.Client {
@@ -25,7 +26,7 @@ func CreateSQLiteClient(dsn string, ctx context.Context, debug bool) *ent.Client
 	); err != nil {
 		logger.Fatal().Msgf("creating schema: %v", err)
 	} else {
-		logger.Debug().Msgf("entutils db client created")
+		logger.Debug().Msgf("entutils db client created with dsn: %v", dsn)
 	}
 	if debug {
 		client = client.Debug()

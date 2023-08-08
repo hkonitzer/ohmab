@@ -8,6 +8,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/oauth"
+	"github.com/go-chi/render"
 	"github.com/hkonitzer/ohmab"
 	"github.com/hkonitzer/ohmab/ent"
 	"github.com/hkonitzer/ohmab/ent/intercept"
@@ -106,7 +107,9 @@ func newRouter(srv *routes.Server) chi.Router {
 	r.Use(middleware.ThrottleBacklog(10, 100, 10*time.Second)) // @TODO: make this configurable
 
 	routes.RegisterOAuthAPI(r, srv)
-
+	// version route
+	// version
+	r.Get("/version", version)
 	// standard api routes, protected with OAuth
 	r.Route("/", func(r chi.Router) {
 		r.Use(oauth.Authorize(configs.OAUTHSECRETKEY, nil))
@@ -157,6 +160,15 @@ func SetHeadersHandler(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	},
 	)
+}
+
+func version(w http.ResponseWriter, r *http.Request) {
+	render.Status(r, http.StatusOK)
+	v := config.Version
+	if v == "" {
+		v = "unknown"
+	}
+	render.PlainText(w, r, v)
 }
 
 func createTestData(client *ent.Client) {

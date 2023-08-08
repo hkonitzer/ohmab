@@ -17,7 +17,7 @@ import (
 // CreateBusiness is the resolver for the createBusiness field.
 func (r *mutationResolver) CreateBusiness(ctx context.Context, input ent.CreateBusinessInput) (*ent.Business, error) {
 	logger := log.GetLoggerInstance()
-	uv := privacy.FromContext(ctx)
+	uv, _ := privacy.FromContext(ctx)
 	uid, err := uuid.Parse(uv.GetUserID())
 	if err != nil {
 		logger.Err(err).Msgf("Error parsing UUID from UserViewer: %v", uv.GetUserID())

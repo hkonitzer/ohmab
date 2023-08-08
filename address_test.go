@@ -23,12 +23,12 @@ func TestCreateAddress(t *testing.T) {
 	adminViewer := privacy.UserViewer{Role: privacy.Admin}
 	adminViewer.SetUserID("TESTADMIN")
 	// create admin context
-	adminCtx := privacy.NewContext(ctx, &adminViewer)
+	adminCtx := adminViewer.ToContext(ctx)
 	// create owner viewer
 	ownerViewer := privacy.UserViewer{Role: privacy.Owner}
 	ownerViewer.SetUserID("TESTOWNER")
 	// create owner context
-	ownerCtx := privacy.NewContext(ctx, &ownerViewer)
+	ownerCtx := ownerViewer.ToContext(ctx)
 
 	// create users first
 	// admin user
@@ -57,6 +57,7 @@ func TestCreateAddress(t *testing.T) {
 	}
 	// update viewers
 	adminViewer.SetUserID(adminUser.ID.String())
+	adminCtx = adminViewer.ToContext(adminCtx)
 	ownerViewer.SetUserID(ownerUser.ID.String())
 
 	// create a business for the address first
@@ -72,6 +73,7 @@ func TestCreateAddress(t *testing.T) {
 	}
 	// set the scopes for the owner viewer, same as AddUserIDs above
 	ownerViewer.Scopes = append(ownerViewer.Scopes, business.ID.String())
+	ownerCtx = ownerViewer.ToContext(ownerCtx) // update the context with the new scopes
 	// create a new address as Admin
 	_, err = client.Address.Create().
 		SetComment("(AT) ADMIN created a address").

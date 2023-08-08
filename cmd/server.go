@@ -55,11 +55,14 @@ func main() {
 	// See Policy also in ent/schema/user.go
 	client.User.Intercept(
 		intercept.TraverseUser(func(ctx context.Context, q *ent.UserQuery) error {
-			uv := privacy.FromContext(ctx)
-			if uv != nil { // auth in context found, skip
+			uv, _ := privacy.FromContext(ctx)
+			if uv.IsEmpty() { // auth in context found, skip
 				return nil
 			}
 			rc := chi.RouteContext(ctx)
+			if rc == nil {
+				return nil
+			}
 			if !routes.HasPublicRoute(rc.RoutePatterns) {
 				return nil
 			}
@@ -93,12 +96,12 @@ func newRouter(srv *routes.Server) chi.Router {
 	r := chi.NewRouter()
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
+	r.Use(ViewerCtx)
 	configs, _ := config.Get()
 	if configs.DEBUG > 0 {
 		r.Use(log.RequestLogger)
 	}
 	r.Use(middleware.Recoverer)
-	r.Use(ESDRACtx)
 	r.Use(SetHeadersHandler)
 	r.Use(middleware.ThrottleBacklog(10, 100, 10*time.Second)) // @TODO: make this configurable
 
@@ -131,9 +134,9 @@ func newRouter(srv *routes.Server) chi.Router {
 	return r
 }
 
-func ESDRACtx(next http.Handler) http.Handler {
+func ViewerCtx(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ctx := context.WithValue(r.Context(), "OHMAB", "OHMAB")
+		ctx := privacy.NewViewerContext(r.Context(), 0, nil) // create empty Viewer
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
@@ -161,9 +164,9 @@ func createTestData(client *ent.Client) {
 	logger := log.GetLoggerInstance()
 
 	var ctx = context.Background()
-	uv := &privacy.UserViewer{Role: privacy.Admin}
+	uv := privacy.UserViewer{Role: privacy.Admin}
 	uv.SetUserID("TESTDATA")
-	ctx = privacy.NewContext(ctx, uv)
+	ctx = uv.ToContext(ctx)
 	// Check if database is empty
 	count, err := client.Business.Query().Count(ctx)
 	if err != nil {

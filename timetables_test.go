@@ -28,12 +28,12 @@ func TestCreateTimeTable(t *testing.T) {
 	adminViewer := privacy.UserViewer{Role: privacy.Admin}
 	adminViewer.SetUserID("TESTADMIN")
 	// create admin context
-	adminCtx := privacy.NewContext(ctx, &adminViewer)
+	adminCtx := adminViewer.ToContext(ctx)
 	// create owner viewer
 	ownerViewer := privacy.UserViewer{Role: privacy.Owner}
 	ownerViewer.SetUserID("TESTOWNER")
 	// create owner context
-	ownerCtx := privacy.NewContext(ctx, &ownerViewer)
+	ownerCtx := ownerViewer.ToContext(ctx)
 
 	// create users first
 	// admin user
@@ -78,6 +78,7 @@ func TestCreateTimeTable(t *testing.T) {
 	}
 	// set the scopes for the owner viewer, same as AddUserIDs above
 	ownerViewer.Scopes = append(ownerViewer.Scopes, business.ID.String())
+	ownerCtx = ownerViewer.ToContext(ownerCtx)
 	// create a new address as Admin
 	a1, err := client.Address.Create().
 		SetComment("(TT) ADMIN created a address").

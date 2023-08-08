@@ -31,7 +31,7 @@ func TestCreateUser(t *testing.T) {
 	adminViewer := privacy.UserViewer{Role: privacy.Admin}
 	adminViewer.SetUserID("TESTADMIN")
 	// create admin context
-	adminCtx := privacy.NewContext(context.Background(), &adminViewer)
+	adminCtx := adminViewer.ToContext(context.Background())
 
 	// create business first
 	_, err := client.Business.Create().

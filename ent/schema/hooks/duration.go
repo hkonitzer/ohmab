@@ -9,10 +9,9 @@ import (
 	"time"
 )
 
-var logger = log.GetLoggerInstance()
-
 func EnsureDurationIsSet() ent.Hook {
 	hk := func(next ent.Mutator) ent.Mutator {
+		var logger = log.GetLoggerInstance()
 		return hook.TimetableFunc(func(ctx context.Context, m *ent.TimetableMutation) (ent.Value, error) {
 			fro, exists := m.DatetimeFrom()
 			if !exists {

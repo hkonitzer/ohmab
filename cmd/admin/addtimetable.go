@@ -31,7 +31,7 @@ var CmdAddTimetableEntry = &cobra.Command{
 		ctx := context.TODO()
 		uv := privacy.UserViewer{Role: privacy.Admin}
 		uv.SetUserID("cli")
-		ctx = privacy.NewContext(ctx, &uv)
+		ctx = uv.ToContext(ctx)
 		client, clientError := db.CreateClient(ctx)
 		if clientError != nil {
 			panic(fmt.Sprintf("Error creating client: %v", clientError))

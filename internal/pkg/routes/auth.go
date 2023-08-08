@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"github.com/go-chi/chi/v5"
@@ -42,53 +43,62 @@ func RegisterOAuthAPI(r *chi.Mux, srv *Server) *chi.Mux {
 	return r
 }
 
+var readerContext = privacy.NewViewerContext(context.Background(), privacy.View, nil)
+
 func (s *Server) CheckUser(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		view := privacy.FromContext(ctx)
-		uv := privacy.UserViewer{}
-		if view == nil { // should be nil!
+		uv, _ := privacy.FromContext(ctx)
+		if uv.IsEmpty() { // should be empty!
 			claims := ctx.Value(oauth.ClaimsContext).(map[string]string)
-			uv.Claims = claims
+			uv.Claims = claims // sets the user id
 			uuid_, err := uuid.Parse(uv.GetUserID())
 			if err != nil {
-				logger.Fatal().Msgf("Error parsing UUID: %v", err)
+				logger.Fatal().Msgf("Error parsing UUID: %w", err)
 			}
-			u := s.Client.User.Query().Where(user.IDEQ(uuid_)).Select(user.FieldRole).OnlyX(ctx)
+			u := s.Client.User.Query().Where(user.IDEQ(uuid_)).Select(user.FieldRole).OnlyX(readerContext)
 			uv.Scopes = strings.Split(ctx.Value(oauth.ScopeContext).(string), ",")
-			switch u.Role {
-			case privacy.ViewerRoleAsString():
-				uv.Role = privacy.View
-			case privacy.OwnerRoleAsString():
-				uv.Role = privacy.Owner
-			case privacy.AdminRoleAsString():
-				uv.Role = privacy.Admin
-			default:
+			err = uv.SetRoleAsString(u.Role)
+			if err != nil {
 				logger.Fatal().Msgf("Unknown role: %v for user-id '%v'", u.Role, uuid_)
 			}
+			next.ServeHTTP(w, r.WithContext(uv.ToContext(r.Context())))
 		}
-		next.ServeHTTP(w, r.WithContext(privacy.NewContext(r.Context(), &uv)))
+		next.ServeHTTP(w, r)
 	})
 }
 
 // UserVerifier provides user credentials verifier for testing.
 type UserVerifier struct {
-	Client *ent.Client
+	Client     *ent.Client
+	userViewer privacy.UserViewer
 }
 
 // ValidateUser validates username and password returning an error if the user credentials are wrong
 func (t *UserVerifier) ValidateUser(username, password, scope string, r *http.Request) error {
-	u, err := t.Client.User.Query().Where(user.LoginEQ(username)).WithBusinesses().Only(r.Context())
+	u, err := t.Client.User.Query().Where(user.LoginEQ(username)).WithBusinesses().Only(readerContext)
 	if err != nil {
 		logger.Debug().Msgf("Error getting user '%s': %v", username, err)
 		return errors.New("wrong username")
 	}
+	// init UserViewer (for scope testing and request context later)
+	ex := false
+	t.userViewer, ex = privacy.FromContext(r.Context())
+	if !ex {
+		t.userViewer = privacy.UserViewer{}
+	}
+	t.userViewer.SetRoleAsString(u.Role)
+	t.userViewer.SetUserID(u.ID.String())
+	for _, b := range u.Edges.Businesses {
+		t.userViewer.Scopes = append(t.userViewer.Scopes, b.ID.String())
+	}
+	// Set scopes from database on viewer, but see below @TODO: refactoring scopes for login?
+
+	/* SKIPPING SCOPES FOR NOW
 	if u.Role != privacy.AdminRoleAsString() { // test given scopes against allowed scopes because user has no admin role
 		if scope == "" {
 			return errors.New("scope is empty")
 		}
-		// init UserViewer (for scope testing only)
-		uv := privacy.UserViewer{}
 		// get scope
 		scopes := strings.Split(scope, ",")
 		// set scopes
@@ -106,7 +116,9 @@ func (t *UserVerifier) ValidateUser(username, password, scope string, r *http.Re
 			return errors.New("scope not allowed")
 		}
 	}
+	*/
 	if utils.DoPasswordsMatch(u.Passwordhash, password) {
+		r.WithContext(t.userViewer.ToContext(r.Context()))
 		return nil
 	}
 	logger.Debug().Msgf("provided password does not match for user '%s'", username)
@@ -126,7 +138,15 @@ func (*UserVerifier) ValidateCode(clientID, clientSecret, code, redirectURI stri
 
 // AddClaims provides additional claims to the token
 func (t *UserVerifier) AddClaims(tokenType oauth.TokenType, credential, tokenID, scope string, r *http.Request) (map[string]string, error) {
-	uid, err := t.Client.User.Query().Where(user.Login(credential)).OnlyID(r.Context()) // @TODO set this in ValidateUser in context and get this here from context
+	if len(t.userViewer.Claims) > 0 { // claims should be set through ValidateUser with SetUserID
+		return t.userViewer.Claims, nil
+	}
+	if !t.userViewer.IsEmpty() && t.userViewer.GetUserID() != "" {
+		claims := make(map[string]string)
+		claims["user_"+user.FieldID] = t.userViewer.GetUserID()
+		return claims, nil
+	}
+	uid, err := t.Client.User.Query().Where(user.Login(credential)).OnlyID(readerContext)
 	if err != nil {
 		return nil, err
 	}

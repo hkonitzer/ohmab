@@ -8,11 +8,12 @@ import (
 	"github.com/hkonitzer/ohmab/ent/address"
 	"github.com/hkonitzer/ohmab/ent/hook"
 	"github.com/hkonitzer/ohmab/ent/schema/constants"
+	"github.com/hkonitzer/ohmab/internal/pkg/common/log"
 	"github.com/hkonitzer/ohmab/internal/pkg/privacy"
 )
 
 type AuditLog struct {
-	viewer privacy.Viewer
+	viewer privacy.UserViewer
 }
 
 // AuditLogForUser is a hook that logs all operations on Users.
@@ -40,6 +41,7 @@ func (al *AuditLog) AuditLogForUser() ent.Hook {
 
 func (al *AuditLog) AuditLogForTimetable() ent.Hook {
 	hk := func(next ent.Mutator) ent.Mutator {
+		var logger = log.GetLoggerInstance()
 		return hook.TimetableFunc(func(ctx context.Context, m *ent.TimetableMutation) (ent.Value, error) {
 			// get authorize from context
 			err := al.getAuth(ctx)
@@ -152,8 +154,8 @@ func extractFieldsandherValues(m ent.Mutation) map[string]string {
 }
 
 func (al *AuditLog) getAuth(ctx context.Context) error {
-	al.viewer = privacy.FromContext(ctx)
-	if al.viewer == nil {
+	al.viewer, _ = privacy.FromContext(ctx)
+	if al.viewer.IsEmpty() {
 		return errors.New("not authorized")
 	}
 	return nil
@@ -168,6 +170,7 @@ func (al *AuditLog) createLogEntry(client *ent.Client, ctx context.Context, m en
 		SetEntityValues(extractFieldsandherValues(m)).
 		Save(ctx)
 	if err != nil {
+		var logger = log.GetLoggerInstance()
 		logger.Err(err).Msgf("could not create audit log for entity-id %v", eId)
 	}
 	return err

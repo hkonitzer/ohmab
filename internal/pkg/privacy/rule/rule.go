@@ -14,8 +14,8 @@ import (
 // DenyIfNoViewer is a rule that returns deny decision if the viewer is missing in the context.
 func DenyIfNoViewer() privacy.QueryMutationRule {
 	return privacy.ContextQueryMutationRule(func(ctx context.Context) error {
-		view := entprivacy.FromContext(ctx)
-		if view == nil {
+		viewer, exists := entprivacy.FromContext(ctx)
+		if !exists || viewer.IsEmpty() {
 			return privacy.Denyf("viewer-context is missing")
 		}
 		// Skip to the next privacy rule (equivalent to return nil).
@@ -26,7 +26,7 @@ func DenyIfNoViewer() privacy.QueryMutationRule {
 // AllowIfAdmin is a rule that returns allow decision if the viewer is admin.
 func AllowIfAdmin() privacy.QueryMutationRule {
 	return privacy.ContextQueryMutationRule(func(ctx context.Context) error {
-		view := entprivacy.FromContext(ctx)
+		view, _ := entprivacy.FromContext(ctx)
 		if view.Admin() {
 			return privacy.Allow
 		}

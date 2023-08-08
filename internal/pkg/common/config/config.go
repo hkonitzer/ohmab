@@ -92,6 +92,13 @@ func Init() {
 	initOnce.Do(read)
 }
 
+func initFlags() (configFilePath *string, configFile *string) {
+	configFilePath = flag.String("configpath", ".", "path to the config file")
+	configFile = flag.String("config", "config", "name of the config file (does not inculde extension yml!)")
+	flag.Parse()
+	return configFilePath, configFile
+}
+
 func configFileExists(path string, filename string) bool {
 	if filename == "" {
 		filename = "config"
@@ -117,9 +124,7 @@ func read() {
 	viper.SetDefault("OAUTHSECRETKEY", "OHMAB-Secret-Key")
 
 	// Set the file name of the config file
-	configFilePath := flag.String("configpath", ".", "path to the config file")
-	configFile := flag.String("config", "config", "name of the config file (does not inculde extension yml!)")
-	flag.Parse()
+	configFilePath, configFile := initFlags()
 	viper.SetConfigName(*configFile)
 	viper.SetConfigType("yml")
 	configFromFileUsed := false

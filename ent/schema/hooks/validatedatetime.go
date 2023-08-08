@@ -37,15 +37,17 @@ func EnsureOnlyOneTimetableEntry() ent.Hook {
 			}
 
 			// check if datetime_to is in range of another entry
-			for _, tt := range tts {
-				if to.After(tt.DatetimeTo) && !f.Before(tt.DatetimeTo) {
-					continue
-				}
-				if tt.DatetimeFrom.Compare(f) == 0 {
-					return nil, fmt.Errorf("%s there is already a timetable entry with the same datetime_from=%v and type: %v", ErrorMessagePrefix, tt.DatetimeFrom.Format(time.RFC3339), tt.ID)
-				}
-				if tt.DatetimeFrom.Compare(to) < 1 {
-					return nil, fmt.Errorf("%s there is already a timetable entry with existing datetime_from=%v before new datetime_to=%v : %v", ErrorMessagePrefix, tt.DatetimeFrom.Format(time.RFC3339), to.Format(time.RFC3339), tt.ID)
+			if m.Op() == ent.OpCreate {
+				for _, tt := range tts {
+					if to.After(tt.DatetimeTo) && !f.Before(tt.DatetimeTo) {
+						continue
+					}
+					if tt.DatetimeFrom.Compare(f) == 0 {
+						return nil, fmt.Errorf("%s there is already a timetable entry with the same datetime_from=%v and type: %v", ErrorMessagePrefix, tt.DatetimeFrom.Format(time.RFC3339), tt.ID)
+					}
+					if tt.DatetimeFrom.Compare(to) < 1 {
+						return nil, fmt.Errorf("%s there is already a timetable entry with existing datetime_from=%v before new datetime_to=%v : %v", ErrorMessagePrefix, tt.DatetimeFrom.Format(time.RFC3339), to.Format(time.RFC3339), tt.ID)
+					}
 				}
 			}
 			return next.Mutate(ctx, m)

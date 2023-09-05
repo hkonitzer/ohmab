@@ -272,8 +272,13 @@ func main() {
 			Where(timetable.TimetableTypeEQ(ttType)).
 			CountX(ctx)
 		if exists == 0 {
-			timetableCreate.SetAddress(businessAddress).SaveX(ctx)
-			successfulImports++
+			_, err = timetableCreate.SetAddress(businessAddress).Save(ctx)
+			if err != nil {
+				logger.Info().Msgf("Error creating timetable: %v", err)
+			} else {
+				successfulImports++
+			}
+
 		} else {
 			logger.Debug().Msgf("Timetable with type '%v' dateFrom %v and dateTo %v already exists", ttType, dateFrom, dateTo)
 			skippedImports++

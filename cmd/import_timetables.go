@@ -28,16 +28,18 @@ const (
 )
 
 func main() {
+	// Parse cmd line
+	filename := flag.String("filename", "import.csv", "Filename of the CSV file to import")
+	drop := flag.Bool("drop", false, "Drop all existing timetables before import")
+	allTimeentries := flag.Bool("alltimeentries", false, "Import also time entries in the past")
 	// Get logger
 	logger := log.GetLoggerInstance()
 	// Get the configuration
 	config.Init()
-	// Parse cmd line
+	if !flag.Parsed() {
+		flag.Parse()
+	}
 	logger.Debug().Msgf("Starting Timetables Import")
-	filename := flag.String("filename", "import.csv", "Filename of the CSV file to import")
-	drop := flag.Bool("drop", false, "Drop all existing timetables before import")
-	allTimeentries := flag.Bool("alltimeentries", false, "Import also time entries in the past")
-	flag.Parse()
 	file, err := os.OpenFile(*filename, os.O_RDONLY, 0644)
 	if err != nil {
 		logger.Fatal().Msgf("Error opening file: %v", err)
@@ -46,12 +48,8 @@ func main() {
 	if err != nil {
 		logger.Fatal().Msgf("Error getting stats: %v", err)
 	}
-	// CreateClient client
-	ctx := context.TODO()
 	// Authorize me
-	uv := privacy.UserViewer{Role: privacy.Admin}
-	uv.SetUserID("import")
-	ctx = privacy.NewContext(ctx, &uv)
+	ctx := privacy.NewViewerWithIdContext(context.TODO(), privacy.Admin, "import", nil)
 	client, clientError := db.CreateClient(ctx)
 	if clientError != nil {
 		logger.Fatal().Msgf("Error creating client: %v", clientError)

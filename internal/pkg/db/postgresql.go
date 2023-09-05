@@ -5,10 +5,12 @@ import (
 	"entgo.io/ent/dialect"
 	"github.com/hkonitzer/ohmab/ent"
 	"github.com/hkonitzer/ohmab/ent/migrate"
+	"github.com/hkonitzer/ohmab/internal/pkg/common/log"
 	_ "github.com/lib/pq"
 )
 
 func CreatePGClient(dsn string, ctx context.Context, debug bool) *ent.Client { // Create entutils.Client and run the schema migration.
+	var logger = log.GetLoggerInstance()
 	client, err := ent.Open(dialect.Postgres, dsn, ent.Log(ClientDebuglog))
 	if err != nil {
 		logger.Fatal().Msgf("opening entutils pg client: %v", err)

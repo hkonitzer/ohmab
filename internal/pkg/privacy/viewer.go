@@ -169,3 +169,18 @@ func NewViewerContext(parent context.Context, role Role, scopes []string) contex
 		Scopes: scopes,
 	})
 }
+
+func NewViewerWithIdContext(parent context.Context, role Role, userid string, scopes []string) context.Context {
+	if parent == nil {
+		parent = context.Background()
+	}
+	if scopes == nil {
+		scopes = []string{}
+	}
+	uv := UserViewer{
+		Role:   role,
+		Scopes: scopes,
+	}
+	uv.SetUserID(userid)
+	return setToken(parent, uv)
+}

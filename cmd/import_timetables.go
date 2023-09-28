@@ -23,8 +23,9 @@ import (
 )
 
 const (
-	dateTimeParseLayoutDots            = "02.01.2006 15:04"
-	dateTimeParseLayoutDotsWithSeconds = "02.01.2006 15:04:05"
+	dateTimeParseLayoutDots                    = "02.01.06 15:04"
+	dateTimeParseLayoutDotsFullYear            = "02.01.2006 15:04"
+	dateTimeParseLayoutDotsFullYearWithSeconds = "02.01.2006 15:04:05"
 )
 
 func main() {
@@ -210,9 +211,9 @@ func main() {
 							if strings.Contains(field, ".") {
 								var l_ string
 								if strings.Count(field, ":") > 1 {
-									l_ = dateTimeParseLayoutDotsWithSeconds
+									l_ = dateTimeParseLayoutDotsFullYearWithSeconds
 								} else {
-									l_ = dateTimeParseLayoutDots
+									l_ = dateTimeParseLayoutDotsFullYear
 								}
 								l = l_
 							} else {
@@ -221,7 +222,10 @@ func main() {
 							}
 							date_, errParse := time.ParseInLocation(l, field, time.Local)
 							if errParse != nil {
-								logger.Fatal().Msgf("Error parsing date from value '%s': %v", field, errParse)
+								date_, errParse = time.ParseInLocation(dateTimeParseLayoutDots, field, time.Local)
+								if errParse != nil {
+									logger.Fatal().Msgf("Error parsing date from value '%s': %v", field, errParse)
+								}
 							}
 							dateOrTime = date_
 						}

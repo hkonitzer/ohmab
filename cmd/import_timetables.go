@@ -23,21 +23,24 @@ import (
 )
 
 const (
-	dateTimeParseLayoutDots            = "02.01.2006 15:04"
-	dateTimeParseLayoutDotsWithSeconds = "02.01.2006 15:04:05"
+	dateTimeParseLayoutDots                    = "02.01.06 15:04"
+	dateTimeParseLayoutDotsFullYear            = "02.01.2006 15:04"
+	dateTimeParseLayoutDotsFullYearWithSeconds = "02.01.2006 15:04:05"
 )
 
 func main() {
+	// Parse cmd line
+	filename := flag.String("filename", "import.csv", "Filename of the CSV file to import")
+	drop := flag.Bool("drop", false, "Drop all existing timetables before import")
+	allTimeentries := flag.Bool("alltimeentries", false, "Import also time entries in the past")
 	// Get logger
 	logger := log.GetLoggerInstance()
 	// Get the configuration
 	config.Init()
-	// Parse cmd line
+	if !flag.Parsed() {
+		flag.Parse()
+	}
 	logger.Debug().Msgf("Starting Timetables Import")
-	filename := flag.String("filename", "import.csv", "Filename of the CSV file to import")
-	drop := flag.Bool("drop", false, "Drop all existing timetables before import")
-	allTimeentries := flag.Bool("alltimeentries", false, "Import also time entries in the past")
-	flag.Parse()
 	file, err := os.OpenFile(*filename, os.O_RDONLY, 0644)
 	if err != nil {
 		logger.Fatal().Msgf("Error opening file: %v", err)
@@ -46,12 +49,8 @@ func main() {
 	if err != nil {
 		logger.Fatal().Msgf("Error getting stats: %v", err)
 	}
-	// CreateClient client
-	ctx := context.TODO()
 	// Authorize me
-	uv := privacy.UserViewer{Role: privacy.Admin}
-	uv.SetUserID("import")
-	ctx = privacy.NewContext(ctx, &uv)
+	ctx := privacy.NewViewerWithIdContext(context.TODO(), privacy.Admin, "import", nil)
 	client, clientError := db.CreateClient(ctx)
 	if clientError != nil {
 		logger.Fatal().Msgf("Error creating client: %v", clientError)
@@ -212,9 +211,9 @@ func main() {
 							if strings.Contains(field, ".") {
 								var l_ string
 								if strings.Count(field, ":") > 1 {
-									l_ = dateTimeParseLayoutDotsWithSeconds
+									l_ = dateTimeParseLayoutDotsFullYearWithSeconds
 								} else {
-									l_ = dateTimeParseLayoutDots
+									l_ = dateTimeParseLayoutDotsFullYear
 								}
 								l = l_
 							} else {
@@ -223,7 +222,10 @@ func main() {
 							}
 							date_, errParse := time.ParseInLocation(l, field, time.Local)
 							if errParse != nil {
-								logger.Fatal().Msgf("Error parsing date from value '%s': %v", field, errParse)
+								date_, errParse = time.ParseInLocation(dateTimeParseLayoutDots, field, time.Local)
+								if errParse != nil {
+									logger.Fatal().Msgf("Error parsing date from value '%s': %v", field, errParse)
+								}
 							}
 							dateOrTime = date_
 						}
@@ -274,8 +276,13 @@ func main() {
 			Where(timetable.TimetableTypeEQ(ttType)).
 			CountX(ctx)
 		if exists == 0 {
-			timetableCreate.SetAddress(businessAddress).SaveX(ctx)
-			successfulImports++
+			_, err = timetableCreate.SetAddress(businessAddress).Save(ctx)
+			if err != nil {
+				logger.Info().Msgf("Error creating timetable: %v", err)
+			} else {
+				successfulImports++
+			}
+
 		} else {
 			logger.Debug().Msgf("Timetable with type '%v' dateFrom %v and dateTo %v already exists", ttType, dateFrom, dateTo)
 			skippedImports++

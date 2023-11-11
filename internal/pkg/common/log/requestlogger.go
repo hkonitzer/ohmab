@@ -35,7 +35,7 @@ func RequestLogger(next http.Handler) http.Handler {
 				Str(middleware.RequestIDHeader, fmt.Sprint(rqid)).
 				Str("method", r.Method).
 				Int("status", ww.Status()).
-				Str("url", r.URL.String()).
+				Str("path", r.URL.Path).
 				Str("remote_addr", r.RemoteAddr).
 				Str("user_agent", r.UserAgent()).
 				Int("length", ww.BytesWritten()).

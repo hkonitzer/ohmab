@@ -7,7 +7,6 @@ import (
 	"github.com/hkonitzer/ohmab/ent"
 	_ "github.com/hkonitzer/ohmab/ent/runtime"
 	"github.com/hkonitzer/ohmab/ent/timetable"
-	"github.com/hkonitzer/ohmab/internal/pkg/common/config"
 	"github.com/hkonitzer/ohmab/internal/pkg/common/log"
 	"github.com/hkonitzer/ohmab/internal/pkg/db"
 	"github.com/hkonitzer/ohmab/internal/pkg/ghost"
@@ -19,7 +18,6 @@ import (
 )
 
 var logger = log.GetLoggerInstance()
-var configurations = config.GetX()
 
 func main() {
 

@@ -27,16 +27,13 @@ import (
 )
 
 var srv *routes.Server
+var configurations = config.GetX()
 
 func main() {
 	// Get logger
 	logger := log.GetLoggerInstance()
 	logger.Info().Msg("Starting OHMAB Version " + config.Version)
 	// Get the configuration
-	configurations, err := config.Get()
-	if err != nil {
-		logger.Fatal().Msgf("Error reading configurations: %v", err)
-	}
 
 	// Get environment variable
 	environment := configurations.ENVIRONMENT
@@ -44,7 +41,7 @@ func main() {
 	if environment != "" && strings.ToLower(environment) == "development" {
 		developmentMode = true
 		logger.Debug().Msgf("DEVELOPMENT mode enabled, DEBUG LEVEL: %v", configurations.DEBUG)
-		logger.Debug().Msgf("Database dialect %s on host: %s", configurations.Database.Dialect, configurations.Database.DBHost)
+		logger.Debug().Msgf("Database dialect '%s' on host: %s with db: %s", configurations.Database.Dialect, configurations.Database.DBHost, configurations.Database.DBName)
 	}
 
 	ctx := context.TODO()
@@ -98,7 +95,7 @@ func newRouter(srv *routes.Server) chi.Router {
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
 	r.Use(ViewerCtx)
-	configs, _ := config.Get()
+	configs := config.GetX()
 	if configs.DEBUG > 0 {
 		r.Use(log.RequestLogger)
 	}
@@ -147,7 +144,6 @@ func ViewerCtx(next http.Handler) http.Handler {
 func SetHeadersHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Set CORS headers for the preflight request
-		configurations, _ := config.Get()
 		for key, val := range configurations.Server.Headers {
 			w.Header().Set(key, val)
 		}

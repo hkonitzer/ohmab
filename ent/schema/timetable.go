@@ -79,6 +79,7 @@ func (Timetable) Indexes() []ent.Index {
 }
 func (t Timetable) Hooks() []ent.Hook {
 	return []ent.Hook{
+		hooks.RemoveZeroTimeValues(),
 		hooks.EnsureDurationIsSet(),
 		hooks.EnsureOnlyOneTimetableEntry(),
 		t.AuditLogForTimetable(),

@@ -170,8 +170,7 @@ func main() {
 	// Get the configuration
 	config.Init()
 	// Create client
-
-	ctx = privacy.NewContext(ctx, &privacy.UserViewer{Role: privacy.Admin})
+	ctx = privacy.NewViewerWithIdContext(ctx, privacy.Admin, "export", nil)
 	client, clientError := db.CreateClient(ctx)
 	if clientError != nil {
 		exportlog.Fatal().Msgf("Error creating client: %v", clientError)

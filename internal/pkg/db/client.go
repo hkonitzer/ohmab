@@ -9,10 +9,8 @@ import (
 	"github.com/spf13/viper"
 )
 
-// Get logger
-var logger = log.GetLoggerInstance()
-
 func ClientDebuglog(v ...any) {
+	var logger = log.GetLoggerInstance()
 	logger.Printf("%v", v...)
 }
 

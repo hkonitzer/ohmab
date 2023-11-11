@@ -22,14 +22,17 @@ import (
 )
 
 func main() {
+	// Parse cmd line
+	filename := flag.String("filename", "import.csv", "Filename of the CSV file to import")
 	// Get logger
 	logger := log.GetLoggerInstance()
 	// Get the configuration
 	config.Init()
 	// Parse cmd line
 	logger.Debug().Msgf("Starting Businesses Import")
-	filename := flag.String("filename", "import.csv", "Filename of the CSV file to import")
-	flag.Parse()
+	if !flag.Parsed() {
+		flag.Parse()
+	}
 	file, err := os.OpenFile(*filename, os.O_RDONLY, 0644)
 	if err != nil {
 		logger.Fatal().Msgf("Error opening file: %v", err)
@@ -41,9 +44,7 @@ func main() {
 	// Create client
 	ctx := context.TODO()
 	// Authorize me
-	uv := privacy.UserViewer{Role: privacy.Admin}
-	uv.SetUserID("import")
-	ctx = privacy.NewContext(ctx, &uv)
+	ctx = privacy.NewViewerWithIdContext(ctx, privacy.Admin, "import", nil)
 	client, clientError := db.CreateClient(ctx)
 	if clientError != nil {
 		logger.Fatal().Msgf("Error creating client: %v", clientError)

@@ -31,11 +31,14 @@ func EnsureOnlyOneTimetableEntry() ent.Hook {
 				),
 				timetable.TimetableTypeEQ(ty),
 				timetable.DatetimeToLTE(to),
+				timetable.DeletedAtIsNil(),
 			).All(ctx)
 			if err != nil && !ent.IsNotFound(err) {
 				return nil, err
 			}
-
+			// address_timetables is NIL? why?
+			// cannot check against given address_id (aid)
+			// TODO: get address_timetables from timetable entry and enable this check also for ent.OpUpdate|ent.OpUpdateOne
 			// check if datetime_to is in range of another entry
 			if m.Op() == ent.OpCreate {
 				for _, tt := range tts {
@@ -53,5 +56,5 @@ func EnsureOnlyOneTimetableEntry() ent.Hook {
 			return next.Mutate(ctx, m)
 		})
 	}
-	return hook.On(hk, ent.OpCreate|ent.OpUpdate|ent.OpUpdateOne)
+	return hook.On(hk, ent.OpCreate)
 }

@@ -29,7 +29,7 @@ func RegisterOAuthAPI(r *chi.Mux, srv *Server) *chi.Mux {
 	if configurations.ENVIRONMENT == config.DevelopmentEnvironment {
 		exp *= 30000
 	} else {
-		exp *= 300
+		exp *= 1800
 	}
 	s := oauth.NewBearerServer(
 		configurations.OAUTHSECRETKEY,

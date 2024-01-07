@@ -43,6 +43,11 @@ func (r *queryResolver) Timetables(ctx context.Context, after *entgql.Cursor[uui
 	return r.client.Timetable.Query().WithAddress().Paginate(ctx, after, first, before, last, ent.WithTimetableOrder(orderBy), ent.WithTimetableFilter(where.Filter))
 }
 
+// Users is the resolver for the users field.
+func (r *queryResolver) Users(ctx context.Context, after *entgql.Cursor[uuid.UUID], first *int, before *entgql.Cursor[uuid.UUID], last *int, orderBy []*ent.UserOrder, where *ent.UserWhereInput) (*ent.UserConnection, error) {
+	return r.client.User.Query().WithBusinesses().Paginate(ctx, after, first, before, last, ent.WithUserOrder(orderBy), ent.WithUserFilter(where.Filter))
+}
+
 // Query returns QueryResolver implementation.
 func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 

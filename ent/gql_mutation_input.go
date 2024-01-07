@@ -265,3 +265,177 @@ func (c *TimetableUpdateOne) SetInput(i UpdateTimetableInput) *TimetableUpdateOn
 	i.Mutate(c.Mutation())
 	return c
 }
+
+// CreateUserInput represents a mutation input for creating users.
+type CreateUserInput struct {
+	CreatedAt    *time.Time
+	UpdatedAt    *time.Time
+	DeletedAt    *time.Time
+	UsePublicapi *string
+	Login        string
+	Surname      string
+	Firstname    string
+	Title        *string
+	Email        string
+	Passwordhash *string
+	Comment      *string
+	Active       *bool
+	Role         *string
+	BusinessIDs  []uuid.UUID
+	TagIDs       []uuid.UUID
+}
+
+// Mutate applies the CreateUserInput on the UserMutation builder.
+func (i *CreateUserInput) Mutate(m *UserMutation) {
+	if v := i.CreatedAt; v != nil {
+		m.SetCreatedAt(*v)
+	}
+	if v := i.UpdatedAt; v != nil {
+		m.SetUpdatedAt(*v)
+	}
+	if v := i.DeletedAt; v != nil {
+		m.SetDeletedAt(*v)
+	}
+	if v := i.UsePublicapi; v != nil {
+		m.SetUsePublicapi(*v)
+	}
+	m.SetLogin(i.Login)
+	m.SetSurname(i.Surname)
+	m.SetFirstname(i.Firstname)
+	if v := i.Title; v != nil {
+		m.SetTitle(*v)
+	}
+	m.SetEmail(i.Email)
+	if v := i.Passwordhash; v != nil {
+		m.SetPasswordhash(*v)
+	}
+	if v := i.Comment; v != nil {
+		m.SetComment(*v)
+	}
+	if v := i.Active; v != nil {
+		m.SetActive(*v)
+	}
+	if v := i.Role; v != nil {
+		m.SetRole(*v)
+	}
+	if v := i.BusinessIDs; len(v) > 0 {
+		m.AddBusinessIDs(v...)
+	}
+	if v := i.TagIDs; len(v) > 0 {
+		m.AddTagIDs(v...)
+	}
+}
+
+// SetInput applies the change-set in the CreateUserInput on the UserCreate builder.
+func (c *UserCreate) SetInput(i CreateUserInput) *UserCreate {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// UpdateUserInput represents a mutation input for updating users.
+type UpdateUserInput struct {
+	UpdatedAt         *time.Time
+	ClearDeletedAt    bool
+	DeletedAt         *time.Time
+	UsePublicapi      *string
+	Login             *string
+	Surname           *string
+	Firstname         *string
+	ClearTitle        bool
+	Title             *string
+	Email             *string
+	ClearPasswordhash bool
+	Passwordhash      *string
+	ClearComment      bool
+	Comment           *string
+	Active            *bool
+	Role              *string
+	ClearBusinesses   bool
+	AddBusinessIDs    []uuid.UUID
+	RemoveBusinessIDs []uuid.UUID
+	ClearTags         bool
+	AddTagIDs         []uuid.UUID
+	RemoveTagIDs      []uuid.UUID
+}
+
+// Mutate applies the UpdateUserInput on the UserMutation builder.
+func (i *UpdateUserInput) Mutate(m *UserMutation) {
+	if v := i.UpdatedAt; v != nil {
+		m.SetUpdatedAt(*v)
+	}
+	if i.ClearDeletedAt {
+		m.ClearDeletedAt()
+	}
+	if v := i.DeletedAt; v != nil {
+		m.SetDeletedAt(*v)
+	}
+	if v := i.UsePublicapi; v != nil {
+		m.SetUsePublicapi(*v)
+	}
+	if v := i.Login; v != nil {
+		m.SetLogin(*v)
+	}
+	if v := i.Surname; v != nil {
+		m.SetSurname(*v)
+	}
+	if v := i.Firstname; v != nil {
+		m.SetFirstname(*v)
+	}
+	if i.ClearTitle {
+		m.ClearTitle()
+	}
+	if v := i.Title; v != nil {
+		m.SetTitle(*v)
+	}
+	if v := i.Email; v != nil {
+		m.SetEmail(*v)
+	}
+	if i.ClearPasswordhash {
+		m.ClearPasswordhash()
+	}
+	if v := i.Passwordhash; v != nil {
+		m.SetPasswordhash(*v)
+	}
+	if i.ClearComment {
+		m.ClearComment()
+	}
+	if v := i.Comment; v != nil {
+		m.SetComment(*v)
+	}
+	if v := i.Active; v != nil {
+		m.SetActive(*v)
+	}
+	if v := i.Role; v != nil {
+		m.SetRole(*v)
+	}
+	if i.ClearBusinesses {
+		m.ClearBusinesses()
+	}
+	if v := i.AddBusinessIDs; len(v) > 0 {
+		m.AddBusinessIDs(v...)
+	}
+	if v := i.RemoveBusinessIDs; len(v) > 0 {
+		m.RemoveBusinessIDs(v...)
+	}
+	if i.ClearTags {
+		m.ClearTags()
+	}
+	if v := i.AddTagIDs; len(v) > 0 {
+		m.AddTagIDs(v...)
+	}
+	if v := i.RemoveTagIDs; len(v) > 0 {
+		m.RemoveTagIDs(v...)
+	}
+}
+
+// SetInput applies the change-set in the UpdateUserInput on the UserUpdate builder.
+func (c *UserUpdate) SetInput(i UpdateUserInput) *UserUpdate {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// SetInput applies the change-set in the UpdateUserInput on the UserUpdateOne builder.
+func (c *UserUpdateOne) SetInput(i UpdateUserInput) *UserUpdateOne {
+	i.Mutate(c.Mutation())
+	return c
+}

@@ -62,6 +62,11 @@ var (
 				Unique:  false,
 				Columns: []*schema.Column{AuditLogsColumns[5]},
 			},
+			{
+				Name:    "auditlog_timestamp",
+				Unique:  false,
+				Columns: []*schema.Column{AuditLogsColumns[6]},
+			},
 		},
 	}
 	// BusinessesColumns holds the columns for the "businesses" table.

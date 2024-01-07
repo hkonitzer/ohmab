@@ -27,7 +27,7 @@ type AuditLog struct {
 	// EntitySchema holds the value of the "entity_schema" field.
 	EntitySchema string `json:"entity_schema,omitempty"`
 	// EntityValues holds the value of the "entity_values" field.
-	EntityValues map[string]string `json:"entity_values,omitempty"`
+	EntityValues map[string]interface{} `json:"entity_values,omitempty"`
 	// EntityUUID holds the value of the "entity_uuid" field.
 	EntityUUID string `json:"entity_uuid,omitempty"`
 	// Timestamp holds the value of the "timestamp" field.

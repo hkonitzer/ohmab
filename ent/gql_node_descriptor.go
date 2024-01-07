@@ -211,7 +211,7 @@ func (al *AuditLog) Node(ctx context.Context) (node *Node, err error) {
 		return nil, err
 	}
 	node.Fields[3] = &Field{
-		Type:  "map[string]string",
+		Type:  "map[string]interface {}",
 		Name:  "entity_values",
 		Value: string(buf),
 	}

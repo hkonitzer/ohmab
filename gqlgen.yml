@@ -19,6 +19,7 @@ autobind:
   - github.com/hkonitzer/ohmab/ent/address
   - github.com/hkonitzer/ohmab/ent/timetable
   - github.com/hkonitzer/ohmab/ent/user
+  - github.com/hkonitzer/ohmab/ent/auditlog
 
 # This section declares type mapping between the GraphQL and Go type systems.
 models:

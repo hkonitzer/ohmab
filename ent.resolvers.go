@@ -13,11 +13,6 @@ import (
 	"github.com/hkonitzer/ohmab/ent"
 )
 
-// EntityValues is the resolver for the entityValues field.
-func (r *auditLogResolver) EntityValues(ctx context.Context, obj *ent.AuditLog) (map[string]interface{}, error) {
-	panic(fmt.Errorf("not implemented: EntityValues - entityValues"))
-}
-
 // Node is the resolver for the node field.
 func (r *queryResolver) Node(ctx context.Context, id uuid.UUID) (ent.Noder, error) {
 	return r.client.Noder(ctx, id)
@@ -33,6 +28,11 @@ func (r *queryResolver) Addresses(ctx context.Context, after *entgql.Cursor[uuid
 	panic(fmt.Errorf("not implemented: Addresses - addresses"))
 }
 
+// AuditLogs is the resolver for the auditLogs field.
+func (r *queryResolver) AuditLogs(ctx context.Context, after *entgql.Cursor[uuid.UUID], first *int, before *entgql.Cursor[uuid.UUID], last *int, orderBy []*ent.AuditLogOrder, where *ent.AuditLogWhereInput) (*ent.AuditLogConnection, error) {
+	return r.client.AuditLog.Query().Paginate(ctx, after, first, before, last, ent.WithAuditLogOrder(orderBy), ent.WithAuditLogFilter(where.Filter))
+}
+
 // Businesses is the resolver for the businesses field.
 func (r *queryResolver) Businesses(ctx context.Context, after *entgql.Cursor[uuid.UUID], first *int, before *entgql.Cursor[uuid.UUID], last *int, orderBy []*ent.BusinessOrder, where *ent.BusinessWhereInput) (*ent.BusinessConnection, error) {
 	return r.client.Business.Query().Paginate(ctx, after, first, before, last, ent.WithBusinessOrder(orderBy), ent.WithBusinessFilter(where.Filter))
@@ -43,11 +43,7 @@ func (r *queryResolver) Timetables(ctx context.Context, after *entgql.Cursor[uui
 	return r.client.Timetable.Query().WithAddress().Paginate(ctx, after, first, before, last, ent.WithTimetableOrder(orderBy), ent.WithTimetableFilter(where.Filter))
 }
 
-// AuditLog returns AuditLogResolver implementation.
-func (r *Resolver) AuditLog() AuditLogResolver { return &auditLogResolver{r} }
-
 // Query returns QueryResolver implementation.
 func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 
-type auditLogResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }

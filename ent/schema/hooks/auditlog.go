@@ -140,8 +140,8 @@ func (al *AuditLog) AuditLogForContent() ent.Hook {
 	return hook.On(hk, ent.OpCreate|ent.OpUpdate|ent.OpDelete|ent.OpDeleteOne|ent.OpUpdateOne)
 }
 
-func extractFieldsandherValues(m ent.Mutation) map[string]string {
-	fieldsAndValues := make(map[string]string)
+func extractFieldsandherValues(m ent.Mutation) map[string]interface{} {
+	fieldsAndValues := make(map[string]any)
 	for _, field := range m.Fields() {
 		if field == constants.TimeMixinUpdatedAtFieldName ||
 			field == constants.TimeMixinCreatedAtFieldName { // skip this field in audit logs

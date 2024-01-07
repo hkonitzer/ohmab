@@ -408,19 +408,14 @@ func (c *AuditLogConnection) build(nodes []*AuditLog, pager *auditlogPager, afte
 type AuditLogPaginateOption func(*auditlogPager) error
 
 // WithAuditLogOrder configures pagination ordering.
-func WithAuditLogOrder(order *AuditLogOrder) AuditLogPaginateOption {
-	if order == nil {
-		order = DefaultAuditLogOrder
-	}
-	o := *order
+func WithAuditLogOrder(order []*AuditLogOrder) AuditLogPaginateOption {
 	return func(pager *auditlogPager) error {
-		if err := o.Direction.Validate(); err != nil {
-			return err
+		for _, o := range order {
+			if err := o.Direction.Validate(); err != nil {
+				return err
+			}
 		}
-		if o.Field == nil {
-			o.Field = DefaultAuditLogOrder.Field
-		}
-		pager.order = &o
+		pager.order = append(pager.order, order...)
 		return nil
 	}
 }
@@ -438,7 +433,7 @@ func WithAuditLogFilter(filter func(*AuditLogQuery) (*AuditLogQuery, error)) Aud
 
 type auditlogPager struct {
 	reverse bool
-	order   *AuditLogOrder
+	order   []*AuditLogOrder
 	filter  func(*AuditLogQuery) (*AuditLogQuery, error)
 }
 
@@ -449,8 +444,10 @@ func newAuditLogPager(opts []AuditLogPaginateOption, reverse bool) (*auditlogPag
 			return nil, err
 		}
 	}
-	if pager.order == nil {
-		pager.order = DefaultAuditLogOrder
+	for i, o := range pager.order {
+		if i > 0 && o.Field == pager.order[i-1].Field {
+			return nil, fmt.Errorf("duplicate order direction %q", o.Direction)
+		}
 	}
 	return pager, nil
 }
@@ -463,48 +460,87 @@ func (p *auditlogPager) applyFilter(query *AuditLogQuery) (*AuditLogQuery, error
 }
 
 func (p *auditlogPager) toCursor(al *AuditLog) Cursor {
-	return p.order.Field.toCursor(al)
+	cs := make([]any, 0, len(p.order))
+	for _, o := range p.order {
+		cs = append(cs, o.Field.toCursor(al).Value)
+	}
+	return Cursor{ID: al.ID, Value: cs}
 }
 
 func (p *auditlogPager) applyCursors(query *AuditLogQuery, after, before *Cursor) (*AuditLogQuery, error) {
-	direction := p.order.Direction
+	idDirection := entgql.OrderDirectionAsc
 	if p.reverse {
-		direction = direction.Reverse()
+		idDirection = entgql.OrderDirectionDesc
 	}
-	for _, predicate := range entgql.CursorsPredicate(after, before, DefaultAuditLogOrder.Field.column, p.order.Field.column, direction) {
+	fields, directions := make([]string, 0, len(p.order)), make([]OrderDirection, 0, len(p.order))
+	for _, o := range p.order {
+		fields = append(fields, o.Field.column)
+		direction := o.Direction
+		if p.reverse {
+			direction = direction.Reverse()
+		}
+		directions = append(directions, direction)
+	}
+	predicates, err := entgql.MultiCursorsPredicate(after, before, &entgql.MultiCursorsOptions{
+		FieldID:     DefaultAuditLogOrder.Field.column,
+		DirectionID: idDirection,
+		Fields:      fields,
+		Directions:  directions,
+	})
+	if err != nil {
+		return nil, err
+	}
+	for _, predicate := range predicates {
 		query = query.Where(predicate)
 	}
 	return query, nil
 }
 
 func (p *auditlogPager) applyOrder(query *AuditLogQuery) *AuditLogQuery {
-	direction := p.order.Direction
-	if p.reverse {
-		direction = direction.Reverse()
+	var defaultOrdered bool
+	for _, o := range p.order {
+		direction := o.Direction
+		if p.reverse {
+			direction = direction.Reverse()
+		}
+		query = query.Order(o.Field.toTerm(direction.OrderTermOption()))
+		if o.Field.column == DefaultAuditLogOrder.Field.column {
+			defaultOrdered = true
+		}
+		if len(query.ctx.Fields) > 0 {
+			query.ctx.AppendFieldOnce(o.Field.column)
+		}
 	}
-	query = query.Order(p.order.Field.toTerm(direction.OrderTermOption()))
-	if p.order.Field != DefaultAuditLogOrder.Field {
+	if !defaultOrdered {
+		direction := entgql.OrderDirectionAsc
+		if p.reverse {
+			direction = direction.Reverse()
+		}
 		query = query.Order(DefaultAuditLogOrder.Field.toTerm(direction.OrderTermOption()))
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(p.order.Field.column)
 	}
 	return query
 }
 
 func (p *auditlogPager) orderExpr(query *AuditLogQuery) sql.Querier {
-	direction := p.order.Direction
-	if p.reverse {
-		direction = direction.Reverse()
-	}
 	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(p.order.Field.column)
+		for _, o := range p.order {
+			query.ctx.AppendFieldOnce(o.Field.column)
+		}
 	}
 	return sql.ExprFunc(func(b *sql.Builder) {
-		b.Ident(p.order.Field.column).Pad().WriteString(string(direction))
-		if p.order.Field != DefaultAuditLogOrder.Field {
-			b.Comma().Ident(DefaultAuditLogOrder.Field.column).Pad().WriteString(string(direction))
+		for _, o := range p.order {
+			direction := o.Direction
+			if p.reverse {
+				direction = direction.Reverse()
+			}
+			b.Ident(o.Field.column).Pad().WriteString(string(direction))
+			b.Comma()
 		}
+		direction := entgql.OrderDirectionAsc
+		if p.reverse {
+			direction = direction.Reverse()
+		}
+		b.Ident(DefaultAuditLogOrder.Field.column).Pad().WriteString(string(direction))
 	})
 }
 
@@ -556,6 +592,53 @@ func (al *AuditLogQuery) Paginate(
 	}
 	conn.build(nodes, pager, after, first, before, last)
 	return conn, nil
+}
+
+var (
+	// AuditLogOrderFieldTimestamp orders AuditLog by timestamp.
+	AuditLogOrderFieldTimestamp = &AuditLogOrderField{
+		Value: func(al *AuditLog) (ent.Value, error) {
+			return al.Timestamp, nil
+		},
+		column: auditlog.FieldTimestamp,
+		toTerm: auditlog.ByTimestamp,
+		toCursor: func(al *AuditLog) Cursor {
+			return Cursor{
+				ID:    al.ID,
+				Value: al.Timestamp,
+			}
+		},
+	}
+)
+
+// String implement fmt.Stringer interface.
+func (f AuditLogOrderField) String() string {
+	var str string
+	switch f.column {
+	case AuditLogOrderFieldTimestamp.column:
+		str = "timestamp"
+	}
+	return str
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (f AuditLogOrderField) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(f.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (f *AuditLogOrderField) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("AuditLogOrderField %T must be a string", v)
+	}
+	switch str {
+	case "timestamp":
+		*f = *AuditLogOrderFieldTimestamp
+	default:
+		return fmt.Errorf("%s is not a valid AuditLogOrderField", str)
+	}
+	return nil
 }
 
 // AuditLogOrderField defines the ordering field of AuditLog.

@@ -502,7 +502,8 @@ func (c *AuditLogClient) GetX(ctx context.Context, id uuid.UUID) *AuditLog {
 
 // Hooks returns the client hooks.
 func (c *AuditLogClient) Hooks() []Hook {
-	return c.hooks.AuditLog
+	hooks := c.hooks.AuditLog
+	return append(hooks[:len(hooks):len(hooks)], auditlog.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.

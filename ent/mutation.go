@@ -1358,7 +1358,7 @@ type AuditLogMutation struct {
 	user          *string
 	action        *string
 	entity_schema *string
-	entity_values *map[string]string
+	entity_values *map[string]interface{}
 	entity_uuid   *string
 	timestamp     *time.Time
 	clearedFields map[string]struct{}
@@ -1580,12 +1580,12 @@ func (m *AuditLogMutation) ResetEntitySchema() {
 }
 
 // SetEntityValues sets the "entity_values" field.
-func (m *AuditLogMutation) SetEntityValues(value map[string]string) {
+func (m *AuditLogMutation) SetEntityValues(value map[string]interface{}) {
 	m.entity_values = &value
 }
 
 // EntityValues returns the value of the "entity_values" field in the mutation.
-func (m *AuditLogMutation) EntityValues() (r map[string]string, exists bool) {
+func (m *AuditLogMutation) EntityValues() (r map[string]interface{}, exists bool) {
 	v := m.entity_values
 	if v == nil {
 		return
@@ -1596,7 +1596,7 @@ func (m *AuditLogMutation) EntityValues() (r map[string]string, exists bool) {
 // OldEntityValues returns the old "entity_values" field's value of the AuditLog entity.
 // If the AuditLog object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AuditLogMutation) OldEntityValues(ctx context.Context) (v map[string]string, err error) {
+func (m *AuditLogMutation) OldEntityValues(ctx context.Context) (v map[string]interface{}, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldEntityValues is only allowed on UpdateOne operations")
 	}
@@ -1838,7 +1838,7 @@ func (m *AuditLogMutation) SetField(name string, value ent.Value) error {
 		m.SetEntitySchema(v)
 		return nil
 	case auditlog.FieldEntityValues:
-		v, ok := value.(map[string]string)
+		v, ok := value.(map[string]interface{})
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}

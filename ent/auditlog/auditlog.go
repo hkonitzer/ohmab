@@ -6,6 +6,7 @@ package auditlog
 import (
 	"time"
 
+	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 )
@@ -52,7 +53,14 @@ func ValidColumn(column string) bool {
 	return false
 }
 
+// Note that the variables below are initialized by the runtime
+// package on the initialization of the application. Therefore,
+// it should be imported in the main as follows:
+//
+//	import _ "github.com/hkonitzer/ohmab/ent/runtime"
 var (
+	Hooks  [1]ent.Hook
+	Policy ent.Policy
 	// UserValidator is a validator for the "user" field. It is called by the builders before save.
 	UserValidator func(string) error
 	// ActionValidator is a validator for the "action" field. It is called by the builders before save.

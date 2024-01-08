@@ -59,6 +59,7 @@ func (Address) Mixin() []ent.Mixin {
 
 func (Address) Annotations() []schema.Annotation {
 	return []schema.Annotation{
+		entgql.Mutations(entgql.MutationCreate(), entgql.MutationUpdate()),
 		entgql.QueryField(),
 		entgql.RelayConnection(),
 	}

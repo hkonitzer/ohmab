@@ -10,6 +10,204 @@ import (
 	"github.com/hkonitzer/ohmab/ent/timetable"
 )
 
+// CreateAddressInput represents a mutation input for creating addresses.
+type CreateAddressInput struct {
+	CreatedAt    *time.Time
+	UpdatedAt    *time.Time
+	DeletedAt    *time.Time
+	Addition     *string
+	Street       *string
+	City         *string
+	Zip          *string
+	State        *string
+	Country      *string
+	Locale       *string
+	Primary      *bool
+	Telephone    *string
+	Comment      *string
+	BusinessID   *uuid.UUID
+	TimetableIDs []uuid.UUID
+}
+
+// Mutate applies the CreateAddressInput on the AddressMutation builder.
+func (i *CreateAddressInput) Mutate(m *AddressMutation) {
+	if v := i.CreatedAt; v != nil {
+		m.SetCreatedAt(*v)
+	}
+	if v := i.UpdatedAt; v != nil {
+		m.SetUpdatedAt(*v)
+	}
+	if v := i.DeletedAt; v != nil {
+		m.SetDeletedAt(*v)
+	}
+	if v := i.Addition; v != nil {
+		m.SetAddition(*v)
+	}
+	if v := i.Street; v != nil {
+		m.SetStreet(*v)
+	}
+	if v := i.City; v != nil {
+		m.SetCity(*v)
+	}
+	if v := i.Zip; v != nil {
+		m.SetZip(*v)
+	}
+	if v := i.State; v != nil {
+		m.SetState(*v)
+	}
+	if v := i.Country; v != nil {
+		m.SetCountry(*v)
+	}
+	if v := i.Locale; v != nil {
+		m.SetLocale(*v)
+	}
+	if v := i.Primary; v != nil {
+		m.SetPrimary(*v)
+	}
+	if v := i.Telephone; v != nil {
+		m.SetTelephone(*v)
+	}
+	if v := i.Comment; v != nil {
+		m.SetComment(*v)
+	}
+	if v := i.BusinessID; v != nil {
+		m.SetBusinessID(*v)
+	}
+	if v := i.TimetableIDs; len(v) > 0 {
+		m.AddTimetableIDs(v...)
+	}
+}
+
+// SetInput applies the change-set in the CreateAddressInput on the AddressCreate builder.
+func (c *AddressCreate) SetInput(i CreateAddressInput) *AddressCreate {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// UpdateAddressInput represents a mutation input for updating addresses.
+type UpdateAddressInput struct {
+	UpdatedAt          *time.Time
+	ClearDeletedAt     bool
+	DeletedAt          *time.Time
+	ClearAddition      bool
+	Addition           *string
+	ClearStreet        bool
+	Street             *string
+	ClearCity          bool
+	City               *string
+	ClearZip           bool
+	Zip                *string
+	ClearState         bool
+	State              *string
+	ClearCountry       bool
+	Country            *string
+	Locale             *string
+	Primary            *bool
+	ClearTelephone     bool
+	Telephone          *string
+	ClearComment       bool
+	Comment            *string
+	ClearBusiness      bool
+	BusinessID         *uuid.UUID
+	ClearTimetables    bool
+	AddTimetableIDs    []uuid.UUID
+	RemoveTimetableIDs []uuid.UUID
+}
+
+// Mutate applies the UpdateAddressInput on the AddressMutation builder.
+func (i *UpdateAddressInput) Mutate(m *AddressMutation) {
+	if v := i.UpdatedAt; v != nil {
+		m.SetUpdatedAt(*v)
+	}
+	if i.ClearDeletedAt {
+		m.ClearDeletedAt()
+	}
+	if v := i.DeletedAt; v != nil {
+		m.SetDeletedAt(*v)
+	}
+	if i.ClearAddition {
+		m.ClearAddition()
+	}
+	if v := i.Addition; v != nil {
+		m.SetAddition(*v)
+	}
+	if i.ClearStreet {
+		m.ClearStreet()
+	}
+	if v := i.Street; v != nil {
+		m.SetStreet(*v)
+	}
+	if i.ClearCity {
+		m.ClearCity()
+	}
+	if v := i.City; v != nil {
+		m.SetCity(*v)
+	}
+	if i.ClearZip {
+		m.ClearZip()
+	}
+	if v := i.Zip; v != nil {
+		m.SetZip(*v)
+	}
+	if i.ClearState {
+		m.ClearState()
+	}
+	if v := i.State; v != nil {
+		m.SetState(*v)
+	}
+	if i.ClearCountry {
+		m.ClearCountry()
+	}
+	if v := i.Country; v != nil {
+		m.SetCountry(*v)
+	}
+	if v := i.Locale; v != nil {
+		m.SetLocale(*v)
+	}
+	if v := i.Primary; v != nil {
+		m.SetPrimary(*v)
+	}
+	if i.ClearTelephone {
+		m.ClearTelephone()
+	}
+	if v := i.Telephone; v != nil {
+		m.SetTelephone(*v)
+	}
+	if i.ClearComment {
+		m.ClearComment()
+	}
+	if v := i.Comment; v != nil {
+		m.SetComment(*v)
+	}
+	if i.ClearBusiness {
+		m.ClearBusiness()
+	}
+	if v := i.BusinessID; v != nil {
+		m.SetBusinessID(*v)
+	}
+	if i.ClearTimetables {
+		m.ClearTimetables()
+	}
+	if v := i.AddTimetableIDs; len(v) > 0 {
+		m.AddTimetableIDs(v...)
+	}
+	if v := i.RemoveTimetableIDs; len(v) > 0 {
+		m.RemoveTimetableIDs(v...)
+	}
+}
+
+// SetInput applies the change-set in the UpdateAddressInput on the AddressUpdate builder.
+func (c *AddressUpdate) SetInput(i UpdateAddressInput) *AddressUpdate {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// SetInput applies the change-set in the UpdateAddressInput on the AddressUpdateOne builder.
+func (c *AddressUpdateOne) SetInput(i UpdateAddressInput) *AddressUpdateOne {
+	i.Mutate(c.Mutation())
+	return c
+}
+
 // CreateBusinessInput represents a mutation input for creating businesses.
 type CreateBusinessInput struct {
 	CreatedAt   *time.Time
@@ -76,6 +274,138 @@ func (i *CreateBusinessInput) Mutate(m *BusinessMutation) {
 
 // SetInput applies the change-set in the CreateBusinessInput on the BusinessCreate builder.
 func (c *BusinessCreate) SetInput(i CreateBusinessInput) *BusinessCreate {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// UpdateBusinessInput represents a mutation input for updating businesses.
+type UpdateBusinessInput struct {
+	UpdatedAt         *time.Time
+	ClearDeletedAt    bool
+	DeletedAt         *time.Time
+	Name1             *string
+	ClearName2        bool
+	Name2             *string
+	Alias             *string
+	ClearTelephone    bool
+	Telephone         *string
+	ClearEmail        bool
+	Email             *string
+	ClearWebsite      bool
+	Website           *string
+	ClearComment      bool
+	Comment           *string
+	Active            *bool
+	ClearAddresses    bool
+	AddAddressIDs     []uuid.UUID
+	RemoveAddressIDs  []uuid.UUID
+	ClearTags         bool
+	AddTagIDs         []uuid.UUID
+	RemoveTagIDs      []uuid.UUID
+	ClearUsers        bool
+	AddUserIDs        []uuid.UUID
+	RemoveUserIDs     []uuid.UUID
+	ClearOperators    bool
+	AddOperatorIDs    []uuid.UUID
+	RemoveOperatorIDs []uuid.UUID
+}
+
+// Mutate applies the UpdateBusinessInput on the BusinessMutation builder.
+func (i *UpdateBusinessInput) Mutate(m *BusinessMutation) {
+	if v := i.UpdatedAt; v != nil {
+		m.SetUpdatedAt(*v)
+	}
+	if i.ClearDeletedAt {
+		m.ClearDeletedAt()
+	}
+	if v := i.DeletedAt; v != nil {
+		m.SetDeletedAt(*v)
+	}
+	if v := i.Name1; v != nil {
+		m.SetName1(*v)
+	}
+	if i.ClearName2 {
+		m.ClearName2()
+	}
+	if v := i.Name2; v != nil {
+		m.SetName2(*v)
+	}
+	if v := i.Alias; v != nil {
+		m.SetAlias(*v)
+	}
+	if i.ClearTelephone {
+		m.ClearTelephone()
+	}
+	if v := i.Telephone; v != nil {
+		m.SetTelephone(*v)
+	}
+	if i.ClearEmail {
+		m.ClearEmail()
+	}
+	if v := i.Email; v != nil {
+		m.SetEmail(*v)
+	}
+	if i.ClearWebsite {
+		m.ClearWebsite()
+	}
+	if v := i.Website; v != nil {
+		m.SetWebsite(*v)
+	}
+	if i.ClearComment {
+		m.ClearComment()
+	}
+	if v := i.Comment; v != nil {
+		m.SetComment(*v)
+	}
+	if v := i.Active; v != nil {
+		m.SetActive(*v)
+	}
+	if i.ClearAddresses {
+		m.ClearAddresses()
+	}
+	if v := i.AddAddressIDs; len(v) > 0 {
+		m.AddAddressIDs(v...)
+	}
+	if v := i.RemoveAddressIDs; len(v) > 0 {
+		m.RemoveAddressIDs(v...)
+	}
+	if i.ClearTags {
+		m.ClearTags()
+	}
+	if v := i.AddTagIDs; len(v) > 0 {
+		m.AddTagIDs(v...)
+	}
+	if v := i.RemoveTagIDs; len(v) > 0 {
+		m.RemoveTagIDs(v...)
+	}
+	if i.ClearUsers {
+		m.ClearUsers()
+	}
+	if v := i.AddUserIDs; len(v) > 0 {
+		m.AddUserIDs(v...)
+	}
+	if v := i.RemoveUserIDs; len(v) > 0 {
+		m.RemoveUserIDs(v...)
+	}
+	if i.ClearOperators {
+		m.ClearOperators()
+	}
+	if v := i.AddOperatorIDs; len(v) > 0 {
+		m.AddOperatorIDs(v...)
+	}
+	if v := i.RemoveOperatorIDs; len(v) > 0 {
+		m.RemoveOperatorIDs(v...)
+	}
+}
+
+// SetInput applies the change-set in the UpdateBusinessInput on the BusinessUpdate builder.
+func (c *BusinessUpdate) SetInput(i UpdateBusinessInput) *BusinessUpdate {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// SetInput applies the change-set in the UpdateBusinessInput on the BusinessUpdateOne builder.
+func (c *BusinessUpdateOne) SetInput(i UpdateBusinessInput) *BusinessUpdateOne {
 	i.Mutate(c.Mutation())
 	return c
 }

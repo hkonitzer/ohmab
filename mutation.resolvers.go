@@ -6,6 +6,7 @@ package OHMAB
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/hkonitzer/ohmab/ent"
@@ -36,6 +37,11 @@ func (r *mutationResolver) CreateBusiness(ctx context.Context, input ent.CreateB
 	return b, err
 }
 
+// UpdateBusiness is the resolver for the updateBusiness field.
+func (r *mutationResolver) UpdateBusiness(ctx context.Context, id uuid.UUID, input ent.UpdateBusinessInput) (*ent.Business, error) {
+	return r.client.Business.UpdateOneID(id).SetInput(input).Save(ctx)
+}
+
 // CreateTimetable is the resolver for the createTimetable field.
 func (r *mutationResolver) CreateTimetable(ctx context.Context, input ent.CreateTimetableInput) (*ent.Timetable, error) {
 	t, err := r.client.Timetable.Create().SetInput(input).Save(ctx)
@@ -45,6 +51,16 @@ func (r *mutationResolver) CreateTimetable(ctx context.Context, input ent.Create
 // UpdateTimetable is the resolver for the updateTimetable field.
 func (r *mutationResolver) UpdateTimetable(ctx context.Context, id uuid.UUID, input ent.UpdateTimetableInput) (*ent.Timetable, error) {
 	return r.client.Timetable.UpdateOneID(id).SetInput(input).Save(ctx)
+}
+
+// CreateAddress is the resolver for the createAddress field.
+func (r *mutationResolver) CreateAddress(ctx context.Context, input ent.CreateAddressInput) (*ent.Address, error) {
+	panic(fmt.Errorf("not implemented: CreateAddress - createAddress"))
+}
+
+// UpdateAddress is the resolver for the updateAddress field.
+func (r *mutationResolver) UpdateAddress(ctx context.Context, id uuid.UUID, input ent.UpdateAddressInput) (*ent.Address, error) {
+	panic(fmt.Errorf("not implemented: UpdateAddress - updateAddress"))
 }
 
 // Mutation returns MutationResolver implementation.

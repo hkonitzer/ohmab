@@ -10,6 +10,7 @@ import (
 	"github.com/hkonitzer/ohmab/ent/schema/constants"
 	"github.com/hkonitzer/ohmab/internal/pkg/common/log"
 	"github.com/hkonitzer/ohmab/internal/pkg/privacy"
+	"strings"
 )
 
 type AuditLog struct {
@@ -149,6 +150,12 @@ func extractFieldsandherValues(m ent.Mutation) map[string]interface{} {
 		}
 		value, _ := m.Field(field)
 		fieldsAndValues[field] = fmt.Sprintf("%v", value)
+	}
+	if len(m.AddedEdges()) > 0 {
+		fieldsAndValues["added_edges"] = strings.Join(m.AddedEdges(), ",")
+	}
+	if len(m.ClearedEdges()) > 0 {
+		fieldsAndValues["cleared_edges"] = strings.Join(m.AddedEdges(), ",")
 	}
 	return fieldsAndValues
 }

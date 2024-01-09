@@ -60,7 +60,7 @@ func (r *mutationResolver) CreateAddress(ctx context.Context, input ent.CreateAd
 
 // UpdateAddress is the resolver for the updateAddress field.
 func (r *mutationResolver) UpdateAddress(ctx context.Context, id uuid.UUID, input ent.UpdateAddressInput) (*ent.Address, error) {
-	panic(fmt.Errorf("not implemented: UpdateAddress - updateAddress"))
+	return r.client.Address.UpdateOneID(id).SetInput(input).Save(ctx)
 }
 
 // Mutation returns MutationResolver implementation.

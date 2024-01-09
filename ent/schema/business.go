@@ -29,7 +29,7 @@ func (Business) Fields() []ent.Field {
 		field.Text("name1").
 			NotEmpty().Annotations(entgql.OrderField("NAME1")).Comment("The main name of the business"),
 		field.Text("name2").
-			Optional().Comment("The optional second name of the business"),
+			Optional().Nillable().Comment("The optional second name of the business"),
 		field.Text("alias").
 			Unique().
 			MaxLen(20).
@@ -39,13 +39,13 @@ func (Business) Fields() []ent.Field {
 				entgql.OrderField("ALIAS")).
 			Comment("The unqiue alias of the business (short name)"),
 		field.Text("telephone").
-			Optional().Unique().Comment("Telephone number"),
+			Optional().Nillable().Unique().Comment("Telephone number"),
 		field.Text("email").
-			Optional().Unique().Comment("Email address (has to be unique)"),
+			Optional().Nillable().Unique().Comment("Email address (has to be unique)"),
 		field.Text("website").
-			Optional().Comment("Website address"),
+			Optional().Nillable().Comment("Website address"),
 		field.Text("comment").
-			Optional().Comment("A comment for this business"),
+			Optional().Nillable().Comment("A comment for this business"),
 		field.Bool(constants.ActiveFieldName).Default(true).Comment("Is the business active?"),
 	}
 }

@@ -383,7 +383,7 @@ func (bc *BusinessCreate) createSpec() (*Business, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := bc.mutation.Name2(); ok {
 		_spec.SetField(business.FieldName2, field.TypeString, value)
-		_node.Name2 = value
+		_node.Name2 = &value
 	}
 	if value, ok := bc.mutation.Alias(); ok {
 		_spec.SetField(business.FieldAlias, field.TypeString, value)
@@ -391,19 +391,19 @@ func (bc *BusinessCreate) createSpec() (*Business, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := bc.mutation.Telephone(); ok {
 		_spec.SetField(business.FieldTelephone, field.TypeString, value)
-		_node.Telephone = value
+		_node.Telephone = &value
 	}
 	if value, ok := bc.mutation.Email(); ok {
 		_spec.SetField(business.FieldEmail, field.TypeString, value)
-		_node.Email = value
+		_node.Email = &value
 	}
 	if value, ok := bc.mutation.Website(); ok {
 		_spec.SetField(business.FieldWebsite, field.TypeString, value)
-		_node.Website = value
+		_node.Website = &value
 	}
 	if value, ok := bc.mutation.Comment(); ok {
 		_spec.SetField(business.FieldComment, field.TypeString, value)
-		_node.Comment = value
+		_node.Comment = &value
 	}
 	if value, ok := bc.mutation.Active(); ok {
 		_spec.SetField(business.FieldActive, field.TypeBool, value)

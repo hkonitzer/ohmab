@@ -28,17 +28,17 @@ type Business struct {
 	// The main name of the business
 	Name1 string `json:"name1,omitempty"`
 	// The optional second name of the business
-	Name2 string `json:"name2,omitempty"`
+	Name2 *string `json:"name2,omitempty"`
 	// The unqiue alias of the business (short name)
 	Alias string `json:"alias,omitempty"`
 	// Telephone number
-	Telephone string `json:"telephone,omitempty"`
+	Telephone *string `json:"telephone,omitempty"`
 	// Email address (has to be unique)
-	Email string `json:"email,omitempty"`
+	Email *string `json:"email,omitempty"`
 	// Website address
-	Website string `json:"website,omitempty"`
+	Website *string `json:"website,omitempty"`
 	// A comment for this business
-	Comment string `json:"comment,omitempty"`
+	Comment *string `json:"comment,omitempty"`
 	// Is the business active?
 	Active bool `json:"active,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -167,7 +167,8 @@ func (b *Business) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field name2", values[i])
 			} else if value.Valid {
-				b.Name2 = value.String
+				b.Name2 = new(string)
+				*b.Name2 = value.String
 			}
 		case business.FieldAlias:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -179,25 +180,29 @@ func (b *Business) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field telephone", values[i])
 			} else if value.Valid {
-				b.Telephone = value.String
+				b.Telephone = new(string)
+				*b.Telephone = value.String
 			}
 		case business.FieldEmail:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field email", values[i])
 			} else if value.Valid {
-				b.Email = value.String
+				b.Email = new(string)
+				*b.Email = value.String
 			}
 		case business.FieldWebsite:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field website", values[i])
 			} else if value.Valid {
-				b.Website = value.String
+				b.Website = new(string)
+				*b.Website = value.String
 			}
 		case business.FieldComment:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field comment", values[i])
 			} else if value.Valid {
-				b.Comment = value.String
+				b.Comment = new(string)
+				*b.Comment = value.String
 			}
 		case business.FieldActive:
 			if value, ok := values[i].(*sql.NullBool); !ok {
@@ -273,23 +278,33 @@ func (b *Business) String() string {
 	builder.WriteString("name1=")
 	builder.WriteString(b.Name1)
 	builder.WriteString(", ")
-	builder.WriteString("name2=")
-	builder.WriteString(b.Name2)
+	if v := b.Name2; v != nil {
+		builder.WriteString("name2=")
+		builder.WriteString(*v)
+	}
 	builder.WriteString(", ")
 	builder.WriteString("alias=")
 	builder.WriteString(b.Alias)
 	builder.WriteString(", ")
-	builder.WriteString("telephone=")
-	builder.WriteString(b.Telephone)
+	if v := b.Telephone; v != nil {
+		builder.WriteString("telephone=")
+		builder.WriteString(*v)
+	}
 	builder.WriteString(", ")
-	builder.WriteString("email=")
-	builder.WriteString(b.Email)
+	if v := b.Email; v != nil {
+		builder.WriteString("email=")
+		builder.WriteString(*v)
+	}
 	builder.WriteString(", ")
-	builder.WriteString("website=")
-	builder.WriteString(b.Website)
+	if v := b.Website; v != nil {
+		builder.WriteString("website=")
+		builder.WriteString(*v)
+	}
 	builder.WriteString(", ")
-	builder.WriteString("comment=")
-	builder.WriteString(b.Comment)
+	if v := b.Comment; v != nil {
+		builder.WriteString("comment=")
+		builder.WriteString(*v)
+	}
 	builder.WriteString(", ")
 	builder.WriteString("active=")
 	builder.WriteString(fmt.Sprintf("%v", b.Active))

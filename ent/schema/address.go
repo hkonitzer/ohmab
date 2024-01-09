@@ -44,7 +44,7 @@ func (Address) Fields() []ent.Field {
 		field.Bool("primary").
 			Default(false).Comment("Is this the primary address?"),
 		field.Text("telephone").
-			Optional().Unique().Comment("Telephone number"),
+			Optional().Nillable().Unique().Comment("Telephone number"),
 		field.Text("comment").
 			Optional().Comment("A comment for this address"),
 	}

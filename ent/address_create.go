@@ -423,7 +423,7 @@ func (ac *AddressCreate) createSpec() (*Address, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := ac.mutation.Telephone(); ok {
 		_spec.SetField(address.FieldTelephone, field.TypeString, value)
-		_node.Telephone = value
+		_node.Telephone = &value
 	}
 	if value, ok := ac.mutation.Comment(); ok {
 		_spec.SetField(address.FieldComment, field.TypeString, value)

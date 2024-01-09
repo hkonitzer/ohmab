@@ -39,6 +39,16 @@ func (r *mutationResolver) CreateBusiness(ctx context.Context, input ent.CreateB
 
 // UpdateBusiness is the resolver for the updateBusiness field.
 func (r *mutationResolver) UpdateBusiness(ctx context.Context, id uuid.UUID, input ent.UpdateBusinessInput) (*ent.Business, error) {
+	// Workaround for Khan/genqlient, since the # @genqlient(omitempty: true) directive will not work and the
+	//UpdateBusinessInput ist derived from here
+	if *input.Email == "" {
+		input.ClearEmail = true
+		input.Email = nil
+	}
+	if *input.Telephone == "" {
+		input.ClearEmail = true
+		input.Email = nil
+	}
 	return r.client.Business.UpdateOneID(id).SetInput(input).Save(ctx)
 }
 
@@ -60,6 +70,11 @@ func (r *mutationResolver) CreateAddress(ctx context.Context, input ent.CreateAd
 
 // UpdateAddress is the resolver for the updateAddress field.
 func (r *mutationResolver) UpdateAddress(ctx context.Context, id uuid.UUID, input ent.UpdateAddressInput) (*ent.Address, error) {
+	// Workaround, see UpdateBusiness
+	if *input.Telephone == "" {
+		input.ClearTelephone = true
+		input.Telephone = nil
+	}
 	return r.client.Address.UpdateOneID(id).SetInput(input).Save(ctx)
 }
 

@@ -681,7 +681,7 @@ func (m *AddressMutation) Telephone() (r string, exists bool) {
 // OldTelephone returns the old "telephone" field's value of the Address entity.
 // If the Address object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AddressMutation) OldTelephone(ctx context.Context) (v string, err error) {
+func (m *AddressMutation) OldTelephone(ctx context.Context) (v *string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldTelephone is only allowed on UpdateOne operations")
 	}
@@ -2305,7 +2305,7 @@ func (m *BusinessMutation) Name2() (r string, exists bool) {
 // OldName2 returns the old "name2" field's value of the Business entity.
 // If the Business object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *BusinessMutation) OldName2(ctx context.Context) (v string, err error) {
+func (m *BusinessMutation) OldName2(ctx context.Context) (v *string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldName2 is only allowed on UpdateOne operations")
 	}
@@ -2390,7 +2390,7 @@ func (m *BusinessMutation) Telephone() (r string, exists bool) {
 // OldTelephone returns the old "telephone" field's value of the Business entity.
 // If the Business object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *BusinessMutation) OldTelephone(ctx context.Context) (v string, err error) {
+func (m *BusinessMutation) OldTelephone(ctx context.Context) (v *string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldTelephone is only allowed on UpdateOne operations")
 	}
@@ -2439,7 +2439,7 @@ func (m *BusinessMutation) Email() (r string, exists bool) {
 // OldEmail returns the old "email" field's value of the Business entity.
 // If the Business object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *BusinessMutation) OldEmail(ctx context.Context) (v string, err error) {
+func (m *BusinessMutation) OldEmail(ctx context.Context) (v *string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldEmail is only allowed on UpdateOne operations")
 	}
@@ -2488,7 +2488,7 @@ func (m *BusinessMutation) Website() (r string, exists bool) {
 // OldWebsite returns the old "website" field's value of the Business entity.
 // If the Business object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *BusinessMutation) OldWebsite(ctx context.Context) (v string, err error) {
+func (m *BusinessMutation) OldWebsite(ctx context.Context) (v *string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldWebsite is only allowed on UpdateOne operations")
 	}
@@ -2537,7 +2537,7 @@ func (m *BusinessMutation) Comment() (r string, exists bool) {
 // OldComment returns the old "comment" field's value of the Business entity.
 // If the Business object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *BusinessMutation) OldComment(ctx context.Context) (v string, err error) {
+func (m *BusinessMutation) OldComment(ctx context.Context) (v *string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldComment is only allowed on UpdateOne operations")
 	}

@@ -43,7 +43,7 @@ type Address struct {
 	// Is this the primary address?
 	Primary bool `json:"primary,omitempty"`
 	// Telephone number
-	Telephone string `json:"telephone,omitempty"`
+	Telephone *string `json:"telephone,omitempty"`
 	// A comment for this address
 	Comment string `json:"comment,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -196,7 +196,8 @@ func (a *Address) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field telephone", values[i])
 			} else if value.Valid {
-				a.Telephone = value.String
+				a.Telephone = new(string)
+				*a.Telephone = value.String
 			}
 		case address.FieldComment:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -290,8 +291,10 @@ func (a *Address) String() string {
 	builder.WriteString("primary=")
 	builder.WriteString(fmt.Sprintf("%v", a.Primary))
 	builder.WriteString(", ")
-	builder.WriteString("telephone=")
-	builder.WriteString(a.Telephone)
+	if v := a.Telephone; v != nil {
+		builder.WriteString("telephone=")
+		builder.WriteString(*v)
+	}
 	builder.WriteString(", ")
 	builder.WriteString("comment=")
 	builder.WriteString(a.Comment)

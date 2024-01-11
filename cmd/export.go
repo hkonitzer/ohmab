@@ -52,12 +52,28 @@ func exportBusinesses(client *ent.Client) {
 	for _, business := range b {
 		var bRow []string
 		bRow = append(bRow, business.Name1)
-		bRow = append(bRow, business.Name2)
+		if business.Name2 != nil {
+			bRow = append(bRow, *business.Name2)
+		} else {
+			bRow = append(bRow, "")
+		}
 		bRow = append(bRow, business.Alias)
-		bRow = append(bRow, business.Telephone)
-		bRow = append(bRow, business.Email)
-		bRow = append(bRow, business.Website)
-		bRow = append(bRow, business.Comment)
+		bRow = append(bRow, *business.Telephone)
+		if business.Email != nil {
+			bRow = append(bRow, *business.Email)
+		} else {
+			bRow = append(bRow, "")
+		}
+		if business.Website != nil {
+			bRow = append(bRow, *business.Website)
+		} else {
+			bRow = append(bRow, "")
+		}
+		if business.Comment != nil {
+			bRow = append(bRow, *business.Comment)
+		} else {
+			bRow = append(bRow, "")
+		}
 		for _, addr := range business.Edges.Addresses {
 			aRow := bRow
 			aRow = append(aRow, addr.Addition)
@@ -68,7 +84,7 @@ func exportBusinesses(client *ent.Client) {
 			aRow = append(aRow, addr.Country)
 			aRow = append(aRow, addr.Locale)
 			aRow = append(aRow, strconv.FormatBool(addr.Primary))
-			aRow = append(aRow, addr.Telephone)
+			aRow = append(aRow, *addr.Telephone)
 			aRow = append(aRow, addr.Comment)
 			err := writer.Write(aRow)
 			if err != nil {

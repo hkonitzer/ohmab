@@ -60,7 +60,7 @@ type DatabaseConfigurations struct {
 	Sqlite3    Sqlite3DatabaseConfigurations
 }
 
-var configurations *Configurations
+var Configs *Configurations
 var initOnce, readOnce sync.Once
 
 var Version string
@@ -70,22 +70,22 @@ func Get() (*Configurations, error) {
 	readOnce.Do(func() {
 		Init()
 		// Unmarshal the configuration file into the Config variable.
-		err = viper.Unmarshal(&configurations)
+		err = viper.Unmarshal(&Configs)
 	})
-	return configurations, err
+	return Configs, err
 }
 func GetX() *Configurations {
-	if configurations == nil {
+	if Configs == nil {
 		readOnce.Do(func() {
 			Init()
 			// Unmarshal the configuration file into the Config variable.
-			err := viper.Unmarshal(&configurations)
+			err := viper.Unmarshal(&Configs)
 			if err != nil {
 				panic(fmt.Sprintf("Unable to decode config into struct, %v", err))
 			}
 		})
 	}
-	return configurations
+	return Configs
 }
 
 func Init() {

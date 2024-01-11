@@ -38,9 +38,9 @@ var CmdListBusiness = &cobra.Command{
 			table.Append([]string{
 				v.ID.String(),
 				v.Name1,
-				v.Name2,
+				*v.Name2,
 				v.Alias,
-				v.Telephone,
+				*v.Telephone,
 				strconv.FormatBool(v.Active),
 				v.UpdatedAt.Format(time.DateTime),
 			})

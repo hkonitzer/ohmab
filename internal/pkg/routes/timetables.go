@@ -35,10 +35,13 @@ func (s *Server) Timetables(w http.ResponseWriter, r *http.Request) {
 	// parse requested locale @TODO: use query param also?
 	langq := utils.ParseAcceptLanguage(r.Header.Get("Accept-Language"))
 	var locale string
+	var timelocation *time.Location // @TODO Make this configurable!
 	if len(langq) == 0 {
 		locale = "en_US"
+		timelocation = time.UTC
 	} else {
 		locale = langq[0].Locale
+		timelocation, _ = time.LoadLocation("Europe/Berlin")
 	}
 	data := DataTemplate{
 		Title:  "Timetables",
@@ -46,14 +49,14 @@ func (s *Server) Timetables(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(ttTypes) == 0 {
-		_, err := GetStandardTimetableData(&data, "", nil, s.Client, r.Context())
+		_, err := GetStandardTimetableData(&data, "", nil, s.Client, r.Context(), timelocation)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 	} else {
 		for _, ttType := range ttTypes {
-			c, err := GetStandardTimetableData(&data, strings.TrimSpace(ttType), nil, s.Client, r.Context())
+			c, err := GetStandardTimetableData(&data, strings.TrimSpace(ttType), nil, s.Client, r.Context(), timelocation)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
@@ -68,7 +71,7 @@ func (s *Server) Timetables(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func GetStandardTimetableData(data *DataTemplate, timetabletype string, query *ent.TimetableQuery, client *ent.Client, ctx context.Context) (int, error) {
+func GetStandardTimetableData(data *DataTemplate, timetabletype string, query *ent.TimetableQuery, client *ent.Client, ctx context.Context, location *time.Location) (int, error) {
 	/* @TODO: This is not working, why? --> Order ByTimetables is not working
 	a, err := s.Client.Address.Query().Where(address.HasTimetables()).
 		WithTimetables(
@@ -95,7 +98,7 @@ func GetStandardTimetableData(data *DataTemplate, timetabletype string, query *e
 	}
 	// construct time for where clause: get all timetables valid from today 00:00:00
 	t := time.Now()
-	midnight := time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, time.Local)
+	midnight := time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, location)
 
 	// get timetables for every requested type
 
@@ -124,8 +127,8 @@ func GetStandardTimetableData(data *DataTemplate, timetabletype string, query *e
 	// fill timetable address business edge with map created above
 	for _, tt := range timetables {
 		tt.Edges.Address.Edges.Business = bsMap[tt.Edges.Address.ID.String()]
-		tt.DatetimeTo = tt.DatetimeTo.In(time.Local)
-		tt.DatetimeFrom = tt.DatetimeFrom.In(time.Local)
+		tt.DatetimeTo = tt.DatetimeTo.In(location)
+		tt.DatetimeFrom = tt.DatetimeFrom.In(location)
 	}
 	ttdata.Data = timetables
 	// get content for the timetable type

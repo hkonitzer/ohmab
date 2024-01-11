@@ -253,6 +253,7 @@ func request(url string, method string, payload io.Reader) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	if res.StatusCode != 200 {
 		ghostErrors := Errors{}
 		_ = json.Unmarshal(resBody, &ghostErrors)
@@ -309,5 +310,9 @@ func ReplaceMobileDoc(mobiledoc string, newMobiledoc string) string {
 	hc := strings.ReplaceAll(newMobiledoc, "\n", "")
 	hc = strings.ReplaceAll(hc, "\"", "\\\"")
 	// replace mobiledoc
-	return mbdregx.ReplaceAllString(mobiledoc, fmt.Sprintf(`["html",{"html":"%s"}]`, hc))
+	if mobiledoc == "" {
+		mobiledoc = newMobiledoc
+	}
+	validDoc := mbdregx.ReplaceAllString(mobiledoc, fmt.Sprintf(`["html",{"html":"%s"}]`, hc))
+	return validDoc
 }

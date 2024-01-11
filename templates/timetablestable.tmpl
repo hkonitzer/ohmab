@@ -26,15 +26,16 @@
                     <tr>
                         <td>{{ .Edges.Address.Zip }}&thinsp;{{ .Edges.Address.City }}</td>
                     </tr>
-                    {{ if .AvailabilityByPhone }}
-                    <tr>
-                        <td><a href="tel:{{ .AvailabilityByPhone }}">{{ convertTel .AvailabilityByPhone }}</a></td>
-                    </tr>
-                    {{ end }}
-                    {{ if (ne .AvailabilityByPhone .Edges.Address.Telephone) }}
+
+                    {{ if .Edges.Address.Telephone }}
                     <tr>
                         <td><a href="tel:{{ .Edges.Address.Telephone }}">{{ convertTel .Edges.Address.Telephone }}</a></td>
                     </tr>
+                    {{ else if .AvailabilityByPhone }}
+                    <tr>
+                    <td><a href="tel:{{ .AvailabilityByPhone }}">{{ convertTel .AvailabilityByPhone }}</a></td>
+                    </tr>
+                    {{ end }}
                     {{ if .Edges.Address.Edges.Business.Website }}
                     <tr>
                         <td><a href="{{ .Edges.Address.Edges.Business.Website }}">{{ convertWebsite .Edges.Address.Edges.Business.Website }}</a></td>
@@ -49,15 +50,5 @@
     </tbody>
 </table>
 
-{{ if .CSSBottom }}
-<style>
-{{.CSSBottom}}
-</style>
-{{ end }}
-
-{{ if .HTMLBottom }}
-<p class="contentBOTTOM">{{.HTMLBottom}}</p>
-{{ end }}
 
 {{- end }}
-{{end}}

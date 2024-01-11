@@ -7,20 +7,25 @@ import (
 	"github.com/hkonitzer/ohmab/ent"
 	_ "github.com/hkonitzer/ohmab/ent/runtime"
 	"github.com/hkonitzer/ohmab/ent/timetable"
+	"github.com/hkonitzer/ohmab/internal/pkg/common/config"
 	"github.com/hkonitzer/ohmab/internal/pkg/common/log"
 	"github.com/hkonitzer/ohmab/internal/pkg/db"
 	"github.com/hkonitzer/ohmab/internal/pkg/ghost"
 	"github.com/hkonitzer/ohmab/internal/pkg/routes"
 	"github.com/hkonitzer/ohmab/internal/pkg/utils"
 	"github.com/hkonitzer/ohmab/templates"
+	"github.com/spf13/viper"
 	"strings"
 	"time"
 )
 
+// @TODO: REMOVE THIS. NEEDS AN OWN PACKAGE!
+
 var logger = log.GetLoggerInstance()
 
 func main() {
-
+	// config
+	config.Init()
 	// get the timetable data
 	ctx := context.TODO()
 	client, clientError := db.CreateClient(ctx)
@@ -30,7 +35,7 @@ func main() {
 	defer client.Close()
 
 	// determine ghost locale
-	locale := configurations.Ghost.Locale // try config first
+	locale := viper.GetString("ghost.locale") // try config first
 	if locale == "" {
 		// request locale from ghost site meta data
 		site, err := ghost.RequestSite()
@@ -39,13 +44,14 @@ func main() {
 		}
 		locale = site.Site.Locale
 	}
-	logger.Debug().Msgf("Using locale: %s", locale)
+	timelocation, _ := time.LoadLocation("Europe/Berlin") // @TODO: get this from requested locale
+	logger.Debug().Msgf("Using locale: %s with timezone: %s", locale, timelocation)
 
 	ttdata := routes.DataTemplate{
 		Locale: locale,
 	}
 
-	_, err := routes.GetStandardTimetableData(&ttdata, "EMERGENCYSERVICE", nil, client, ctx)
+	_, err := routes.GetStandardTimetableData(&ttdata, "EMERGENCYSERVICE", nil, client, ctx, timelocation)
 	if err != nil {
 		logger.Fatal().Msgf("Error getting timetable data: %v", err)
 	}
@@ -55,8 +61,10 @@ func main() {
 	}
 
 	var postID, pageID, postTitle string
-	for _, i := range configurations.Ghost.Content {
+	gcmap := config.Configs.Ghost
+	for _, i := range gcmap.Content {
 		for k, v := range i {
+			fmt.Printf("%v,%v\n", k, v)
 			if k == strings.ToLower(timetable.TimetableTypeEMERGENCYSERVICE.String()) {
 				postID = v.PostID
 				pageID = v.PageID
@@ -83,6 +91,9 @@ func main() {
 	}
 	// replace mobiledoc
 	page.MobileDoc = ghost.ReplaceMobileDoc(page.MobileDoc, buff1.String())
+	if len(page.MobileDoc) == 0 {
+		logger.Fatal().Msgf("MobileDoc is empty!")
+	}
 	page.PublishedAt = time.Now().Format(time.RFC3339)
 	page.Status = "published"
 	// update
@@ -120,7 +131,7 @@ func main() {
 			firstEntry.Edges.Address.Street,
 			firstEntry.Edges.Address.Zip,
 			firstEntry.Edges.Address.City,
-			utils.ConvertTel(firstEntry.Edges.Address.Telephone),
+			utils.ConvertTel(*firstEntry.Edges.Address.Telephone),
 		)
 		err = posts.UpdatePost()
 		if err != nil {

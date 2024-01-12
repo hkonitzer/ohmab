@@ -3,7 +3,6 @@ package routes
 import (
 	"context"
 	"errors"
-	"fmt"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/oauth"
 	"github.com/google/uuid"
@@ -132,7 +131,6 @@ func (*UserVerifier) ValidateClient(clientID, clientSecret, scope string, r *htt
 
 // ValidateCode validates token ID
 func (*UserVerifier) ValidateCode(clientID, clientSecret, code, redirectURI string, r *http.Request) (string, error) {
-	fmt.Println("ValidateCode", clientID, clientSecret, code, redirectURI)
 	return "", nil
 }
 
@@ -156,8 +154,12 @@ func (t *UserVerifier) AddClaims(tokenType oauth.TokenType, credential, tokenID,
 }
 
 // AddProperties provides additional information to the token response
-func (*UserVerifier) AddProperties(tokenType oauth.TokenType, credential, tokenID, scope string, r *http.Request) (map[string]string, error) {
+func (t *UserVerifier) AddProperties(tokenType oauth.TokenType, credential, tokenID, scope string, r *http.Request) (map[string]string, error) {
 	props := make(map[string]string)
+	umail, err := t.Client.User.Query().Where(user.Login(credential)).Select("email").First(readerContext)
+	if err == nil {
+		props["email"] = umail.Email
+	}
 	return props, nil
 }
 

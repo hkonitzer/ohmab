@@ -90,9 +90,9 @@ func main() {
 		logger.Fatal().Msgf("Error requesting page: %v", err)
 	}
 	// replace mobiledoc
-	page.MobileDoc = ghost.ReplaceMobileDoc(page.MobileDoc, buff1.String())
-	if len(page.MobileDoc) == 0 {
-		logger.Fatal().Msgf("MobileDoc is empty!")
+	page.HTML = ghost.ReplaceMobileDoc(page.HTML, buff1.String())
+	if len(page.HTML) == 0 {
+		logger.Fatal().Msgf("HTML is empty!")
 	}
 	page.PublishedAt = time.Now().Format(time.RFC3339)
 	page.Status = "published"
@@ -121,7 +121,7 @@ func main() {
 		if err := templates.TableTimeTableHTMLTemplate.Execute(&buff2, ttdata); err != nil {
 			logger.Fatal().Msgf("Error executing template: %v", err)
 		}
-		posts.Posts[0].MobileDoc = ghost.ReplaceMobileDoc(posts.Posts[0].MobileDoc, buff2.String())
+		posts.Posts[0].HTML = ghost.ReplaceMobileDoc(posts.Posts[0].HTML, buff2.String())
 		posts.Posts[0].PublishedAt = time.Now().Format(time.RFC3339)
 		posts.Posts[0].Status = "published"
 		posts.Posts[0].Title = fmt.Sprintf(postTitle, firstEntry.I18nDate(timetable.FieldDatetimeTo))

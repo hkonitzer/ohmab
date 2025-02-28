@@ -51,12 +51,12 @@ type SingleRessource struct {
 	Slug        string `json:"slug,omitempty"`
 	UpdatedAt   string `json:"updated_at"`
 	PublishedAt string `json:"published_at"`
-	MobileDoc   string `json:"mobiledoc,omitempty"`
-	HTML        string `json:"html,omitempty"`
-	Status      string `json:"status,omitempty"`
-	Featured    bool   `json:"featured,omitempty"`
-	Excerpt     string `json:"custom_excerpt,omitempty"`
-	Tags        []Tag  `json:"tags,omitempty"`
+	//MobileDoc   string `json:"mobiledoc,omitempty"`
+	HTML     string `json:"html,omitempty"`
+	Status   string `json:"status,omitempty"`
+	Featured bool   `json:"featured,omitempty"`
+	Excerpt  string `json:"custom_excerpt,omitempty"`
+	Tags     []Tag  `json:"tags,omitempty"`
 }
 
 type Tag struct {
@@ -168,7 +168,7 @@ func (gp PostEntity) UpdatePost() error {
 	}
 	// build the URL
 	requestURL := fmt.Sprintf(
-		"ghost/api/admin/posts/%s",
+		"ghost/api/admin/posts/%s?source=html",
 		gp.Posts[0].ID,
 	)
 	// create the request
@@ -216,10 +216,11 @@ func (gp PageEntity) UpdatePage() error {
 	}
 	// build the URL
 	requestURL := fmt.Sprintf(
-		"ghost/api/admin/pages/%s",
+		"ghost/api/admin/pages/%s?source=html",
 		gp.Pages[0].ID,
 	)
 	// create the request
+	logger.Debug().Msgf("UpdatePage() create request with content:\r\n %s", gjson)
 	resBody, err := request(requestURL, http.MethodPut, bytes.NewBuffer(gjson))
 	if err != nil {
 		return err
@@ -253,7 +254,7 @@ func request(url string, method string, payload io.Reader) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-
+	logger.Debug().Msgf("request done, status: %d", res.StatusCode)
 	if res.StatusCode != 200 {
 		ghostErrors := Errors{}
 		_ = json.Unmarshal(resBody, &ghostErrors)

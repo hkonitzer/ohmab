@@ -102,7 +102,7 @@ func GetStandardTimetableData(data *DataTemplate, timetabletype string, query *e
 
 	// get timetables for every requested type
 
-	timetablesQuery := client.Timetable.Query().Where(timetable.DatetimeFromGTE(midnight), timetable.DeletedAtIsNil()).WithAddress().
+	timetablesQuery := client.Timetable.Query().Where(timetable.DeletedAtIsNil(), timetable.DatetimeFromGTE(midnight), timetable.DeletedAtIsNil()).WithAddress().
 		Order(ent.Asc(timetable.FieldDatetimeFrom))
 
 	if timetabletype != "" {
